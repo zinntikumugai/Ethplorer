@@ -83,10 +83,8 @@ class evxMongo {
             'driver' => 'mongodb',
             'server' => 'mongodb://127.0.0.1:27017',
             'dbName' => 'ethplorer',
-            'prefix' => 'everex.'
         );
         $db = $this->dbName = $aSettings['dbName'];
-        $prefix = $aSettings['prefix'];
         $start = microtime(true);
         switch($aSettings['driver']){
             // Fake mongo driver to run without real mongo instance
@@ -98,24 +96,24 @@ class evxMongo {
                 $this->oMongo = new MongoClient($aSettings['server']);
                 $oDB = $this->oMongo->{$db};
                 $this->aDBs = array(
-                    'transactions' => $oDB->{$prefix . "eth.transactions"},
-                    'blocks'       => $oDB->{$prefix . "eth.blocks"},
-                    'contracts'    => $oDB->{$prefix . "eth.contracts"},
-                    'tokens'       => $oDB->{$prefix . "erc20.contracts"},
-                    'operations'   => $oDB->{$prefix . "erc20.operations"},
-                    'balances'     => $oDB->{$prefix . "erc20.balances"}
+                    'transactions' => $oDB->{"transactions"},
+                    'blocks'       => $oDB->{"blocks"},
+                    'contracts'    => $oDB->{"contracts"},
+                    'tokens'       => $oDB->{"tokens"},
+                    'operations'   => $oDB->{"tokenOperations"},
+                    'balances'     => $oDB->{"tokenBalances"}
                 );
                 break;
             // php version 5.6, 7.x use mongodb extension
             case 'mongodb':
                 $this->oMongo = new MongoDB\Driver\Manager($aSettings['server']);
                 $this->aDBs = array(
-                    'transactions' => $prefix . "eth.transactions",
-                    'blocks'       => $prefix . "eth.blocks",
-                    'contracts'    => $prefix . "eth.contracts",
-                    'tokens'       => $prefix . "erc20.contracts",
-                    'operations'   => $prefix . "erc20.operations",
-                    'balances'     => $prefix . "erc20.balances"
+                    'transactions' => "transactions",
+                    'blocks'       => "blocks",
+                    'contracts'    => "contracts",
+                    'tokens'       => "tokens",
+                    'operations'   => "tokenOperations",
+                    'balances'     => "tokenBalances"
                 );
                 break;
             default:
