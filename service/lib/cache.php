@@ -158,7 +158,17 @@ class evxCache {
         if('memcached' === $this->driver){
             return $this->oDriver->add($entryName . '-lock', TRUE, evxCache::LOCK_TTL);
         }else{
-            // @todo: create file lock
+            $lockFilename = $this->path . '/' . $entryName . "-lock.tmp";
+
+            if(file_exists($lockFilename)){
+                $lockFileTime = filemtime($lockFilename);
+                if((time() - $lockFileTime) <= evxCache::LOCK_TTL){
+                    return FALSE;
+                }
+            }
+            @unlink($lockFilename);
+            $saveLockRes = !!file_put_contents($lockFilename, '1');
+            return $saveLockRes;
         }
     }
 
