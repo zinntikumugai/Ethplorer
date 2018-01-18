@@ -32,7 +32,7 @@ class evxCache {
     /**
      * Cache locks ttl in seconds
      */
-    const LOCK_TTL = 60;
+    const LOCK_TTL = 120;
 
     /**
      * Waiting time for checking cache data in seconds
@@ -42,7 +42,7 @@ class evxCache {
     /**
      * Repeats number for checking cache data
      */
-    const LOCK_WAITING_REPEATS = 10;
+    const LOCK_WAITING_REPEATS = 20;
 
     /**
      * Cache storage.
@@ -160,6 +160,37 @@ class evxCache {
     }
 
     /**
+     * Returns true if cache lock file created.
+     *
+     * @param string  $file  File name
+     * @return boolean
+     */
+    public function isLockFileExists($file){
+        if(file_exists($file)){
+            $lockFileTime = filemtime($file);
+            if((time() - $lockFileTime) <= evxCache::LOCK_TTL){
+                return TRUE;
+            }
+        }
+
+        return FALSE;
+    }
+
+    /**
+     * Returns true if cache lock created.
+     *
+     * @param string  $entryName  Cache entry name
+     * @return boolean
+     */
+    public function isLockExists($entryName){
+        if('memcached' === $this->driver){
+            return $this->oDriver->get($entryName . '-lock');
+        }else{
+            return $this->isLockFileExists($this->path . '/' . $entryName . "-lock.tmp");
+        }
+    }
+
+    /**
      * Adds cache lock.
      *
      * @param string  $entryName  Cache entry name
@@ -171,12 +202,8 @@ class evxCache {
         }else{
             $lockFilename = $this->path . '/' . $entryName . "-lock.tmp";
 
-            if(file_exists($lockFilename)){
-                $lockFileTime = filemtime($lockFilename);
-                if((time() - $lockFileTime) <= evxCache::LOCK_TTL){
-                    return FALSE;
-                }
-            }
+            if($this->isLockFileExists($lockFilename)) return FALSE;
+
             @unlink($lockFilename);
             $saveLockRes = !!file_put_contents($lockFilename, '1');
             return $saveLockRes;
@@ -229,8 +256,7 @@ class evxCache {
                 if($result && isset($result['lifetime']) && isset($result['data'])){
                     // checking data is not expired
                     if($result['lifetime'] < time()){
-                        // try to create cache lock
-                        if($this->addLock($entryName)){
+                        if(!$this->isLockExists($entryName)){
                             return FALSE;
                         }
                     }
@@ -248,7 +274,7 @@ class evxCache {
                         $fileTime = filemtime($filename);
                         $gmtZero = gmmktime(0, 0, 0);
                         if((($gmtZero > $fileTime) && ($cacheLifetime > evxCache::HOUR)) || ((time() - $fileTime) > $cacheLifetime)){
-                            if($this->addLock($entryName)){
+                            if(!$this->isLockExists($entryName)){
                                 return FALSE;
                             }
                         }
@@ -262,6 +288,17 @@ class evxCache {
     }
 
     /**
+     * Sends HTTP error code 503.
+     *
+     * @param int  $timeout  Retry timeout
+     */
+    protected function send503Header($timeout){
+        header($_SERVER["SERVER_PROTOCOL"].' 503 Service Temporarily Unavailable');
+        header('Status: 503 Service Temporarily Unavailable');
+        header('Retry-After: ' . $timeout);
+    }
+
+    /**
      * Returns cached data by entry name.
      *
      * @param string   $entryName
@@ -272,7 +309,9 @@ class evxCache {
     public function get($entryName, $default = NULL, $loadIfNeeded = FALSE, $cacheLifetime = FALSE){
         $result = $this->getCachedData($entryName, $default, $loadIfNeeded, $cacheLifetime);
 
+        $isCacheCreated = FALSE;
         if(!$result){
+            // try to create cache lock
             if($this->addLock($entryName)){
                 return FALSE;
             }else{
@@ -282,8 +321,13 @@ class evxCache {
                     sleep(evxCache::LOCK_WAITING_TIME);
                     $result = $this->getCachedData($entryName, $default, $loadIfNeeded, $cacheLifetime);
                     if($result){
+                        $isCacheCreated = TRUE;
                         break;
                     }
+                }
+                if(!$isCacheCreated){
+                    $this->send503Header(180);
+                    die();
                 }
             }
         }
