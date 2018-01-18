@@ -2161,7 +2161,7 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
                 },
                 vAxes: vAxes,
                 pointSize: 3,
-                lineWidth: 2,
+                lineWidth: 1,
                 bar: { groupWidth: '70%' },
                 candlestick: {
                     fallingColor: {
