@@ -762,6 +762,22 @@ Ethplorer = {
                 oToken.description = oToken.description.replace(/~~~(.*)~~~\n?/g, '<h4>$1</h4>');
                 oToken.description = oToken.description.replace(/\n/g, '<br />');
             }
+            if(oToken.website){
+                oToken.description = oToken.description + '<br><i class="fa fa-globe" title="Website"></i> <a href="' + oToken.website + '" target="_blank"></a>';
+            }
+            if(oToken.facebook){
+                oToken.description = oToken.description + '<br><i class="fa fa-facebook" title="Facebook"></i> <a href="https://facebook.com/' + oToken.facebook + '" target="_blank"></a>';
+            }
+            if(oToken.twitter){
+                oToken.description = oToken.description + '<br><i class="fa fa-twitter" title="Twitter"></i> <a href="https://twitter.com/' + oToken.twitter + '" target="_blank"></a>';
+            }
+            if(oToken.reddit){
+                oToken.description = oToken.description + '<br><i class="fa fa-reddit" title="Reddit"></i> <a href="https://reddit.com/r/' + oToken.reddit + '" target="_blank"></a>';
+            }
+            if(oToken.telegram){
+                oToken.description = oToken.description + '<br><i class="fa fa-telegram" title="Telegram"></i> <a href="' + oToken.telegram + '" target="_blank"></a>';
+            }
+
             if(oToken.image){
                 $('#address-token-details .block-header').find('img').remove();                
                 $('#address-token-details .block-header').prepend('<img src="' + oToken.image + '" class="token-logo" align="left">');
