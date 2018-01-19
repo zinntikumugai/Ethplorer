@@ -773,7 +773,7 @@ Ethplorer = {
                 oToken.description = oToken.description + '<br><i class="fa fa-twitter" title="Twitter"></i> <a href="https://twitter.com/' + oToken.twitter + '" target="_blank">@' + oToken.twitter + '</a>';
             }
             if(oToken.reddit){
-                oToken.description = oToken.description + '<br><i class="fa fa-reddit" title="Reddit"></i> <a href="https://reddit.com/r/' + oToken.reddit + '" target="_blank">@' + oToken.reddit + '</a>';
+                oToken.description = oToken.description + '<br><i class="fa fa-reddit-alien" title="Reddit"></i> <a href="https://reddit.com/r/' + oToken.reddit + '" target="_blank">@' + oToken.reddit + '</a>';
             }
             if(oToken.telegram){
                 oToken.description = oToken.description + '<br><i class="fa fa-telegram" title="Telegram"></i> <a href="' + oToken.telegram + '" target="_blank">Join Channel</a>';
