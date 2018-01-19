@@ -27,7 +27,7 @@ class evxCache {
     /**
      * Seconds in 30 days
      */
-    const MONTH = 30 * 24 * 3600;
+    const MONTH = 2592000; // 30 * 24 * 3600
 
     /**
      * Cache locks ttl in seconds

@@ -60,7 +60,7 @@ class evxMongo {
      *
      * @var string
      */
-    protected $logFile = __DIR__ . '/../log/mongo-profile.log';
+    protected $logFile;
 
     /**
      * Initialization.
@@ -78,6 +78,8 @@ class evxMongo {
      * @throws \Exception
      */
     protected function __construct(array $aSettings){
+        
+        $this->logFile = __DIR__ . '/../log/mongo-profile.log';
         // Default config
         $aSettings += array(
             'driver' => 'mongodb',
