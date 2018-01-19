@@ -136,12 +136,14 @@ class evxCache {
         switch($this->driver){
             case 'memcached':
                 $lifetime = isset($this->aLifetime[$entryName]) ? (int)$this->aLifetime[$entryName] : 0;
-                if($lifetime > evxCache::MONTH){
+                /*if($lifetime > evxCache::MONTH){
                     $lifetime = time() + $cacheLifetime;
-                }
+                }*/
                 if(!$lifetime){
                     // 365 days if cache lifetime is not set
-                    $lifetime = time() + 12 * evxCache::MONTH + 5;
+                    $lifetime = time() + 12 * evxCache::MONTH + 5 * 24 * evxCache::HOUR;
+                }else{
+                    $lifetime = time() + $lifetime;
                 }
                 //$saveRes = $this->oDriver->set($entryName, $data, $lifetime);
                 $aMemcachedData = array('lifetime' => $lifetime, 'data' => $data);
