@@ -761,7 +761,10 @@ Ethplorer = {
                 oToken.description = oToken.description.replace(/http[s]?\:\/\/[^\s]*/g, '<a href="$&" target="_blank">$&</a>');
                 oToken.description = oToken.description.replace(/~~~(.*)~~~\n?/g, '<h4>$1</h4>');
                 oToken.description = oToken.description.replace(/\n/g, '<br />');
+            }else{
+                oToken.description = '';
             }
+
             // Add website, social icons and other links
             if(oToken.website || oToken.facebook || oToken.twitter || oToken.reddit || oToken.telegram){
                 oToken.description = oToken.description + '<br>';
