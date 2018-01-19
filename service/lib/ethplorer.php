@@ -671,7 +671,7 @@ class Ethplorer {
         if($updateCache || (false === $aResult)){
             evxProfiler::checkpoint('getTokens', 'START');
             if($updateCache){
-                $aPrevTokens = clone $aResult;
+                $aPrevTokens = $aResult;
                 if(!is_array($aPrevTokens)){
                     $aPrevTokens = array();
                 }
