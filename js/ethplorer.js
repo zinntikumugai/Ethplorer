@@ -762,6 +762,7 @@ Ethplorer = {
                 oToken.description = oToken.description.replace(/~~~(.*)~~~\n?/g, '<h4>$1</h4>');
                 oToken.description = oToken.description.replace(/\n/g, '<br />');
             }
+            // Add website, social icons and other links
             if(oToken.website){
                 oToken.description = oToken.description + '<br><i class="fa fa-globe" title="Website"></i> <a href="' + oToken.website + '" target="_blank">' + oToken.website + '</a>';
             }
@@ -776,6 +777,11 @@ Ethplorer = {
             }
             if(oToken.telegram){
                 oToken.description = oToken.description + '<br><i class="fa fa-telegram" title="Telegram"></i> <a href="' + oToken.telegram + '" target="_blank">Join Channel</a>';
+            }
+            if(oToken.links){
+                oToken.links = oToken.links.replace(/http[s]?\:\/\/[^\s]*/g, '<a href="$&" target="_blank">$&</a>');
+                oToken.links = oToken.links.replace(/\n/g, '<br />');
+                oToken.description = oToken.description + '<br>' + oToken.links;
             }
 
             if(oToken.image){
