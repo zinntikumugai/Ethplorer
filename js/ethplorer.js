@@ -766,7 +766,7 @@ Ethplorer = {
             }
 
             // Add website, social icons and other links
-            if(oToken.website || oToken.facebook || oToken.twitter || oToken.reddit || oToken.telegram){
+            if(oToken.description && (oToken.website || oToken.facebook || oToken.twitter || oToken.reddit || oToken.telegram)){
                 oToken.description = oToken.description + '<br>';
             }
             if(oToken.website){
