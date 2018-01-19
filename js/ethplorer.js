@@ -770,7 +770,10 @@ Ethplorer = {
                 oToken.description = oToken.description + '<br>';
             }
             if(oToken.website){
-                oToken.description = oToken.description + '<br><i class="fa fa-globe" title="Website"></i> <a href="' + oToken.website + '" target="_blank">' + oToken.website + '</a>';
+                if(oToken.description){
+                    oToken.description = oToken.description + '<br>';
+                }
+                oToken.description = oToken.description + '<i class="fa fa-globe" title="Website"></i> <a href="' + oToken.website + '" target="_blank">' + oToken.website + '</a>';
             }
             if(oToken.facebook){
                 oToken.description = oToken.description + '<br><i class="fa fa-facebook" title="Facebook"></i> <a href="https://facebook.com/' + oToken.facebook + '" target="_blank">@' + oToken.facebook + '</a>';
