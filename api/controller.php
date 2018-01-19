@@ -468,7 +468,8 @@ class ethplorerController {
 
     public function getBlockTransactions(){
         $block = (int)$this->getRequest('block');
-        $result = $this->db->getBlockTransactions($block);
+        $showZeroValues = !!$this->getRequest('showZeroValues', FALSE);
+        $result = $this->db->getBlockTransactions($block, $showZeroValues);
         $this->sendResult($result);
     }
 
