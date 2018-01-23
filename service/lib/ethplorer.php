@@ -1349,6 +1349,9 @@ class Ethplorer {
                         $aHistoryCount = $this->getTokenHistoryGrouped(2, $address, 'hourly', 3600);
                         if(is_array($aHistoryCount)){
                             foreach($aHistoryCount as $aRecord){
+                                if(!is_object($aRecord['_id'])){
+                                    continue;
+                                }
                                 $aPeriod = $aPeriods[0];
                                 $aRecordDate = date("Y-m-d", $aRecord['ts']);
                                 $inCurrentPeriod = ($aRecordDate > $aPeriod['currentPeriodStart']) || (($aRecordDate == $aPeriod['currentPeriodStart']) && ($aRecord['_id']->hour >= $curHour));
