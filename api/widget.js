@@ -751,11 +751,11 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
         header: '<div class="txs-header">' +
                     '<div class="widget-topTokens-tabs-row">' +
                         '<div class="widget-topTokens-tabs-wrapper">' +
-                            '<div data-tab="trade" class="widget-topTokens-tab">' +
-                                '<a data-criteria="trade"><div class="widget-topTokens-tab-title">By<br>Trade Volume<br></div></a>' +
-                            '</div>' +
                             '<div data-tab="cap" class="widget-topTokens-tab">' +
                                 '<a data-criteria="cap"><div class="widget-topTokens-tab-title">By<br>Capitalization</div></a>' +
+                            '</div>' +
+                            '<div data-tab="trade" class="widget-topTokens-tab">' +
+                                '<a data-criteria="trade"><div class="widget-topTokens-tab-title">By<br>Trade Volume<br></div></a>' +
                             '</div>' +
                             '<div data-tab="count" class="widget-topTokens-tab">' +
                                 '<a data-criteria="count"><div class="widget-topTokens-tab-title">By<br>Operations<br></div></a>' +
@@ -763,8 +763,8 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                         '</div>' +
                         '<div class="widget-topTokens-tabs-wrapper_mobile">' +
                             '<select id="widgetTopTokensSelect" name="widgetTopTokensSelect" class="widget-topTokens-select">' +
-                                '<option value="trade">By Trade Volume</option>' +
                                 '<option value="cap">By Capitalization</option>' +
+                                '<option value="trade">By Trade Volume</option>' +
                                 '<option value="count">By Operations</option>' +
                             '</select>' +
                         '</div>' +
