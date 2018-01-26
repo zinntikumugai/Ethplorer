@@ -739,10 +739,10 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
 
     this.cache = {};
 
-    this.options.criteria = window.location.hash.substr(1) || (options.criteria || 'trade');
-    var aCriteries = ['trade', 'cap', 'count'];
+    this.options.criteria = window.location.hash.substr(1) || (options.criteria || 'cap');
+    var aCriteries = ['cap', 'trade', 'count'];
     if(aCriteries.indexOf(this.options.criteria) < 0){
-        this.options.criteria = 'trade';
+        this.options.criteria = 'cap';
     }
 
     this.api = ethplorerWidget.api + '/getTop';
