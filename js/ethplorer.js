@@ -776,13 +776,13 @@ Ethplorer = {
                 oToken.description = oToken.description + '<i class="fa fa-globe" title="Website"></i> <a href="' + oToken.website + '" target="_blank">' + oToken.website + '</a>';
             }
             if(oToken.facebook){
-                oToken.description = oToken.description + '<br><i class="fa fa-facebook" title="Facebook"></i> <a href="https://facebook.com/' + oToken.facebook + '" target="_blank">@' + oToken.facebook + '</a>';
+                oToken.description = oToken.description + '<br><i class="fa fa-facebook" title="Facebook"></i> <a href="https://facebook.com/' + oToken.facebook + '" target="_blank">' + oToken.facebook + '</a>';
             }
             if(oToken.twitter){
-                oToken.description = oToken.description + '<br><i class="fa fa-twitter" title="Twitter"></i> <a href="https://twitter.com/' + oToken.twitter + '" target="_blank">@' + oToken.twitter + '</a>';
+                oToken.description = oToken.description + '<br><i class="fa fa-twitter" title="Twitter"></i> <a href="https://twitter.com/' + oToken.twitter + '" target="_blank">' + oToken.twitter + '</a>';
             }
             if(oToken.reddit){
-                oToken.description = oToken.description + '<br><i class="fa fa-reddit-alien" title="Reddit"></i> <a href="https://reddit.com/r/' + oToken.reddit + '" target="_blank">@' + oToken.reddit + '</a>';
+                oToken.description = oToken.description + '<br><i class="fa fa-reddit-alien" title="Reddit"></i> <a href="https://reddit.com/r/' + oToken.reddit + '" target="_blank">' + oToken.reddit + '</a>';
             }
             if(oToken.telegram){
                 oToken.description = oToken.description + '<br><i class="fa fa-telegram" title="Telegram"></i> <a href="' + oToken.telegram + '" target="_blank">Join Channel</a>';
