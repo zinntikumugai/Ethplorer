@@ -159,6 +159,7 @@ class apiTest extends TestCase
                     ['fields' => ['operations'], 'type' => 'count', 'range' => [1, 5]] // 1 <= value <= 5
                 ]
             ]],
+
             // Incorrect limit value
             [[
                 'method' => 'getTokenHistory',
@@ -345,7 +346,7 @@ class apiTest extends TestCase
             [[
                 'method' => 'getAddressTransactions',
                 'description' => '= check request without parameters =',
-                'URL_params' => '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
+                'URL_params' => '0xb297cacf0f91c86dd9d2fb47c6d12783121ab780',
                 'GET_params' =>  ['apiKey' => apiTest::APIKey, ],
                 'asserts' => [
                     ['type' => 'isset', 'array' => 'true', 'fields' => ['timestamp', 'from', 'to', 'hash', 'value', 'input', 'success']],
@@ -356,7 +357,7 @@ class apiTest extends TestCase
             [[
                 'method' => 'getAddressTransactions',
                 'description' => '= check request with "limit" parameter =',
-                'URL_params' => '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
+                'URL_params' => '0xb297cacf0f91c86dd9d2fb47c6d12783121ab780',
                 'GET_params' =>  ['apiKey' => apiTest::APIKey, 'limit'=>'5'],
                 'asserts' => [
                     ['type' => 'isset', 'array' => 'true', 'fields' => ['timestamp', 'from', 'to', 'hash', 'value', 'input', 'success']],
@@ -368,19 +369,19 @@ class apiTest extends TestCase
             [[
                 'method' => 'getAddressTransactions',
                 'description' => '= check request with "showZeroValues" parameter =',
-                'URL_params' => '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
+                'URL_params' => '0xb297cacf0f91c86dd9d2fb47c6d12783121ab780',
                 'GET_params' =>  ['apiKey' => apiTest::APIKey, 'showZeroValues'=>'true'],
                 'asserts' => [
                     ['type' => 'isset', 'array' => 'true', 'fields' => ['timestamp', 'from', 'to', 'hash', 'value', 'input', 'success']],
                     ['type' => '!isset',     'fields' => ['error']],
-                    ['fields' => ['value'], 'array' => 'true', 'equals' => '0'],
+                    ['type' => 'contain',  'array' => 'true', 'fields' => ['value'], 'equals' => 0]
                 ]
             ]],
             //check if limit=0 return correct amount of objects
             [[
                 'method' => 'getAddressTransactions',
                 'description' => '= check if limit=0 return correct amount of objects =',
-                'URL_params' => '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
+                'URL_params' => '0xb297cacf0f91c86dd9d2fb47c6d12783121ab780',
                 'GET_params' =>  ['apiKey' => apiTest::APIKey, 'showZeroValues'=>'true'],
                 'asserts' => [
                     ['type' => 'isset', 'array' => 'true', 'fields' => ['timestamp', 'from', 'to', 'hash', 'value', 'input', 'success']],
@@ -413,7 +414,7 @@ class apiTest extends TestCase
             [[
                 'method' => 'getAddressTransactions',
                 'description' => '= request with wrong "limit" parameter contains only 1 object =',
-                'URL_params' => '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
+                'URL_params' => '0xb297cacf0f91c86dd9d2fb47c6d12783121ab780',
                 'GET_params' =>  ['apiKey' => apiTest::APIKey, 'limit' => 'asd'],
                 'asserts' => [
                     ['fields' => [''], 'array' => 'true', 'type' => 'count', 'range' => [1,1]],
@@ -551,6 +552,14 @@ class apiTest extends TestCase
                     ['type' => '!isset',     'fields' => ['error']],
                 ]
             ]],
+            //check timestamp with last block and last token history
+            [[
+                'method' => 'getTokenHistory',
+                'GET_params' =>  ['apiKey' => apiTest::APIKey,],
+                'asserts' => [
+                    ['type' => 'checkLastBlock', 'fields' => ['operations'], 'time' => 30],
+                ]
+            ]],
             // request with "period" field
             [[
                 'method' => 'getTokenHistoryGrouped',
@@ -654,6 +663,88 @@ class apiTest extends TestCase
                 ],
                 'method' => 'getTokenPriceHistoryGrouped',
                 'URL_params' => '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
+                'GET_params' =>  ['apiKey' => null],
+                'asserts' => [
+                    ['type' => 'isset', 'fields' => ['error']],
+                    ['fields' => ['error:code'], 'equals' => 1],
+                ]
+            ]],
+            // ========================== getLastBlock =========================================================
+            // Success
+            [[
+                'method' => 'getLastBlock',
+                'GET_params' =>  ['apiKey' => apiTest::APIKey],
+                'asserts' => [
+                    ['type' => 'timeCheck',   'fields' => ['time' => 30]]
+                ]
+            ]],
+            //Errors
+            // Error: invalid API key (using iteration)
+            [[
+                '_iterate' => [
+                    'GET_params:apiKey' => ['Invalid Key', ' ', '', 0],
+                ],
+                'method' => 'getLastBlock',
+                'GET_params' =>  ['apiKey' => null],
+                'asserts' => [
+                    ['type' => 'isset', 'fields' => ['error']],
+                    ['fields' => ['error:code'], 'equals' => 1],
+                ]
+            ]],
+            // ========================== getBlockTransactions =========================================================
+            // Success
+            [[
+                'method' => 'getBlockTransactions',
+                'GET_params' =>  ['apiKey' => apiTest::APIKey, 'block' => 4895558],
+                'asserts' => [
+                    ['type' => 'isset', 'array' => 'true', 'count' => 5, 'fields' => ['from', 'to', 'value', 'timestamp']],
+                    ['type' => '!contain',  'array' => 'true', 'fields' => ['value'], 'equals' => 0],
+                    ['type' => 'count', 'array' => 'true', 'fields' => [''], 'gt' => 0], // > 0
+                ]
+            ]],
+            // with showZeroValues = 1
+            [[
+                'method' => 'getBlockTransactions',
+                'GET_params' =>  ['apiKey' => apiTest::APIKey, 'block' => 4895558, 'showZeroValues' => 1],
+                'asserts' => [
+                    ['type' => 'isset', 'array' => 'true', 'fields' => ['from', 'to', 'value', 'timestamp']],
+                    ['type' => 'contain',  'array' => 'true', 'fields' => ['value'], 'equals' => 0],
+                ]
+            ]],
+            // check last block
+            [[
+                'method' => 'getBlockTransactions',
+                'GET_params' =>  ['apiKey' => apiTest::APIKey, 'block' => 'last'],
+                'asserts' => [
+                    ['type' => 'isset', 'array' => 'true', 'count' => 5, 'fields' => ['from', 'to', 'value', 'timestamp']],
+                    ['type' => '!contain',  'array' => 'true', 'fields' => ['value'], 'equals' => 0],
+                    ['type' => 'count', 'array' => 'true', 'fields' => [''], 'gt' => 0], // > 0
+                ]
+            ]],
+            // check last block with showZeroValues = 1
+            [[
+                'method' => 'getBlockTransactions',
+                'GET_params' =>  ['apiKey' => apiTest::APIKey, 'block' => 'last', 'showZeroValues' => 1],
+                'asserts' => [
+                    ['type' => 'isset', 'array' => 'true', 'fields' => ['from', 'to', 'value', 'timestamp']],
+                    ['type' => 'contain',  'array' => 'true', 'fields' => ['value'], 'equals' => 0],
+                ]
+            ]],
+            //check block transaction with etherscan.io
+            [[
+                'method' => 'getBlockTransactions',
+                'GET_params' =>  ['apiKey' => apiTest::APIKey, 'block' => 'last'],
+                'asserts' => [
+                    ['type' => 'checkTransaction', 'fields' => [''], 'count' => 5],
+                ]
+            ]],
+            //Errors
+            // Error: invalid API key (using iteration)
+            [[
+                '_iterate' => [
+                    'GET_params:apiKey' => ['Invalid Key', ' ', '', 0],
+                ],
+                'method' => 'getBlockTransactions',
                 'GET_params' =>  ['apiKey' => null],
                 'asserts' => [
                     ['type' => 'isset', 'fields' => ['error']],
