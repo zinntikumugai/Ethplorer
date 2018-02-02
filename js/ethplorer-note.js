@@ -51,7 +51,7 @@ EthplorerNote = {
         EthplorerNote.inner.fadeOut(500, function(_data){
             return function(){
                 var link = "/go.php?link=" + _data.link;
-                EthplorerNote.inner.html(_data.html.replace('%link%', link));
+                EthplorerNote.inner.html(_data.html.replace(/\%link\%/g, link));
                 if(_data.image){
                     var img = $('<IMG>');
                     img.attr('src', _data.image);

@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-$codeVersion = "173";
-
 $aConfig = require dirname(__FILE__) . '/service/config.php';
 require dirname(__FILE__) . '/service/lib/ethplorer.php';
 $es = Ethplorer::db(array());
+
+$codeVersion = isset($aConfig['codeVersion']) ? $aConfig['codeVersion'] : "179";
 
 $error = TRUE;
 $header = "";
@@ -80,8 +79,24 @@ if(is_array($rParts) && isset($rParts[2])){
     <title>Ethplorer<?php if($header){ echo ": " . $header; } ?></title>
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="/css/ethplorer.css?v=<?=$codeVersion?>">
+<?php
+    // Load extensions CSS
+    if(isset($aConfig['extensions']) && is_array($aConfig['extensions'])){
+        foreach($aConfig['extensions'] as $extName => $aExtension){
+            $cv = isset($aExtension['version']) ? (int)$aExtension['version'] : false;
+            if(isset($aExtension['css'])){
+                $aExtension['js'] = (array)$aExtension['js'];
+                foreach($aExtension['css'] as $js){
+                    $jsf = "/extensions/" . $extName . "/" . $js;
+                    if(file_exists(dirname(__FILE__) . $jsf)){
+                        echo '    <link rel="stylesheet" href="' . $jsf . ($cv ? ("?v=" . $cv) : "") . '">' . "\n";
+                    }
+                }
+            }
+        }
+    } ?>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="referrer" content="never" />
@@ -92,15 +107,42 @@ if(is_array($rParts) && isset($rParts[2])){
     <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="https://www.google.com/jsapi"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
     <script src="/js/bignumber.js"></script>
     <script src="/js/ethplorer.js?v=<?=$codeVersion?>"></script>
     <script src="/js/ethplorer-search.js?v=<?=$codeVersion?>"></script>
-    <?php if($hasNotes):?><script src="/js/ethplorer-note.js?v=<?=$codeVersion?>"></script><?php endif; ?>
+<?php if($hasNotes):?><script src="/js/ethplorer-note.js?v=<?=$codeVersion?>"></script><?php endif; ?>
+<?php
+    // Load extensions JS
+    if(isset($aConfig['extensions']) && is_array($aConfig['extensions'])){
+        foreach($aConfig['extensions'] as $extName => $aExtension){
+            $cv = isset($aExtension['version']) ? (int)$aExtension['version'] : false;
+            if(isset($aExtension['js'])){
+                $aExtension['js'] = (array)$aExtension['js'];
+                foreach($aExtension['js'] as $js){
+                    $jsf = "/extensions/" . $extName . "/" . $js;
+                    if(file_exists(dirname(__FILE__) . $jsf)){
+                        echo '    <script src="' . $jsf . ($cv ? ("?v=" . $cv) : "") . '"></script>' . "\n";
+                    }
+                }
+            }
+        }
+    } ?>
     <script src="/js/config.js"></script>
     <script src="/js/md5.min.js"></script>
     <script src="/js/sha3.min.js"></script>
     <script src="/js/qrcode.min.js"></script>
+    <?php if(isset($address)){ ?>
+        <script>
+        var ethplorerWidgetPreload = [
+            {
+                method: "getPriceHistoryGrouped",
+                options: {address: '<?php echo $address; ?>'}
+            }
+        ];
+        </script>
+    <?php } ?>
     <script src="/api/widget.js?v=<?=$codeVersion?>"></script>
 </head>
 <body>
@@ -253,7 +295,7 @@ if(is_array($rParts) && isset($rParts[2])){
                                 <a class="tx-details-link">Transaction details</a>
                             </div>
                         </div>
-                        <div class="col-xs-12 col-md-6 token-related">
+                        <div class="col-xs-12 col-md-6 token-related" id="token-operation-block">
                             <div class="block">
                                 <div class="block-header"><h3><span class="token-name"></span> <span class="token-operation-type"></span></h3></div>
                                 <table class="table">
@@ -287,7 +329,7 @@ if(is_array($rParts) && isset($rParts[2])){
                                 <a class="tx-details-link">Transaction details</a>
                             </div>
                         </div>
-                        <div class="col-xs-12 col-md-6 token-related">
+                        <div class="col-xs-12 col-md-6 token-related" id="token-information-block">
                             <div class="block">
                                 <div class="block-header"><h3>Token <span class="token-name"></span> Information</h3></div>
                                 <table class="table">
@@ -385,6 +427,10 @@ if(is_array($rParts) && isset($rParts[2])){
                                 <tr>
                                     <td>Nonce</td>
                                     <td id="transaction-tx-nonce" class="list-field"></td>
+                                </tr>
+                                <tr id="tx-method">
+                                    <td>Method</td>
+                                    <td style="font-family: monospace;color:#f8f577;" id="transaction-tx-method" class="list-field text-left"></td>
                                 </tr>
                                 <tr id="tx-parsed">
                                     <td>Parsed Data</td>
@@ -644,7 +690,6 @@ if(is_array($rParts) && isset($rParts[2])){
                     <a href="#"><img src="/images/ethplorerlogowhite400.png" style="max-width: 140px;" alt=""></a>
                     <div>
                         <div style="color:#eeeeee;">© 2016-2017 <a href="https://everex.one/" target="_blank" class="small-link">Everex</a>
-                            <br><a href="mailto:support@ethplorer.io" class="small-link">support@ethplorer.io</a>
                             <br><a href="/privacy" class="small-link">Privacy &amp; Terms</a><br>
                         </div>
                     </div>
@@ -660,10 +705,10 @@ if(is_array($rParts) && isset($rParts[2])){
                 </div>
                 <div class="col-xs-5 col-sm-2 col-md-3 footer-links">
                     <ul>
-                        <li><a href="https://ethplorer.io/#contact">Contact</a></li>
+                        <li><a href="http://bit.ly/ethp-contact" target="_blank">Contact</a></li>
                         <li><a href="https://ethplorer.io/#subscribe">Subscribe</a></li>
                         <li><a href="https://www.reddit.com/r/ethplorer/">Discuss at Reddit</a></li>
-                        <li><a href="https://docs.google.com/forms/d/e/1FAIpQLSemDE0-vqUnJ7ToRdt1qR95iTbaMfq0FRXt7INMMJrm1IO4dQ/viewform?c=0&w=1">Update your Token info</a></li>
+                        <li><a href="http://bit.ly/ethp-contact" target="_blank">Update your Token info</a></li>
                     </ul>
                 </div>
                 <div class="col-xs-7 col-sm-5 col-md-4 footer-donation">

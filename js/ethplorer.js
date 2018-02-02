@@ -24,6 +24,9 @@ Ethplorer = {
     ethPrice: {rate: 0, diff: 0},
     searchCache: {},
     saveData: function(){},
+    Config: {testnet: false},
+    Extensions: {},
+    handlers: {},
     init: function(){
         if('undefined' !== typeof(ethplorerConfig)){
             Ethplorer.Config = ethplorerConfig;
@@ -157,13 +160,22 @@ Ethplorer = {
         }
 
         // @see ethplorer-search.js
+        // @todo extension
         if('undefined' !== typeof(EthplorerSearch)){
             EthplorerSearch.init($('#search-form'), $('#search'), Ethplorer.search);
         }
 
         // @see ethplorer-adv.js
+        // @todo extension
         if('undefined' !== typeof(EthplorerNote)){
             EthplorerNote.init($('#ethplorer-note'));
+        }
+
+        // Initialize extensions
+        if(Ethplorer.Extensions){
+            for(var ext in Ethplorer.Extensions){
+                Ethplorer.Extensions[ext].init();
+            }
         }
 
         // implement save to file function
@@ -405,8 +417,8 @@ Ethplorer = {
                 try {
                     obj = JSON.parse(input);
                 }catch(e){
-//                  console.log(e.message);
-//                  console.log(input);
+                    // console.log(e.message);
+                    // console.log(input);
                 }
                 Ethplorer.dataFields['transaction-tx-input']['ascii'] = input;
                 if(('undefined' !== typeof(obj['id'])) && ('CHAINY' === obj['id'])){
@@ -463,7 +475,7 @@ Ethplorer = {
             txData.tx.gasPrice = parseFloat(Ethplorer.Utils.toBig(txData.tx.gasPrice).toString());            
             txData.tx.cost =  txData.tx.gasUsed ? txData.tx.gasPrice * txData.tx.gasUsed : 0;
         }
-        Ethplorer.fillValues('transaction', txData, ['tx', 'tx.from', 'tx.to', 'tx.creates', 'tx.value', 'tx.timestamp', 'tx.gasLimit', 'tx.gasUsed', 'tx.gasPrice', 'tx.fee', 'tx.nonce', 'tx.blockNumber', 'tx.confirmations', 'tx.input', 'tx.cost']);
+        Ethplorer.fillValues('transaction', txData, ['tx', 'tx.from', 'tx.to', 'tx.creates', 'tx.value', 'tx.timestamp', 'tx.gasLimit', 'tx.gasUsed', 'tx.gasPrice', 'tx.fee', 'tx.nonce', 'tx.blockNumber', 'tx.confirmations', 'tx.input', 'tx.cost', 'tx.method']);
 
         if(txData.token){
             var oToken = Ethplorer.prepareToken(txData.token);
@@ -501,7 +513,6 @@ Ethplorer = {
                 $('#transfer-tx-message').html($('#transaction-tx-message').html());
                 $('#transaction-tx-message').html('')
             }
-
             if(txData.operations && txData.operations.length){
                 txData.operation = txData.operations[txData.operations.length - 1];
                 var multiop = txData.operations.length > 1;
@@ -649,6 +660,7 @@ Ethplorer = {
             Ethplorer.showOpDetails(oTx, txData.operations[0]);
         }
 
+        Ethplorer.Events.fire('ethp_showTxDetails_finish', txData);
         Ethplorer.Utils.hideEmptyFields();
         Ethplorer.hideLoader();
         $('#disqus_thread').show();
@@ -749,7 +761,38 @@ Ethplorer = {
                 oToken.description = oToken.description.replace(/http[s]?\:\/\/[^\s]*/g, '<a href="$&" target="_blank">$&</a>');
                 oToken.description = oToken.description.replace(/~~~(.*)~~~\n?/g, '<h4>$1</h4>');
                 oToken.description = oToken.description.replace(/\n/g, '<br />');
+            }else{
+                oToken.description = '';
             }
+
+            // Add website, social icons and other links
+            if(oToken.description && (oToken.website || oToken.facebook || oToken.twitter || oToken.reddit || oToken.telegram)){
+                oToken.description = oToken.description + '<br>';
+            }
+            if(oToken.website){
+                if(oToken.description){
+                    oToken.description = oToken.description + '<br>';
+                }
+                oToken.description = oToken.description + '<i class="fa fa-globe" title="Website" style="width:20px;"></i> <a href="' + oToken.website + '" target="_blank">' + oToken.website + '</a>';
+            }
+            if(oToken.facebook){
+                oToken.description = oToken.description + '<br><i class="fa fa-facebook" title="Facebook" style="width:20px;"></i> <a href="https://facebook.com/' + oToken.facebook + '" target="_blank">' + oToken.facebook + '</a>';
+            }
+            if(oToken.twitter){
+                oToken.description = oToken.description + '<br><i class="fa fa-twitter" title="Twitter" style="width:20px;"></i> <a href="https://twitter.com/' + oToken.twitter + '" target="_blank">' + oToken.twitter + '</a>';
+            }
+            if(oToken.reddit){
+                oToken.description = oToken.description + '<br><i class="fa fa-reddit-alien" title="Reddit" style="width:20px;"></i> <a href="https://reddit.com/r/' + oToken.reddit + '" target="_blank">' + oToken.reddit + '</a>';
+            }
+            if(oToken.telegram){
+                oToken.description = oToken.description + '<br><i class="fa fa-telegram" title="Telegram" style="width:20px;"></i> <a href="' + oToken.telegram + '" target="_blank">Join Channel</a>';
+            }
+            if(oToken.links){
+                oToken.links = oToken.links.replace(/http[s]?\:\/\/[^\s]*/g, '<a href="$&" target="_blank">$&</a>');
+                oToken.links = oToken.links.replace(/\n/g, '<br />');
+                oToken.description = oToken.description + '<br><br>' + oToken.links;
+            }
+
             if(oToken.image){
                 $('#address-token-details .block-header').find('img').remove();                
                 $('#address-token-details .block-header').prepend('<img src="' + oToken.image + '" class="token-logo" align="left">');
@@ -926,6 +969,8 @@ Ethplorer = {
         document.title += (': ' + (titleAdd ? (titleAdd + ' -') : ''));
         document.title += ((data.isContract ? ' Ethereum contract ' : ' Ethereum address ') + Ethplorer.currentAddress);
 
+        Ethplorer.Events.fire('ethp_showAddressDetails_finish', data);
+
         $('.local-time-offset').text(Ethplorer.Utils.getTZOffset());
         Ethplorer.Utils.hideEmptyFields();
         Ethplorer.hideLoader();
@@ -951,56 +996,57 @@ Ethplorer = {
         var oToken = Ethplorer.prepareToken(data.token);
         var address = Ethplorer.currentAddress;
         if(('undefined' !== typeof(ethplorerWidget)) && (true || !Ethplorer.isProd)){
-            if(data.isContract && data.token){
+            if(data.token){
                 var widgetTitle = (oToken && oToken.name) ? ($('<textarea />').html(oToken.name).text() + ' token pulse') : '';
 
-                if(true){
+                $('#widget-block').show();
+                $('#token-price-history-grouped-widget').show();
+                ethplorerWidget.init(
+                    '#token-price-history-grouped-widget',
+                    'tokenPriceHistoryGrouped',
+                    {
+                        theme: 'dark',
+                        getCode: true,
+                        address: address,
+                        options: {title: widgetTitle}
+                    }
+                );
+                //ethplorerWidget.loadScript("https://www.google.com/jsapi", ethplorerWidget.loadGoogleControlCharts);
+                ethplorerWidget.loadGoogleControlCharts();
+
+                /*$('#token-history-grouped-widget').show();
+                ethplorerWidget.init(
+                    '#token-history-grouped-widget',
+                    'tokenHistoryGrouped',
+                    {
+                        theme: 'dark',
+                        getCode: true,
+                        address: address,
+                        options: {title: widgetTitle, vAxis: {title: 'Token operations'}, hAxis: {title: '30 days token operations chart'}}
+                    }
+                );
+                ethplorerWidget.loadScript("https://www.gstatic.com/charts/loader.js", ethplorerWidget.loadGoogleCharts);*/
+
+            }else{
+                if(testWidget){
                     $('#widget-block').show();
                     $('#token-price-history-grouped-widget').show();
-                    ethplorerWidget.init(
-                        '#token-price-history-grouped-widget',
-                        'tokenPriceHistoryGrouped',
-                        {
-                            theme: 'dark',
-                            getCode: true,
-                            address: address,
-                            options: {title: widgetTitle}
-                        }
-                    );
-                    ethplorerWidget.loadScript("https://www.google.com/jsapi", ethplorerWidget.loadGoogleControlCharts);
                 }else{
-                    $('#token-history-grouped-widget').show();
-                    ethplorerWidget.init(
-                        '#token-history-grouped-widget',
-                        'tokenHistoryGrouped',
-                        {
-                            theme: 'dark',
-                            getCode: true,
-                            address: address,
-                            options: {title: widgetTitle, vAxis: {title: 'Token operations'}, hAxis: {title: '30 days token operations chart'}}
-                        }
-                    );
-                    ethplorerWidget.loadScript("https://www.gstatic.com/charts/loader.js", ethplorerWidget.loadGoogleCharts);
+                    $('#widget-block').hide();
+                    $('#token-price-history-grouped-widget').hide();
                 }
-            }else if(true){
-                    if(testWidget){
-                        $('#widget-block').show();
-                        $('#token-price-history-grouped-widget').show();
-                    }else{
-                        $('#widget-block').hide();
-                        $('#token-price-history-grouped-widget').hide();
+                ethplorerWidget.init(
+                    '#token-price-history-grouped-widget',
+                    'addressPriceHistoryGrouped',
+                    {
+                        theme: 'dark',
+                        getCode: true,
+                        address: address,
+                        //options: {title: widgetTitle}
                     }
-                    ethplorerWidget.init(
-                        '#token-price-history-grouped-widget',
-                        'addressPriceHistoryGrouped',
-                        {
-                            theme: 'dark',
-                            getCode: true,
-                            address: address,
-                            //options: {title: widgetTitle}
-                        }
-                    );
-                    ethplorerWidget.loadScript("https://www.google.com/jsapi", ethplorerWidget.loadGoogleControlCharts);
+                );
+                //ethplorerWidget.loadScript("https://www.google.com/jsapi", ethplorerWidget.loadGoogleControlCharts);
+                ethplorerWidget.loadGoogleControlCharts();
             }
         }else{
             // Wait 3 seconds and retry
@@ -1564,21 +1610,29 @@ Ethplorer = {
                 }
                 break;
             case 'ether':
-                value = Ethplorer.Utils.formatNum(value, true, 18, true) + ' ETHER';
+                if(value < 0){
+                    value = "N/A";
+                }else{
+                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + ' ETHER';
+                }
                 break;
             case 'ether-full':
-                var res = Ethplorer.Utils.formatNum(value, true, 18, true) + ' ETHER';
-                if(value){
-                    var price = Ethplorer.Utils.formatNum(Ethplorer.ethPrice.rate * value, true, 4, true);
-                    if(true || ('0.00' != price)){
-                        var change = Ethplorer.ethPrice.diff;
-                        var cls = change > 0 ? 'diff-up' : 'diff-down';
-                        var diff = "";
-                        // var diff = change ? (' <span class="' + cls + '">(' + Ethplorer.Utils.round(change, 2) + '%)</span>') : '';
-                        res = res + '<br /><span class="transfer-usd">$ ' + price + diff + '</span>';
+                if(value < 0){
+                    value = "N/A";
+                }else{                
+                    var res = Ethplorer.Utils.formatNum(value, true, 18, true) + ' ETHER';
+                    if(value){
+                        var price = Ethplorer.Utils.formatNum(Ethplorer.ethPrice.rate * value, true, 4, true);
+                        if(true || ('0.00' != price)){
+                            var change = Ethplorer.ethPrice.diff;
+                            var cls = change > 0 ? 'diff-up' : 'diff-down';
+                            var diff = "";
+                            // var diff = change ? (' <span class="' + cls + '">(' + Ethplorer.Utils.round(change, 2) + '%)</span>') : '';
+                            res = res + '<br /><span class="transfer-usd">$ ' + price + diff + '</span>';
+                        }
                     }
+                    value = res;
                 }
-                value = res;
                 break;
             case 'ethplorer':
                 if(false !== value){
@@ -1651,6 +1705,36 @@ Ethplorer = {
             correctLevel : QRCode.CorrectLevel.L
         });
         $("#qr-code-popup").dialog('open');
+    },
+    Events: {
+        handlers: [],
+        addHandler: function(event, callback){
+            if('undefined' === typeof(Ethplorer.Events.handlers[event])){
+                Ethplorer.Events.handlers[event] = [];
+            }
+            Ethplorer.Events.handlers[event].push(callback);
+            return Ethplorer.Events.handlers[event].length - 1;
+        },
+        delHandler: function(event, handlerIndex){
+            if(('undefined' !== typeof(Ethplorer.Events.handlers[event])) && ('undefined' !== typeof(Ethplorer.Events.handlers[event][handlerIndex]))){
+                delete Ethplorer.Events.handlers[event][handlerIndex];
+            }
+        },
+        fire: function(event, data){
+            if('undefined' !== typeof(Ethplorer.Events.handlers[event]) && Ethplorer.Events.handlers[event].length){
+                for(var i=0; i<Ethplorer.Events.handlers[event].length; i++){
+                    var res = true;
+                    if('undefined' !== typeof(data)){
+                        res = Ethplorer.Events.handlers[event][i](data);
+                    }else{
+                        res = Ethplorer.Events.handlers[event][i]();
+                    }
+                    if(false === res){
+                        break;
+                    }
+                }
+            }
+        }
     },
     Nav: {
         data: {},
@@ -1934,7 +2018,7 @@ Ethplorer = {
             var str = Ethplorer.Utils.hex2ascii(hex.slice(8)).replace('{{', '{').replace(/^[^{]+/, '');
             var res = false;
             var i1 = str.indexOf('{');
-            var i2 = str.indexOf('}');
+            var i2 = str.lastIndexOf('}');
             if(i1 >= 0 && i2 >= 0 && i1 < i2){
                 var jstr = str.substr(i1, i2 - i1 + 1);
                 try {

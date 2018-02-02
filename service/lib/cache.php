@@ -27,7 +27,22 @@ class evxCache {
     /**
      * Seconds in 30 days
      */
-    const MONTH = 30 * 24 * 3600;
+    const MONTH = 2592000; // 30 * 24 * 3600
+
+    /**
+     * Cache locks ttl in seconds
+     */
+    const LOCK_TTL = 120;
+
+    /**
+     * Waiting time for checking cache data in seconds
+     */
+    const LOCK_WAITING_TIME = 3;
+
+    /**
+     * Repeats number for checking cache data
+     */
+    const LOCK_WAITING_REPEATS = 20;
 
     /**
      * Cache storage.
@@ -105,6 +120,10 @@ class evxCache {
         $this->aData[$entryName] = $data;
     }
 
+    public function clearLocalCache(){
+        $this->aData = array();
+    }
+
     /**
      * Saves data to file.
      *
@@ -117,14 +136,18 @@ class evxCache {
         switch($this->driver){
             case 'memcached':
                 $lifetime = isset($this->aLifetime[$entryName]) ? (int)$this->aLifetime[$entryName] : 0;
-                if($lifetime > evxCache::MONTH){
+                /*if($lifetime > evxCache::MONTH){
                     $lifetime = time() + $cacheLifetime;
-                }
+                }*/
                 if(!$lifetime){
                     // 365 days if cache lifetime is not set
-                    $lifetime = time() + 12 * evxCache::MONTH + 5;
+                    $lifetime = time() + 12 * evxCache::MONTH + 5 * 24 * evxCache::HOUR;
+                }else{
+                    $lifetime = time() + $lifetime;
                 }
-                $saveRes = $this->oDriver->set($entryName, $data, $lifetime);
+                //$saveRes = $this->oDriver->set($entryName, $data, $lifetime);
+                $aMemcachedData = array('lifetime' => $lifetime, 'data' => $data);
+                $saveRes = $this->oDriver->set($entryName, $aMemcachedData);
                 if(!in_array($entryName, array('tokens', 'rates')) && (0 !== strpos($entryName, 'rates-history-'))){
                     break;
                 }
@@ -134,7 +157,73 @@ class evxCache {
                 $saveRes = !!file_put_contents($filename, $json);
                 break;
         }
+        $this->deleteLock($entryName);
         return $saveRes;
+    }
+
+    /**
+     * Returns true if cache lock file created.
+     *
+     * @param string  $file  File name
+     * @return boolean
+     */
+    public function isLockFileExists($file){
+        if(file_exists($file)){
+            $lockFileTime = filemtime($file);
+            if((time() - $lockFileTime) <= evxCache::LOCK_TTL){
+                return TRUE;
+            }
+        }
+
+        return FALSE;
+    }
+
+    /**
+     * Returns true if cache lock created.
+     *
+     * @param string  $entryName  Cache entry name
+     * @return boolean
+     */
+    public function isLockExists($entryName){
+        if('memcached' === $this->driver){
+            return $this->oDriver->get($entryName . '-lock');
+        }else{
+            return $this->isLockFileExists($this->path . '/' . $entryName . "-lock.tmp");
+        }
+    }
+
+    /**
+     * Adds cache lock.
+     *
+     * @param string  $entryName  Cache entry name
+     * @return boolean
+     */
+    public function addLock($entryName){
+        if('memcached' === $this->driver){
+            return $this->oDriver->add($entryName . '-lock', TRUE, evxCache::LOCK_TTL);
+        }else{
+            $lockFilename = $this->path . '/' . $entryName . "-lock.tmp";
+
+            if($this->isLockFileExists($lockFilename)) return FALSE;
+
+            @unlink($lockFilename);
+            $saveLockRes = !!file_put_contents($lockFilename, '1');
+            return $saveLockRes;
+        }
+    }
+
+    /**
+     * Deletes cache lock.
+     *
+     * @param string  $entryName  Cache entry name
+     * @return boolean
+     */
+    public function deleteLock($entryName){
+        if('memcached' === $this->driver){
+            return $this->oDriver->delete($entryName . '-lock');
+        }else{
+            return @unlink($this->path . '/' . $entryName . '-lock.tmp');
+        }
     }
 
     /**
@@ -155,7 +244,7 @@ class evxCache {
      * @param boolean  $loadIfNeeded
      * @return mixed
      */
-    public function get($entryName, $default = NULL, $loadIfNeeded = FALSE, $cacheLifetime = FALSE){
+    public function getCachedData($entryName, $default = NULL, $loadIfNeeded = FALSE, $cacheLifetime = FALSE){
         $result = $default;
         $file = ('file' === $this->driver);
         if(FALSE !== $cacheLifetime){
@@ -166,8 +255,17 @@ class evxCache {
         }elseif($loadIfNeeded){
             if('memcached' === $this->driver){
                 $result = $this->oDriver->get($entryName);
+                if($result && isset($result['lifetime']) && isset($result['data'])){
+                    // checking data is not expired
+                    if($result['lifetime'] < time()){
+                        if(!$this->isLockExists($entryName)){
+                            return FALSE;
+                        }
+                    }
+                    return $result['data'];
+                }
                 // @todo: move hardcode to controller
-                if(!$result && (in_array($entryName, array('tokens', 'rates')) || (0 === strpos($entryName, 'rates-history-')))){
+                if(!$result || (in_array($entryName, array('tokens', 'rates')) || (0 === strpos($entryName, 'rates-history-')))){
                     $file = TRUE;
                 }
             }
@@ -178,8 +276,9 @@ class evxCache {
                         $fileTime = filemtime($filename);
                         $gmtZero = gmmktime(0, 0, 0);
                         if((($gmtZero > $fileTime) && ($cacheLifetime > evxCache::HOUR)) || ((time() - $fileTime) > $cacheLifetime)){
-                            @unlink($filename);
-                            return $result;
+                            if(!$this->isLockExists($entryName)){
+                                return FALSE;
+                            }
                         }
                     }
                     $contents = @file_get_contents($filename);
@@ -187,6 +286,54 @@ class evxCache {
                 }
             }
         }
+        return $result;
+    }
+
+    /**
+     * Sends HTTP error code 503.
+     *
+     * @param int  $timeout  Retry timeout
+     */
+    protected function send503Header($timeout){
+        header($_SERVER["SERVER_PROTOCOL"].' 503 Service Temporarily Unavailable');
+        header('Status: 503 Service Temporarily Unavailable');
+        header('Retry-After: ' . $timeout);
+    }
+
+    /**
+     * Returns cached data by entry name.
+     *
+     * @param string   $entryName
+     * @param mixed    $default
+     * @param boolean  $loadIfNeeded
+     * @return mixed
+     */
+    public function get($entryName, $default = NULL, $loadIfNeeded = FALSE, $cacheLifetime = FALSE){
+        $result = $this->getCachedData($entryName, $default, $loadIfNeeded, $cacheLifetime);
+
+        $isCacheCreated = FALSE;
+        if(!$result){
+            // try to create cache lock
+            if($this->addLock($entryName)){
+                return FALSE;
+            }else{
+                // waiting when other process creates cache data
+                for($i = 0; $i < evxCache::LOCK_WAITING_REPEATS; $i++){
+                    set_time_limit(20);
+                    sleep(evxCache::LOCK_WAITING_TIME);
+                    $result = $this->getCachedData($entryName, $default, $loadIfNeeded, $cacheLifetime);
+                    if($result){
+                        $isCacheCreated = TRUE;
+                        break;
+                    }
+                }
+                if(!$isCacheCreated){
+                    $this->send503Header(180);
+                    die();
+                }
+            }
+        }
+
         return $result;
     }
 }

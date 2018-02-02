@@ -19,7 +19,7 @@ class ethplorerController {
     protected $db;
     protected $command;
     protected $params = array();
-    protected $apiCommands = array('getTxInfo', 'getTokenHistory', 'getAddressTransactions', 'getAddressInfo', 'getTokenInfo', 'getAddressHistory', 'getTopTokens', 'getTop', 'getTokenHistoryGrouped', 'getTokenPriceHistoryGrouped', 'getAddressPriceHistoryGrouped', 'getBlockTransactions', 'getLastBlock');
+    protected $apiCommands = array('getTxInfo', 'getTokenHistory', 'getAddressTransactions', 'getAddressInfo', 'getTokenInfo', 'getAddressHistory', 'getTopTokens', 'getTop', 'getTokenHistoryGrouped', 'getPriceHistoryGrouped', 'getTokenPriceHistoryGrouped', 'getAddressPriceHistoryGrouped', 'getBlockTransactions', 'getLastBlock');
     protected $defaults;
     protected $startTime;
     protected $cacheState = '';
@@ -402,6 +402,31 @@ class ethplorerController {
     }
 
     /**
+     * /getPriceHistoryGrouped method implementation.
+     *
+     * @undocumented
+     * @return array
+     */
+    public function getPriceHistoryGrouped(){
+        $result = array('history' => array());
+        $address = $this->getParam(0, FALSE);
+        if($address){
+            $address = strtolower($address);
+            if(!$this->db->isValidAddress($address)){
+                $this->sendError(104, 'Invalid address format');
+            }
+        }else{
+            $this->sendResult($result);
+            return;
+        }
+        if($token = $this->db->getToken($address)){
+            $this->getTokenPriceHistoryGrouped();
+        }else{
+            $this->getAddressPriceHistoryGrouped();
+        }
+    }
+
+    /**
      * /getTokenPriceHistoryGrouped method implementation.
      *
      * @undocumented
@@ -443,7 +468,8 @@ class ethplorerController {
 
     public function getBlockTransactions(){
         $block = (int)$this->getRequest('block');
-        $result = $this->db->getBlockTransactions($block);
+        $showZeroValues = !!$this->getRequest('showZeroValues', FALSE);
+        $result = $this->db->getBlockTransactions($block, $showZeroValues);
         $this->sendResult($result);
     }
 

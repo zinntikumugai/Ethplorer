@@ -14,6 +14,7 @@ ethplorerWidget = {
 
     chartWidgets: [],
     chartControlWidgets: [],
+    preloadPriceHistory: {},
 
     cssVersion: 11,
 
@@ -90,13 +91,43 @@ ethplorerWidget = {
             for(var i=0; i<ethplorerWidget.chartControlWidgets.length; i++)
                     ethplorerWidget.chartControlWidgets[i].load();
     },
+    preloadData: function(methods){
+        for(var i=0; i<methods.length; i++){
+            var preloadMethod = methods[i];
+
+            var api = ethplorerWidget.api + '/' + preloadMethod.method,
+                address;
+            if(preloadMethod.options && preloadMethod.options.address){
+                address = preloadMethod.options.address.toString().toLowerCase();
+                api += ('/' + address);
+            }
+            var params = {
+                apiKey: 'ethplorer.widget',
+                domain: document.location.href
+            };
+
+            $.getJSON(api, params, function(_address){
+                return function(data){
+                    if(data && !data.error && data.history){
+                        //console.log(_address);
+                        //console.log(data);
+                        ethplorerWidget.preloadPriceHistory[_address] = data;
+                    }else{
+                        console.log('Preloading: No data for chart.');
+                    }
+                };}(address)
+            );
+        }
+    },
     appendEthplorerLink: function(obj, link, style){
         var host = ethplorerWidget.url.split('//')[1];
         if(!style) style = 'text-align:center;font-size:11px;padding-top:10px;padding-bottom:4px;';
         var divLink = '<div style="' + style + '">';
         if((document.location.host !== host) && (document.location.host.indexOf("amilabs.cc") < 0)){
-            if(!link) link = '<a class="tx-link" href="https://ethplorer.io/widgets" target="_blank">Ethplorer.io</a>';
-            obj.el.append(divLink + link + '</div>');
+            if(!document.getElementById('ethpLink')){
+                if(!link) link = '<a id="ethpLink" class="tx-link" href="https://ethplorer.io/widgets" target="_blank">Ethplorer.io</a>';
+                obj.el.append(divLink + link + '</div>');
+            }
         }else if('undefined' !== typeof(obj.options.getCode) && obj.options.getCode){
             var divLink = '<div style="text-align:center;font-size:16px;padding-top:10px;padding-bottom:4px;">';
             var popupId = obj.el.attr('id') + '-code';
@@ -654,14 +685,16 @@ ethplorerWidget.Type['topTokens'] = function(element, options, templates){
                 }
                 txTable += '</table>';
                 obj.el.append(txTable);
-
-                ethplorerWidget.appendEthplorerLink(obj);
-
-                if('function' === typeof(obj.options.onLoad)){
-                    obj.options.onLoad();
-                }
-                setTimeout(ethplorerWidget.fixTilda, 300);
+            }else{
+                obj.el.find('.txs-loading').remove();
+                var noDataMessage = '<div id="ethpNoData">No data...<div>';
+                if(!document.getElementById('ethpNoData')) obj.el.append(noDataMessage);
             }
+            if('function' === typeof(obj.options.onLoad)){
+                obj.options.onLoad();
+            }
+            setTimeout(ethplorerWidget.fixTilda, 300);
+            ethplorerWidget.appendEthplorerLink(obj);
         };
     }(this);
 
@@ -706,10 +739,10 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
 
     this.cache = {};
 
-    this.options.criteria = window.location.hash.substr(1) || (options.criteria || 'trade');
-    var aCriteries = ['trade', 'cap', 'count'];
+    this.options.criteria = window.location.hash.substr(1) || (options.criteria || 'cap');
+    var aCriteries = ['cap', 'trade', 'count'];
     if(aCriteries.indexOf(this.options.criteria) < 0){
-        this.options.criteria = 'trade';
+        this.options.criteria = 'cap';
     }
 
     this.api = ethplorerWidget.api + '/getTop';
@@ -718,21 +751,21 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
         header: '<div class="txs-header">' +
                     '<div class="widget-topTokens-tabs-row">' +
                         '<div class="widget-topTokens-tabs-wrapper">' +
-                            '<div data-tab="trade" class="widget-topTokens-tab">' +
-                                '<a data-criteria="trade"><div class="widget-topTokens-tab-title">Top tokens<br> by trade volume <br></div></a>' +
-                            '</div>' +
                             '<div data-tab="cap" class="widget-topTokens-tab">' +
-                                '<a data-criteria="cap"><div class="widget-topTokens-tab-title">Top tokens<br> by capitalization</div></a>' +
+                                '<a data-criteria="cap"><div class="widget-topTokens-tab-title">By<br>Capitalization</div></a>' +
+                            '</div>' +
+                            '<div data-tab="trade" class="widget-topTokens-tab">' +
+                                '<a data-criteria="trade"><div class="widget-topTokens-tab-title">By<br>Trade Volume<br></div></a>' +
                             '</div>' +
                             '<div data-tab="count" class="widget-topTokens-tab">' +
-                                '<a data-criteria="count"><div class="widget-topTokens-tab-title">Top tokens<br> by operations <br></div></a>' +
+                                '<a data-criteria="count"><div class="widget-topTokens-tab-title">By<br>Operations<br></div></a>' +
                             '</div>' +
                         '</div>' +
                         '<div class="widget-topTokens-tabs-wrapper_mobile">' +
                             '<select id="widgetTopTokensSelect" name="widgetTopTokensSelect" class="widget-topTokens-select">' +
-                                '<option value="trade">Top tokens by trade volume</option>' +
-                                '<option value="cap">Top tokens by capitalization</option>' +
-                                '<option value="count">Top tokens by operations </option>' +
+                                '<option value="cap">By Capitalization</option>' +
+                                '<option value="trade">By Trade Volume</option>' +
+                                '<option value="count">By Operations</option>' +
                             '</select>' +
                         '</div>' +
                     '</div>' +
@@ -882,6 +915,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
 
     this.refreshWidget = function(obj){
         return function(data){
+            ethplorerWidget.appendEthplorerLink(obj, 'source: <a id="ethpLink" class="tx-link" style="display:inline;" href="https://ethplorer.io/widgets" target="_blank">Ethplorer.io</a>', 'text-align:right;font-size:11px;padding-bottom:4px;padding-right:5px;margin-top:-10px;');
             if(data && !data.error && data.tokens && data.tokens.length){
                 if('undefined' === typeof(obj.cache[obj.options.criteria])){
                     obj.cache[obj.options.criteria] = data;
@@ -898,42 +932,45 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                 }
                 txTable += '</table>';
                 txMobileTable += '</table>';
-                ethplorerWidget.appendEthplorerLink(obj, 'source: <a class="tx-link" style="display:inline;" href="https://ethplorer.io/widgets" target="_blank">Ethplorer.io</a>', 'text-align:right;font-size:11px;padding-bottom:4px;padding-right:5px;margin-top:-10px;');
                 obj.el.append(txTable);
                 obj.el.append(txMobileTable);
+            }else{
+                obj.el.find('.txs-loading, .txs').remove();
+                var noDataMessage = '<div id="ethpNoData">No data...<div>';
+                if(!document.getElementById('ethpNoData')) obj.el.append(noDataMessage);
+            }
 
-                obj.el.find('[data-criteria]').click(function(_obj){
-                    return function(){
-                        if(!$(this).hasClass('ewSelected')){
-                            _obj.el.find('.ewSelected').removeClass('ewSelected');
-                            $(this).addClass('ewSelected');                            
-                            _obj.options.criteria = $(this).attr('data-criteria');
-                            $('#widgetTopTokensSelect').val(_obj.options.criteria);
-                            _obj.load();
-                        }
-                    };
-                }(obj))
-                obj.el.find('.widget-topTokens-select').change(function(_obj){
-                    return function(){
+            setTimeout(ethplorerWidget.fixTilda, 300);
+
+            obj.el.find('[data-criteria]').click(function(_obj){
+                return function(){
+                    if(!$(this).hasClass('ewSelected')){
                         _obj.el.find('.ewSelected').removeClass('ewSelected');
-                        _obj.options.criteria = $(this).val();
+                        $(this).addClass('ewSelected');                            
+                        _obj.options.criteria = $(this).attr('data-criteria');
                         $('#widgetTopTokensSelect').val(_obj.options.criteria);
                         _obj.load();
-                    };
-                }(obj))
-                window.location.hash = obj.options.criteria;
-                obj.el.find('[data-criteria="' + obj.options.criteria + '"]').addClass('ewSelected');
-                obj.el.find('[data-tab="' + obj.options.criteria + '"]').removeClass('widget-topTokens-tab').addClass('widget-topTokens-tab-active');
-                $('#widgetTopTokensSelect').val(obj.options.criteria);
-
-                if('undefined' === typeof(obj.onLoadFired)){
-                    if('function' === typeof(obj.options.onLoad)){
-                        obj.options.onLoad();
                     }
-                    obj.onLoadFired = true;
-                }
+                };
+            }(obj))
+            obj.el.find('.widget-topTokens-select').change(function(_obj){
+                return function(){
+                    _obj.el.find('.ewSelected').removeClass('ewSelected');
+                    _obj.options.criteria = $(this).val();
+                    $('#widgetTopTokensSelect').val(_obj.options.criteria);
+                    _obj.load();
+                };
+            }(obj))
+            window.location.hash = obj.options.criteria;
+            obj.el.find('[data-criteria="' + obj.options.criteria + '"]').addClass('ewSelected');
+            obj.el.find('[data-tab="' + obj.options.criteria + '"]').removeClass('widget-topTokens-tab').addClass('widget-topTokens-tab-active');
+            $('#widgetTopTokensSelect').val(obj.options.criteria);
 
-                setTimeout(ethplorerWidget.fixTilda, 300);
+            if('undefined' === typeof(obj.onLoadFired)){
+                if('function' === typeof(obj.options.onLoad)){
+                    obj.options.onLoad();
+                }
+                obj.onLoadFired = true;
             }
         };
     }(this);
@@ -1266,10 +1303,19 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
     };
 
     this.load = function(){
-        $.getJSON(this.api, this.getRequestParams(), this.refreshWidget);
+        var address;
+        if(options && options.address){
+            address = options.address.toString().toLowerCase();
+        }
+        if(address && ethplorerWidget.preloadPriceHistory && ethplorerWidget.preloadPriceHistory[address]){
+            //console.log(ethplorerWidget.preloadPriceHistory[address]);
+            this.refreshWidget(ethplorerWidget.preloadPriceHistory[address]);
+        }else{
+            $.getJSON(this.api, this.getRequestParams(), this.refreshWidget);
+        }
     };
 
-    this.getTooltip = function(noPrice, date, low, open, close, high, operations, volume, convertedVolume){
+    this.getTooltip = function(noPrice, date, low, open, close, high, operations, volume, convertedVolume, rate, diff){
         var tooltipDateFormatter = new google.visualization.DateFormat({ 
             pattern: "MMM dd, yyyy '+UTC'"
         });
@@ -1289,30 +1335,81 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
         }else{
             if(volume > 0) var avg = convertedVolume / volume;
             else var avg = (open + close) / 2;
-            tooltip += '<span class="tooltipRow"><b>Average:</b> ' + avgFormatter.formatValue(avg) + ' USD</span><br/>' +
-                '<span class="tooltipRow"><b>Open:</b> ' + currencyFormatter.formatValue(open) + ' <b>Close:</b> ' + currencyFormatter.formatValue(close) + '</span><br/>' +
-                '<span class="tooltipRow"><b>High:</b> ' + currencyFormatter.formatValue(high) + ' <b>Low:</b> ' + currencyFormatter.formatValue(low) + '</span><br/>' +
-                '<span class="tooltipRow"><b>Token operations:</b> ' + numFormatter.formatValue(operations) + '</span><br/>' +
+            var diffHtml = ' <span style="color:' + (diff >= 0 ? '#1E8C1E' : '#AE2525') + ';">(' + diff + '%)</span>';
+
+            if(rate && rate > 0){
+                tooltip += '<span class="tooltipRow"><b>Price:</b> ' + avgFormatter.formatValue(rate) + ' USD' + diffHtml + '</span><br/>';
+            }else{
+                diffHtml = '';
+                var diff = ethplorerWidget.Utils.pdiff(close, open, true);
+                if('x' === diff){
+                    var pdiff = 0;
+                }else{
+                    var numDec = Math.abs(diff) > 99 ? 0 : 2;
+                    var pdiff = ethplorerWidget.Utils.formatNum(diff, true, numDec, false, true);
+                }
+                var diffHtml = ' <span style="color:' + (pdiff >= 0 ? '#1E8C1E' : '#AE2525') + ';">(' + pdiff + '%)</span>';
+                tooltip += '<span class="tooltipRow"><b>Average:</b> ' + avgFormatter.formatValue(avg) + ' USD</span><br/>' +
+                '<span class="tooltipRow"><b>Open:</b> ' + currencyFormatter.formatValue(open) + ' <b>Close:</b> ' + currencyFormatter.formatValue(close) + diffHtml +'</span><br/>' +
+                '<span class="tooltipRow"><b>High:</b> ' + currencyFormatter.formatValue(high) + ' <b>Low:</b> ' + currencyFormatter.formatValue(low) + '</span><br/>';
+            }
+            tooltip += '<span class="tooltipRow"><b>Token operations:</b> ' + numFormatter.formatValue(operations) + '</span><br/>' +
                 '<span class="tooltipRow"><b>Volume:</b> ' + numFormatter.formatValue(volume.toFixed(0)) + ' (' + numFormatter.formatValue(convertedVolume.toFixed(2)) + ' USD)</span>';
         }
         tooltip += '</div>';
         return tooltip;
     }
 
-    this.drawChart = function(aTxData, widgetPriceData){
+    this.drawChart = function(aTxData, widgetPriceData, currentPrice){
         var aData = [];
 
         if(aTxData.length){
-            var firstMonth = aTxData[0]._id.month,
-                firstDay = aTxData[0]._id.day;
-            if(firstMonth < 10) firstMonth = '0' + firstMonth;
-            if(firstDay < 10) firstDay = '0' + firstDay;
-            var strFirstDate = aTxData[0]._id.year + '-' + firstMonth + '-' + firstDay + 'T00:00:00Z';
-
             if(widgetPriceData && widgetPriceData.length){
+                if(currentPrice){
+                    var currentDate = new Date();
+                    var currentDatePriceKey = currentDate.getFullYear() + '-' + (currentDate.getMonth() < 9 ? '0' : '') + (currentDate.getMonth() + 1) + '-' + (currentDate.getDate() < 10 ? '0' : '') + currentDate.getDate();
+
+                    if(widgetPriceData[widgetPriceData.length - 1].date != currentDatePriceKey){
+                        if(currentPrice.rate && (currentPrice.rate > 0) && currentPrice.volume24h && currentPrice.ts){
+                            var diff = ethplorerWidget.Utils.pdiff(currentPrice.rate, widgetPriceData[widgetPriceData.length - 1].close, true);
+                            if('x' === diff){
+                                var diff = 0;
+                            }else{
+                                var numDec = Math.abs(diff) > 99 ? 0 : 2;
+                                var pdiff = ethplorerWidget.Utils.formatNum(diff, true, numDec, false, true);
+                            }
+                            widgetPriceData.push({
+                                ts: currentPrice.ts,
+                                date: currentDatePriceKey,
+                                hour: 0,
+                                open: widgetPriceData[widgetPriceData.length - 1].close,
+                                close: parseFloat(currentPrice.rate),
+                                high: 0,
+                                low: 0,
+                                average: 0,
+                                rate: currentPrice.rate,
+                                volumeConverted: parseFloat(currentPrice.volume24h),
+                                volume: currentPrice.volume24h / currentPrice.rate,
+                                diff: pdiff
+                            });
+                        }
+                    }
+                }
+
                 var strLastPriceDate = widgetPriceData[widgetPriceData.length - 1].date + 'T00:00:00Z';
+                var strFirstDate = strLastPriceDate;
+            }else{
+                var firstMonth = aTxData[0]._id.month,
+                    firstDay = aTxData[0]._id.day;
+                if(firstMonth < 10) firstMonth = '0' + firstMonth;
+                if(firstDay < 10) firstDay = '0' + firstDay;
+                var strFirstDate = aTxData[0]._id.year + '-' + firstMonth + '-' + firstDay + 'T00:00:00Z';
             }
-            if(new Date(strLastPriceDate) > new Date(strFirstDate)){
+
+            /*if(widgetPriceData && widgetPriceData.length){
+                var strLastPriceDate = widgetPriceData[widgetPriceData.length - 1].date + 'T00:00:00Z';
+            }*/
+            if(strLastPriceDate && (new Date(strLastPriceDate) > new Date(strFirstDate))){
                 strFirstDate = strLastPriceDate;
             }
         }else{
@@ -1391,7 +1488,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
             //console.log(keyPrice);
 
             // 'Low', 'Open', 'Close', 'High'
-            var low = 0, open = 0, high = 0, close = 0, volume = 0, volumeConverted = 0;
+            var low = 0, open = 0, high = 0, close = 0, volume = 0, volumeConverted = 0, rate = 0, diff = 0;
             if('undefined' !== typeof(aPriceData[keyPrice])){
                 low = aPriceData[keyPrice]['low'];
                 open = aPriceData[keyPrice]['open'];
@@ -1399,6 +1496,8 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                 high = aPriceData[keyPrice]['high'];
                 volume = ('undefined' !== typeof(aPriceData[keyPrice]['volume'])) ? aPriceData[keyPrice]['volume'] : 0;
                 volumeConverted = ('undefined' !== typeof(aPriceData[keyPrice]['volumeConverted'])) ? aPriceData[keyPrice]['volumeConverted'] : 0;
+                rate = ('undefined' !== typeof(aPriceData[keyPrice]['rate'])) ? aPriceData[keyPrice]['rate'] : 0;
+                diff = ('undefined' !== typeof(aPriceData[keyPrice]['diff'])) ? aPriceData[keyPrice]['diff'] : 0;
             }
 
             var chartMonth = d.getMonth() + 1;
@@ -1407,7 +1506,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
             if(chartDay < 10) chartDay = '0' + chartDay;
             var strChartDate = d.getFullYear() + '-' + chartMonth + '-' + chartDay + 'T00:00:00Z';
 
-            var tooltip = this.getTooltip(noPrice, new Date(strChartDate), low, open, close, high, cnt, volume, volumeConverted);
+            var tooltip = this.getTooltip(noPrice, new Date(strChartDate), low, open, close, high, cnt, volume, volumeConverted, rate, diff);
             if(noPrice){
                 aData.push([new Date(strChartDate), cnt, 'opacity: 0.5', tooltip]);
             }else{
@@ -1500,11 +1599,11 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
         var series = {
             0: {
                 type: 'candlesticks',
-                targetAxisIndex: 0
+                targetAxisIndex: 1
             },
             1: {
                 type: 'line',
-                targetAxisIndex: 1
+                targetAxisIndex: 0
             },
             2: {
                 type: 'bars',
@@ -1512,12 +1611,12 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
             },
         };
         var vAxes = {
-            0: {
+            1: {
                 title: 'Price',
                 format: '$ #,##0.00##'
                 //format: 'currency'
             },
-            1: {
+            0: {
                 title: 'Token operations',
                 format: 'decimal',
             },
@@ -1667,7 +1766,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                 if(!obj.widgetData.length){
                     obj.el.hide();
                 }else{
-                    obj.drawChart(data.history.countTxs, data.history.prices);
+                    obj.drawChart(data.history.countTxs, data.history.prices, data.history.current);
                     ethplorerWidget.appendEthplorerLink(obj);
                     if('function' === typeof(obj.options.onLoad)){
                         obj.options.onLoad();
@@ -1747,7 +1846,16 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
     };
 
     this.load = function(){
-        $.getJSON(this.api, this.getRequestParams(), this.refreshWidget);
+        var address;
+        if(options && options.address){
+            address = options.address.toString().toLowerCase();
+        }
+        if(address && ethplorerWidget.preloadPriceHistory && ethplorerWidget.preloadPriceHistory[address]){
+            //console.log(ethplorerWidget.preloadPriceHistory[address]);
+            this.refreshWidget(ethplorerWidget.preloadPriceHistory[address]);
+        }else{
+            $.getJSON(this.api, this.getRequestParams(), this.refreshWidget);
+        }
     };
 
     this.getTooltip = function(noPrice, date, balance, volume, txs, dteUpdated){
@@ -2053,7 +2161,7 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
                 },
                 vAxes: vAxes,
                 pointSize: 3,
-                lineWidth: 2,
+                lineWidth: 1,
                 bar: { groupWidth: '70%' },
                 candlestick: {
                     fallingColor: {
@@ -2165,6 +2273,10 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
     this.init();
     ethplorerWidget.chartControlWidgets.push(this);
 };
+
+if('undefined' !== typeof(ethplorerWidgetPreload)){
+    ethplorerWidget.preloadData(ethplorerWidgetPreload);
+}
 
 /**
  * Document on ready widgets initialization.

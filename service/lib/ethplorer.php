@@ -18,6 +18,7 @@
 require_once __DIR__ . '/cache.php';
 require_once __DIR__ . '/mongo.php';
 require_once __DIR__ . '/profiler.php';
+require_once __DIR__ . '/lock.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use \Litipk\BigNumbers\Decimal as Decimal;
@@ -58,6 +59,13 @@ class Ethplorer {
     protected $oCache;
 
     /**
+     * Process lock.
+     *
+     * @var evxProcessLock
+     */
+    protected $oProcessLock;
+
+    /**
      *
      * @var int
      */
@@ -93,6 +101,7 @@ class Ethplorer {
         $this->aSettings += array(
             "cacheDir" => dirname(__FILE__) . "/../cache/",
             "logsDir" => dirname(__FILE__) . "/../log/",
+            "locksDir" => dirname(__FILE__) . "/../lock/",
         );
         $cacheDriver = isset($this->aSettings['cacheDriver']) ? $this->aSettings['cacheDriver'] : 'file';
         $this->oCache = new evxCache($this->aSettings['cacheDir'], $cacheDriver);
@@ -113,6 +122,16 @@ class Ethplorer {
         if(($total > $slowQueryTime) && (php_sapi_name() !== 'cli')){
             evxProfiler::log($this->aSettings['logsDir'] . 'profiler-long-queries.log');
         }
+    }
+
+    /**
+     * Creates and returns process lock object
+     *
+     * @return evxProcessLock
+     */
+    public function createProcessLock($name){
+        $this->oProcessLock = new evxProcessLock($this->aSettings['locksDir'] . $name, $this->aSettings['lockTTL'], TRUE);
+        return $this->oProcessLock;
     }
 
     /**
@@ -291,6 +310,21 @@ class Ethplorer {
                     );
                 }
             }
+            // @todo: move to extension
+            $ck = '0x06012c8cf97bead5deae237070f9587f8e7a266d';
+            if($address == $ck){
+                $result['cryptokitties'] = true;
+            }
+        }else{
+            // @todo: move to extension
+            $ck = '0x06012c8cf97bead5deae237070f9587f8e7a266d';
+            $cursor = $this->oMongo->find('transactions', array('from' => $address, 'to' => $ck));
+            if($cursor){
+                foreach($cursor as $token){
+                    $result['cryptokitties'] = true;
+                    break;
+                }
+            }            
         }
         if(!isset($result['token']) && !isset($result['pager'])){
             // Get balances
@@ -493,6 +527,18 @@ class Ethplorer {
                 }
             }
             $result['tx']['confirmations'] = $confirmations;
+
+            // Temporary
+            $methodsFile = dirname(__FILE__) . "/../methods.sha3.php";
+            if(file_exists($methodsFile)){
+                if($result['tx']['input']){
+                    $methods = require($methodsFile);
+                    $cmd = substr($result['tx']['input'], 2, 8);
+                    if(isset($methods[$cmd])){
+                        $result['tx']['method'] = $methods[$cmd];
+                    }
+                }
+            }
         }
         if(is_array($result) && isset($result['token']) && is_array($result['token'])){
             $result['token'] = $this->getToken($result['token']['address']);
@@ -519,7 +565,7 @@ class Ethplorer {
                 $this->oCache->save($cacheId, $balance);
             }else{
                 file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . '] - get balance for ' . $address . " failed\n", FILE_APPEND);
-                $this->oCache->save($cacheId, 0);
+                $this->oCache->save($cacheId, -1);
             }
         }
         $qTime = microtime(true) - $time;
@@ -550,6 +596,18 @@ class Ethplorer {
 
             $success = ((21000 == $result['gasUsed']) || ($result['gasUsed'] < $result['gasLimit']) || ($receipt && !empty($receipt['logs'])));
             $result['success'] = isset($result['status']) ? !!$result['status'] : $success;
+
+            $methodsFile = dirname(__FILE__) . "/../methods.sha3.php";
+            if(file_exists($methodsFile)){
+                if($result['input']){
+                    $methods = require($methodsFile);
+                    $cmd = substr($result['input'], 2, 8);
+                    if(isset($methods[$cmd])){
+                        $result['method'] = $methods[$cmd];
+                    }
+                }
+            }
+
         }
         evxProfiler::checkpoint('getTransaction', 'FINISH');
         return $result;
@@ -613,7 +671,7 @@ class Ethplorer {
         if($updateCache || (false === $aResult)){
             evxProfiler::checkpoint('getTokens', 'START');
             if($updateCache){
-                $aPrevTokens = $this->oCache->get('tokens', false, true);
+                $aPrevTokens = $aResult;
                 if(!is_array($aPrevTokens)){
                     $aPrevTokens = array();
                 }
@@ -649,6 +707,13 @@ class Ethplorer {
                 }
                 if(isset($aResult[$address]['symbol'])){
                     $aResult[$address]['symbol'] = htmlspecialchars($aResult[$address]['symbol']);
+                }
+
+                $cursor = $this->oMongo->find('addressCache', array("address" => $address));
+                $aCachedData = false;
+                foreach($cursor as $aCachedData) break;
+                if(false !== $aCachedData){
+                    $aResult[$address]['txsCount'] = $aCachedData['txsCount'];
                 }
             }
             if(isset($aResult['0x0000000000000000000000000000000000000000'])){
@@ -1284,6 +1349,9 @@ class Ethplorer {
                         $aHistoryCount = $this->getTokenHistoryGrouped(2, $address, 'hourly', 3600);
                         if(is_array($aHistoryCount)){
                             foreach($aHistoryCount as $aRecord){
+                                if(!is_object($aRecord['_id'])){
+                                    continue;
+                                }
                                 $aPeriod = $aPeriods[0];
                                 $aRecordDate = date("Y-m-d", $aRecord['ts']);
                                 $inCurrentPeriod = ($aRecordDate > $aPeriod['currentPeriodStart']) || (($aRecordDate == $aPeriod['currentPeriodStart']) && ($aRecord['_id']->hour >= $curHour));
@@ -1817,7 +1885,7 @@ class Ethplorer {
             $address = $this->aSettings['priceSource'][$address];
         }
         $isHidden = isset($this->aSettings['hidePrice']) && in_array($address, $this->aSettings['hidePrice']);
-        $knownPrice = isset($this->aSettings['updateRates']) && (FALSE !== array_search($address, $this->aSettings['updateRates']));
+        $knownPrice = isset($this->aSettings['updateRates']) && in_array($address, $this->aSettings['updateRates']);
 
         if(!$isHidden && $knownPrice){
             $cache = 'rates';
@@ -1994,6 +2062,10 @@ class Ethplorer {
 
     public function getTokenPriceHistoryGrouped($address, $period = 365, $type = 'daily', $updateCache = FALSE){
         $aResult = array();
+
+        $aCurrent = $this->getTokenPrice($address);
+        $aResult['current'] = $aCurrent;
+        unset($aCurrent);
 
         $aHistoryCount = $this->getTokenHistoryGrouped($period, $address);
         $aResult['countTxs'] = $aHistoryCount;

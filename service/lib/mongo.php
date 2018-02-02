@@ -60,7 +60,7 @@ class evxMongo {
      *
      * @var string
      */
-    protected $logFile = __DIR__ . '/../log/mongo-profile.log';
+    protected $logFile;
 
     /**
      * Initialization.
@@ -78,6 +78,8 @@ class evxMongo {
      * @throws \Exception
      */
     protected function __construct(array $aSettings){
+        
+        $this->logFile = __DIR__ . '/../log/mongo-profile.log';
         // Default config
         $aSettings += array(
             'driver' => 'mongodb',
@@ -98,37 +100,27 @@ class evxMongo {
                 $this->oMongo = new MongoClient($aSettings['server']);
                 $oDB = $this->oMongo->{$db};
                 $this->aDBs = array(
-                    'transactions' => $oDB->{$prefix . "eth.transactions"},
-                    'blocks'       => $oDB->{$prefix . "eth.blocks"},
-                    'contracts'    => $oDB->{$prefix . "eth.contracts"},
-                    'tokens'       => $oDB->{$prefix . "erc20.contracts"},
-                    'operations'   => $oDB->{$prefix . "erc20.operations"},
-                    'balances'     => $oDB->{$prefix . "erc20.balances"}
+                    'transactions' => $oDB->transactions,
+                    'blocks'       => $oDB->blocks,
+                    'contracts'    => $oDB->contracts,
+                    'tokens'       => $oDB->tokens,
+                    'operations'   => $oDB->tokenOperations,
+                    'balances'     => $oDB->tokenBalances,
+                    'addressCache' => $oDB->cacheAddressData
                 );
                 break;
             // php version 5.6, 7.x use mongodb extension
             case 'mongodb':
                 $this->oMongo = new MongoDB\Driver\Manager($aSettings['server']);
-                if(isset($aSettings['newFormat']) && $aSettings['newFormat']){
-                    $this->aDBs = array(
-                        'transactions' => "transactions",
-                        'blocks'       => "blocks",
-                        'contracts'    => "contracts",
-                        'tokens'       => "tokens",
-                        'operations'   => "tokenOperations",
-                        'balances'     => "tokenBalances",
-                        'addressCache' => "cacheAddressData"
-                    );
-                }else{
-                    $this->aDBs = array(
-                        'transactions' => $prefix . "eth.transactions",
-                        'blocks'       => $prefix . "eth.blocks",
-                        'contracts'    => $prefix . "eth.contracts",
-                        'tokens'       => $prefix . "erc20.contracts",
-                        'operations'   => $prefix . "erc20.operations",
-                        'balances'     => $prefix . "erc20.balances"
-                    );
-                }
+                $this->aDBs = array(
+                    'transactions' => "transactions",
+                    'blocks'       => "blocks",
+                    'contracts'    => "contracts",
+                    'tokens'       => "tokens",
+                    'operations'   => "tokenOperations",
+                    'balances'     => "tokenBalances",
+                    'addressCache' => "cacheAddressData"
+                );
                 break;                
             default:
                 throw new \Exception('Unknown mongodb driver ' . $dbDriver);
