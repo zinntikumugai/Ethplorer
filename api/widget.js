@@ -752,20 +752,20 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                     '<div class="widget-topTokens-tabs-row">' +
                         '<div class="widget-topTokens-tabs-wrapper">' +
                             '<div data-tab="cap" class="widget-topTokens-tab">' +
-                                '<a data-criteria="cap"><div class="widget-topTokens-tab-title">By<br>Capitalization</div></a>' +
+                                '<a data-criteria="cap"><div class="widget-topTokens-tab-title">by Capitalization</div></a>' +
                             '</div>' +
                             '<div data-tab="trade" class="widget-topTokens-tab">' +
-                                '<a data-criteria="trade"><div class="widget-topTokens-tab-title">By<br>Trade Volume<br></div></a>' +
+                                '<a data-criteria="trade"><div class="widget-topTokens-tab-title">by Trade Volume</div></a>' +
                             '</div>' +
                             '<div data-tab="count" class="widget-topTokens-tab">' +
-                                '<a data-criteria="count"><div class="widget-topTokens-tab-title">By<br>Operations<br></div></a>' +
+                                '<a data-criteria="count"><div class="widget-topTokens-tab-title">by Operations</div></a>' +
                             '</div>' +
                         '</div>' +
                         '<div class="widget-topTokens-tabs-wrapper_mobile">' +
                             '<select id="widgetTopTokensSelect" name="widgetTopTokensSelect" class="widget-topTokens-select">' +
-                                '<option value="cap">By Capitalization</option>' +
-                                '<option value="trade">By Trade Volume</option>' +
-                                '<option value="count">By Operations</option>' +
+                                '<option value="cap">by Capitalization</option>' +
+                                '<option value="trade">by Trade Volume</option>' +
+                                '<option value="count">by Operations</option>' +
                             '</select>' +
                         '</div>' +
                     '</div>' +

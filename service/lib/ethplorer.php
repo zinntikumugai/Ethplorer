@@ -1333,11 +1333,22 @@ class Ethplorer {
                 }
             }
 
+            $aTokens[] = array(
+                'address' => '0x0000000000000000000000000000000000000000',
+                'name' => 'Ethereum',
+                'symbol' => 'ETH'
+            );
+
             foreach($aTokens as $aToken){
                 $address = $aToken['address'];
                 $curHour = (int)date('H');
 
-                if($criteria == 'count'){
+                $isEth = false;
+                if($address == '0x0000000000000000000000000000000000000000'){
+                    $isEth = true;
+                }
+
+                if(!$isEth && $criteria == 'count'){
                     if(isset($aTokensCount[$address])){
                         $aToken['txsCount24'] = $aTokensCount[$address];
                         foreach($aPeriods as $aPeriod){
@@ -1370,8 +1381,12 @@ class Ethplorer {
                     continue;
                 }
 
-                $aPrice = $this->getTokenPrice($address);
-                if($aPrice && $aToken['totalSupply']){
+                if($isEth){
+                    $aPrice = $this->getETHPrice();
+                }else{
+                    $aPrice = $this->getTokenPrice($address);
+                }
+                if($aPrice && ($isEth || $aToken['totalSupply'])){
                     $aToken['volume'] = 0;
                     $aToken['cap'] = 0;
                     $aToken['availableSupply'] = 0;
@@ -1434,7 +1449,7 @@ class Ethplorer {
                     // $item['percentage'] = round(($item['volume'] / $total) * 100);
 
                     // get tx's other trends
-                    if($criteria == 'count'){
+                    if(!$isEth && $criteria == 'count'){
                         unset($aPeriods[0]);
                         $aHistoryCount = $this->getTokenHistoryGrouped(60, $item['address'], 'daily', 3600);
                         if(is_array($aHistoryCount)){
