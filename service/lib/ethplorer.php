@@ -1333,11 +1333,13 @@ class Ethplorer {
                 }
             }
 
-            $aTokens[] = array(
-                'address' => '0x0000000000000000000000000000000000000000',
-                'name' => 'Ethereum',
-                'symbol' => 'ETH'
-            );
+            if($criteria != 'count'){
+                $aTokens[] = array(
+                    'address' => '0x0000000000000000000000000000000000000000',
+                    'name' => 'Ethereum',
+                    'symbol' => 'ETH'
+                );
+            }
 
             foreach($aTokens as $aToken){
                 $address = $aToken['address'];
@@ -1582,6 +1584,7 @@ class Ethplorer {
     }
 
     protected function _sortByTxCount($a, $b){
+        if(!isset($a['txsCount24']) || !isset($b['txsCount24'])) return 1;
         return ($a['txsCount24'] == $b['txsCount24']) ? 0 : (($a['txsCount24'] > $b['txsCount24']) ? -1 : 1);
     }
 
