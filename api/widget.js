@@ -264,15 +264,16 @@ ethplorerWidget = {
          * @param {bool} cutZeroes
          * @returns {string}
          */
-        formatNum: function(num, withDecimals /* = false */, decimals /* = 2 */, cutZeroes /* = false */, withPostfix /* = false */){
+        formatNum: function(num, withDecimals /* = false */, decimals /* = 2 */, cutZeroes /* = false */, withPostfix /* = false */, numLimitPostfix /* = 999999 */){
             var postfix = '';
             if(withPostfix){
-                if(num > 999 && num <= 999999){
+                if(!numLimitPostfix) numLimitPostfix = 999999;
+                if(num > 999 && num <= numLimitPostfix){
                     num = num / 1000;
-                    postfix = 'K';
-                }else if(num > 999999){
+                    postfix = ' K';
+                }else if(num > numLimitPostfix){
                     num = num / 1000000;
-                    postfix = 'M';
+                    postfix = ' M';
                 }
             }
             function math(command, val, decimals){
@@ -1049,8 +1050,8 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
             txsCount: data.txsCount24,
             price_full: (data.price && data.price.rate) ? data.price.rate : '$ 0.00',
             price: (data.price && data.price.rate) ? ((data.price.rate < 0.005 ? '>' : '') + '$ ' + ethplorerWidget.Utils.formatNum(data.price.rate, true, 2, false)) : '$ 0.00',
-            volume: data.volume ? ('$ ' + ethplorerWidget.Utils.formatNum(data.volume, true, data.volume >= 1000 ? 0 : 2, true)) : '',
-            cap: data.cap ? ('$ ' + ethplorerWidget.Utils.formatNum(data.cap, true, data.cap >= 1000 ? 0 : 2, true)) : '',
+            volume: data.volume ? ('$ ' + ethplorerWidget.Utils.formatNum(data.volume, true, data.volume >= 1000 ? 0 : 2, true, true, 99999999)) : '',
+            cap: data.cap ? ('$ ' + ethplorerWidget.Utils.formatNum(data.cap, true, data.cap >= 1000 ? 0 : 2, true, true, 99999999)) : '',
             trend_1d: trend_1d,
             trend_7d: trend_7d,
             trend_30d: trend_30d
