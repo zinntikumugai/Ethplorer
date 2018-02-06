@@ -201,6 +201,9 @@ ethplorerWidget = {
     },
     Utils: {
         link: function(data, text, title, hash, addClass){
+            if(data === '0x0000000000000000000000000000000000000000'){
+                return text;
+            }
             title = title || text;
             hash = hash || false;
             if((false !== hash) && hash){
