@@ -63,15 +63,6 @@ class evxMongo {
     protected $logFile;
 
     /**
-     * Initialization.
-     *
-     * @param array $aSettings
-     */
-    public static function init(array $aSettings = array()){
-        self::$oInstance = new evxMongo($aSettings);
-    }
-
-    /**
      * Constructor.
      *
      * @param array $aSettings
@@ -87,49 +78,6 @@ class evxMongo {
             'dbName' => 'ethplorer',
             'prefix' => 'everex.'
         );
-        $db = $this->dbName = $aSettings['dbName'];
-        $prefix = $aSettings['prefix'];
-        $start = microtime(true);
-        switch($aSettings['driver']){
-            // Fake mongo driver to run without real mongo instance
-            case 'fake':
-                // @todo: implement
-                break;
-            // php version <= 5.5
-            case 'mongo':
-                $this->oMongo = new MongoClient($aSettings['server']);
-                $oDB = $this->oMongo->{$db};
-                $this->aDBs = array(
-                    'transactions' => $oDB->transactions,
-                    'blocks'       => $oDB->blocks,
-                    'contracts'    => $oDB->contracts,
-                    'tokens'       => $oDB->tokens,
-                    'operations'   => $oDB->tokenOperations,
-                    'balances'     => $oDB->tokenBalances,
-                    'addressCache' => $oDB->cacheAddressData
-                );
-                break;
-            // php version 5.6, 7.x use mongodb extension
-            case 'mongodb':
-                $this->oMongo = new MongoDB\Driver\Manager($aSettings['server']);
-                $this->aDBs = array(
-                    'transactions' => "transactions",
-                    'blocks'       => "blocks",
-                    'contracts'    => "contracts",
-                    'tokens'       => "tokens",
-                    'operations'   => "tokenOperations",
-                    'balances'     => "tokenBalances",
-                    'addressCache' => "cacheAddressData"
-                );
-                break;                
-            default:
-                throw new \Exception('Unknown mongodb driver ' . $dbDriver);
-        }
-        $finish = microtime(true);
-        $qTime = $finish - $start;
-        if($qTime > 0.1){
-            $this->log('(' . ($qTime) . 's) Connection to ' . $aSettings['server']);
-        }
         $this->driver = $aSettings['driver'];
     }
 

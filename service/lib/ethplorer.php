@@ -17,6 +17,7 @@
 
 require_once __DIR__ . '/cache.php';
 require_once __DIR__ . '/mongo.php';
+require_once __DIR__ . '/mongo_scanner.php';
 require_once __DIR__ . '/profiler.php';
 require_once __DIR__ . '/lock.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -40,7 +41,7 @@ class Ethplorer {
     /**
      * MongoDB.
      *
-     * @var evxMongo
+     * @var evxMongoScanner
      */
     protected $oMongo;
 
@@ -106,8 +107,8 @@ class Ethplorer {
         $cacheDriver = isset($this->aSettings['cacheDriver']) ? $this->aSettings['cacheDriver'] : 'file';
         $this->oCache = new evxCache($this->aSettings['cacheDir'], $cacheDriver);
         if(isset($this->aSettings['mongo']) && is_array($this->aSettings['mongo'])){
-            evxMongo::init($this->aSettings['mongo']);
-            $this->oMongo = evxMongo::getInstance();
+            evxMongoScanner::init($this->aSettings['mongo']);
+            $this->oMongo = evxMongoScanner::getInstance();
         }
     }
 
