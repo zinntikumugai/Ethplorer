@@ -78,6 +78,7 @@ class evxMongo {
             'dbName' => 'ethplorer',
             'prefix' => 'everex.'
         );
+        $this->dbName = $aSettings['dbName'];
         $this->driver = $aSettings['driver'];
     }
 

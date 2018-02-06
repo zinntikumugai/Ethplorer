@@ -48,7 +48,7 @@ class evxMongoScanner extends evxMongo {
             // php version <= 5.5
             case 'mongo':
                 $this->oMongo = new MongoClient($aSettings['server']);
-                $oDB = $this->oMongo->{$db};
+                $oDB = $this->oMongo->{$this->dbName};
                 $this->aDBs = array(
                     'transactions' => $oDB->transactions,
                     'blocks'       => $oDB->blocks,
