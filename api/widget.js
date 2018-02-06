@@ -212,7 +212,11 @@ ethplorerWidget = {
             if(!addClass){
                 addClass = "";
             }
-            return '<a class="tx-link ' + addClass + '" href="' + ethplorerWidget.url + '/' + linkType + '/' + data + hash + '" title="' + title + '" target="_blank">' + text + '</a>';
+            var target = '';
+            if((document.location.host !== 'ethplorer.io') && (document.location.host.indexOf('ethplorer.io') < 0)){
+                target = ' target="_blank"';
+            }
+            return '<a class="tx-link ' + addClass + '" href="' + ethplorerWidget.url + '/' + linkType + '/' + data + hash + '" title="' + title + '" ' + target + '>' + text + '</a>';
         },
 
         // Timestamp to local date
