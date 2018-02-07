@@ -424,7 +424,7 @@ class ethplorerController {
             $this->sendResult($result);
             return;
         }
-        if($token = $this->db->getToken($address)){
+        if($token = $this->db->getToken($address) || $address == $this->db::ADDRESS_CHAINY){
             $this->getTokenPriceHistoryGrouped();
         }else{
             $this->getAddressPriceHistoryGrouped();
@@ -477,7 +477,6 @@ class ethplorerController {
         $result = $this->db->getBlockTransactions($block, $showZeroValues);
         $this->sendResult($result);
     }
-
 
     public function getLastBlock(){
         $result = array('lastBlock' => $this->db->getLastBlock());
