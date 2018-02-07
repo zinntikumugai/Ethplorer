@@ -17,6 +17,8 @@
 
 require_once __DIR__ . '/cache.php';
 require_once __DIR__ . '/mongo.php';
+require_once __DIR__ . '/mongo_scanner.php';
+require_once __DIR__ . '/mongo_pools.php';
 require_once __DIR__ . '/profiler.php';
 require_once __DIR__ . '/lock.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -40,9 +42,16 @@ class Ethplorer {
     /**
      * MongoDB.
      *
-     * @var evxMongo
+     * @var evxMongoScanner
      */
     protected $oMongo;
+
+    /**
+     * MongoDB.
+     *
+     * @var evxMongoPools
+     */
+    protected $oMongoPools;
 
     /**
      * Singleton instance.
@@ -106,8 +115,12 @@ class Ethplorer {
         $cacheDriver = isset($this->aSettings['cacheDriver']) ? $this->aSettings['cacheDriver'] : 'file';
         $this->oCache = new evxCache($this->aSettings['cacheDir'], $cacheDriver);
         if(isset($this->aSettings['mongo']) && is_array($this->aSettings['mongo'])){
-            evxMongo::init($this->aSettings['mongo']);
-            $this->oMongo = evxMongo::getInstance();
+            evxMongoScanner::init($this->aSettings['mongo']);
+            $this->oMongo = evxMongoScanner::getInstance();
+        }
+        if(isset($this->aSettings['bundles']) && is_array($this->aSettings['bundles'])){
+            evxMongoPools::init($this->aSettings['bundles']);
+            $this->oMongoPools = evxMongoPools::getInstance();
         }
     }
 
@@ -1334,11 +1347,24 @@ class Ethplorer {
                 }
             }
 
+            if($criteria != 'count'){
+                $aTokens[] = array(
+                    'address' => '0x0000000000000000000000000000000000000000',
+                    'name' => 'Ethereum',
+                    'symbol' => 'ETH'
+                );
+            }
+
             foreach($aTokens as $aToken){
                 $address = $aToken['address'];
                 $curHour = (int)date('H');
 
-                if($criteria == 'count'){
+                $isEth = false;
+                if($address == '0x0000000000000000000000000000000000000000'){
+                    $isEth = true;
+                }
+
+                if(!$isEth && $criteria == 'count'){
                     if(isset($aTokensCount[$address])){
                         $aToken['txsCount24'] = $aTokensCount[$address];
                         foreach($aPeriods as $aPeriod){
@@ -1371,8 +1397,12 @@ class Ethplorer {
                     continue;
                 }
 
-                $aPrice = $this->getTokenPrice($address);
-                if($aPrice && $aToken['totalSupply']){
+                if($isEth){
+                    $aPrice = $this->getETHPrice();
+                }else{
+                    $aPrice = $this->getTokenPrice($address);
+                }
+                if($aPrice && ($isEth || $aToken['totalSupply'])){
                     $aToken['volume'] = 0;
                     $aToken['cap'] = 0;
                     $aToken['availableSupply'] = 0;
@@ -1435,7 +1465,7 @@ class Ethplorer {
                     // $item['percentage'] = round(($item['volume'] / $total) * 100);
 
                     // get tx's other trends
-                    if($criteria == 'count'){
+                    if(!$isEth && $criteria == 'count'){
                         unset($aPeriods[0]);
                         $aHistoryCount = $this->getTokenHistoryGrouped(60, $item['address'], 'daily', 3600);
                         if(is_array($aHistoryCount)){
@@ -1568,6 +1598,7 @@ class Ethplorer {
     }
 
     protected function _sortByTxCount($a, $b){
+        if(!isset($a['txsCount24']) || !isset($b['txsCount24'])) return 1;
         return ($a['txsCount24'] == $b['txsCount24']) ? 0 : (($a['txsCount24'] > $b['txsCount24']) ? -1 : 1);
     }
 
@@ -2250,6 +2281,28 @@ class Ethplorer {
 
         evxProfiler::checkpoint('getAddressPriceHistoryGrouped', 'FINISH');
         return $result;
+    }
+
+    /**
+     * Returns pool addresses.
+     *
+     * @return int
+     */
+    public function getPoolAddresses($poolId, $updateCache = FALSE){
+        evxProfiler::checkpoint('getPoolAddresses', 'START');
+        $cache = 'pool_addresses-' . $poolId;
+        $aAddresses = $this->oCache->get($cache, false, true, 600);
+        if($updateCache || (false === $aAddresses)){
+            $cursor = $this->oMongoPools->find('pools', array('id' => $poolId));
+            $result = array();
+            foreach($cursor as $result) break;
+            if($result){
+                $aAddresses = explode(",", $result['addresses']);
+                $this->oCache->save($cache, $aAddresses);
+            }
+        }
+        evxProfiler::checkpoint('getPoolAddresses', 'FINISH');
+        return $aAddresses;
     }
 
     protected function _getRateByTimestamp($address, $timestamp){

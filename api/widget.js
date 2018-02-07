@@ -16,7 +16,7 @@ ethplorerWidget = {
     chartControlWidgets: [],
     preloadPriceHistory: {},
 
-    cssVersion: 11,
+    cssVersion: 12,
 
     // Widget initialization
     init: function(selector, type, options, templates){
@@ -202,6 +202,9 @@ ethplorerWidget = {
     Utils: {
         link: function(data, text, title, hash, addClass){
             title = title || text;
+            if(data === '0x0000000000000000000000000000000000000000'){
+                return '<a class="tx-link" href="#" title="' + title + '">' + text + '</a>';
+            }
             hash = hash || false;
             if((false !== hash) && hash){
                 hash = '#' + hash;
@@ -212,7 +215,11 @@ ethplorerWidget = {
             if(!addClass){
                 addClass = "";
             }
-            return '<a class="tx-link ' + addClass + '" href="' + ethplorerWidget.url + '/' + linkType + '/' + data + hash + '" title="' + title + '" target="_blank">' + text + '</a>';
+            var target = '';
+            if((document.location.host !== 'ethplorer.io') && (document.location.host.indexOf('ethplorer.io') < 0)){
+                target = ' target="_blank"';
+            }
+            return '<a class="tx-link ' + addClass + '" href="' + ethplorerWidget.url + '/' + linkType + '/' + data + hash + '" title="' + title + '" ' + target + '>' + text + '</a>';
         },
 
         // Timestamp to local date
@@ -260,15 +267,16 @@ ethplorerWidget = {
          * @param {bool} cutZeroes
          * @returns {string}
          */
-        formatNum: function(num, withDecimals /* = false */, decimals /* = 2 */, cutZeroes /* = false */, withPostfix /* = false */){
+        formatNum: function(num, withDecimals /* = false */, decimals /* = 2 */, cutZeroes /* = false */, withPostfix /* = false */, numLimitPostfix /* = 999999 */){
             var postfix = '';
             if(withPostfix){
-                if(num > 999 && num <= 999999){
+                if(!numLimitPostfix) numLimitPostfix = 999999;
+                if(num > 999 && num <= numLimitPostfix){
                     num = num / 1000;
-                    postfix = 'K';
-                }else if(num > 999999){
+                    postfix = ' K';
+                }else if(num > numLimitPostfix){
                     num = num / 1000000;
-                    postfix = 'M';
+                    postfix = ' M';
                 }
             }
             function math(command, val, decimals){
@@ -752,20 +760,20 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                     '<div class="widget-topTokens-tabs-row">' +
                         '<div class="widget-topTokens-tabs-wrapper">' +
                             '<div data-tab="cap" class="widget-topTokens-tab">' +
-                                '<a data-criteria="cap"><div class="widget-topTokens-tab-title">By<br>Capitalization</div></a>' +
+                                '<a data-criteria="cap"><div class="widget-topTokens-tab-title">by Capitalization</div></a>' +
                             '</div>' +
                             '<div data-tab="trade" class="widget-topTokens-tab">' +
-                                '<a data-criteria="trade"><div class="widget-topTokens-tab-title">By<br>Trade Volume<br></div></a>' +
+                                '<a data-criteria="trade"><div class="widget-topTokens-tab-title">by Trade Volume</div></a>' +
                             '</div>' +
                             '<div data-tab="count" class="widget-topTokens-tab">' +
-                                '<a data-criteria="count"><div class="widget-topTokens-tab-title">By<br>Operations<br></div></a>' +
+                                '<a data-criteria="count"><div class="widget-topTokens-tab-title">by Operations</div></a>' +
                             '</div>' +
                         '</div>' +
                         '<div class="widget-topTokens-tabs-wrapper_mobile">' +
                             '<select id="widgetTopTokensSelect" name="widgetTopTokensSelect" class="widget-topTokens-select">' +
-                                '<option value="cap">By Capitalization</option>' +
-                                '<option value="trade">By Trade Volume</option>' +
-                                '<option value="count">By Operations</option>' +
+                                '<option value="cap">by Capitalization</option>' +
+                                '<option value="trade">by Trade Volume</option>' +
+                                '<option value="count">by Operations</option>' +
                             '</select>' +
                         '</div>' +
                     '</div>' +
@@ -1045,8 +1053,8 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
             txsCount: data.txsCount24,
             price_full: (data.price && data.price.rate) ? data.price.rate : '$ 0.00',
             price: (data.price && data.price.rate) ? ((data.price.rate < 0.005 ? '>' : '') + '$ ' + ethplorerWidget.Utils.formatNum(data.price.rate, true, 2, false)) : '$ 0.00',
-            volume: data.volume ? ('$ ' + ethplorerWidget.Utils.formatNum(data.volume, true, data.volume >= 1000 ? 0 : 2, true)) : '',
-            cap: data.cap ? ('$ ' + ethplorerWidget.Utils.formatNum(data.cap, true, data.cap >= 1000 ? 0 : 2, true)) : '',
+            volume: data.volume ? ('$ ' + ethplorerWidget.Utils.formatNum(data.volume, true, data.volume >= 1000 ? 0 : 2, true, true, 99999999)) : '',
+            cap: data.cap ? ('$ ' + ethplorerWidget.Utils.formatNum(data.cap, true, data.cap >= 1000 ? 0 : 2, true, true, 99999999)) : '',
             trend_1d: trend_1d,
             trend_7d: trend_7d,
             trend_30d: trend_30d

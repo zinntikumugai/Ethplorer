@@ -996,7 +996,8 @@ Ethplorer = {
         var oToken = Ethplorer.prepareToken(data.token);
         var address = Ethplorer.currentAddress;
         if(('undefined' !== typeof(ethplorerWidget)) && (true || !Ethplorer.isProd)){
-            if(data.token){
+            if(data.token || (data.isContract && data.contract.isChainy)){
+                if(data.isContract && data.contract.isChainy) oToken.name = 'Chainy';
                 var widgetTitle = (oToken && oToken.name) ? ($('<textarea />').html(oToken.name).text() + ' token pulse') : '';
 
                 $('#widget-block').show();

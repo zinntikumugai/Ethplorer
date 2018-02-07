@@ -317,10 +317,18 @@
     .txs-top-tokens-mobile {
         display: table;
     }
+	.tx-field-mob, .txs-top-tokens-mobile .tx-field {
+		font-size: 16px !important;
+	}
+	.txs-top-tokens-mobile .tx-field {
+	}
 }
 @media screen and (max-width: 450px) {
 	.txs-top-tokens-mobile {
 		width: 80% !important;
+	}
+	.tx-field-mob, .txs-top-tokens-mobile .tx-field {
+		font-size: 14px !important;
 	}
 }
 @media screen and (min-width: 700px) {
