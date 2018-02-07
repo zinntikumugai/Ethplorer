@@ -2285,7 +2285,8 @@ class Ethplorer {
     /**
      * Returns pool addresses.
      *
-     * @return int
+     * @param int $poolId  Pool id
+     * @return array
      */
     public function getPoolAddresses($poolId, $updateCache = FALSE){
         evxProfiler::checkpoint('getPoolAddresses', 'START');
@@ -2302,6 +2303,48 @@ class Ethplorer {
         }
         evxProfiler::checkpoint('getPoolAddresses', 'FINISH');
         return $aAddresses;
+    }
+
+    /**
+     * Returns pool transactions.
+     *
+     * @param int $poolId  Pool id
+     * @return array
+     */
+    public function getPoolLastTransactions($poolId, $updateCache = FALSE){
+        evxProfiler::checkpoint('getPoolLastTransactions', 'START');
+        $cache = 'pool_transactions-' . $poolId;
+        $aTxs = $this->oCache->get($cache, false, true, 300);
+        if($updateCache || (false === $aTxs)){
+            $cursor = $this->oMongo->find('transactions', array('id' => $poolId));
+            $aTxs = array();
+            foreach($cursor as $tx){
+                $aAddresses = [$tx["from"], $tx["to"]];
+                for($i = 0; $i < sizeof($aAddresses); $i++){
+                    if(!isset($aTxs[$aAddresses[$i]])){
+                        $aTxs[$aAddresses[$i]] = array();
+                    }
+                    $gasLimit = $tx['gas'];
+                    $gasUsed = isset($tx['gasUsed']) ? $tx['gasUsed'] : 0;
+                    $success = ((21000 == $gasUsed) || ($gasUsed < $gasLimit));
+                    $success = isset($tx['status']) ? !!$tx['status'] : $success;
+                    $aTxs[$aAddresses[$i]][] = array(
+                        'timestamp' => $tx["timestamp"],
+                        'from' => $tx["from"],
+                        'to' => $tx["to"],
+                        'hash' => $tx["hash"],
+                        'value' => $tx["value"],
+                        'input' => $tx["input"],
+                        'success' => $success,
+                    );
+                }
+            }
+            if($aTxs){
+                $this->oCache->save($cache, $aTxs);
+            }
+        }
+        evxProfiler::checkpoint('getPoolLastTransactions', 'FINISH');
+        return $aTxs;
     }
 
     protected function _getRateByTimestamp($address, $timestamp){
