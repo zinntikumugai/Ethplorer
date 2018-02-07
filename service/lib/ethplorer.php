@@ -18,6 +18,7 @@
 require_once __DIR__ . '/cache.php';
 require_once __DIR__ . '/mongo.php';
 require_once __DIR__ . '/mongo_scanner.php';
+require_once __DIR__ . '/mongo_pools.php';
 require_once __DIR__ . '/profiler.php';
 require_once __DIR__ . '/lock.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -44,6 +45,13 @@ class Ethplorer {
      * @var evxMongoScanner
      */
     protected $oMongo;
+
+    /**
+     * MongoDB.
+     *
+     * @var evxMongoPools
+     */
+    protected $oMongoPools;
 
     /**
      * Singleton instance.
@@ -109,6 +117,10 @@ class Ethplorer {
         if(isset($this->aSettings['mongo']) && is_array($this->aSettings['mongo'])){
             evxMongoScanner::init($this->aSettings['mongo']);
             $this->oMongo = evxMongoScanner::getInstance();
+        }
+        if(isset($this->aSettings['mongo']) && is_array($this->aSettings['mongo'])){
+            evxMongoPools::init($this->aSettings['bundles']);
+            $this->oMongoPools = evxMongoPools::getInstance();
         }
     }
 
@@ -2268,6 +2280,28 @@ class Ethplorer {
 
         evxProfiler::checkpoint('getAddressPriceHistoryGrouped', 'FINISH');
         return $result;
+    }
+
+    /**
+     * Returns pool addresses.
+     *
+     * @return int
+     */
+    public function getPoolAddresses($poolId, $updateCache = FALSE){
+        evxProfiler::checkpoint('getPoolAddresses', 'START');
+        $cache = 'pool_addresses-' . $poolId;
+        $aAddresses = $this->oCache->get($cache, false, true, 600);
+        if($updateCache || (false === $aAddresses)){
+            $cursor = $this->oMongoPools->find('pools', array('id' => $poolId));
+            $result = array();
+            foreach($cursor as $result) break;
+            if($result){
+                $aAddresses = explode(",", $result['addresses']);
+                $this->oCache->save($cache, $aAddresses);
+            }
+        }
+        evxProfiler::checkpoint('getPoolAddresses', 'FINISH');
+        return $aAddresses;
     }
 
     protected function _getRateByTimestamp($address, $timestamp){

@@ -19,7 +19,7 @@ class ethplorerController {
     protected $db;
     protected $command;
     protected $params = array();
-    protected $apiCommands = array('getTxInfo', 'getTokenHistory', 'getAddressTransactions', 'getAddressInfo', 'getTokenInfo', 'getAddressHistory', 'getTopTokens', 'getTop', 'getTokenHistoryGrouped', 'getPriceHistoryGrouped', 'getTokenPriceHistoryGrouped', 'getAddressPriceHistoryGrouped', 'getBlockTransactions', 'getLastBlock');
+    protected $apiCommands = array('getTxInfo', 'getTokenHistory', 'getAddressTransactions', 'getAddressInfo', 'getTokenInfo', 'getAddressHistory', 'getTopTokens', 'getTop', 'getTokenHistoryGrouped', 'getPriceHistoryGrouped', 'getTokenPriceHistoryGrouped', 'getAddressPriceHistoryGrouped', 'getBlockTransactions', 'getLastBlock', 'getPoolAddresses');
     protected $defaults;
     protected $startTime;
     protected $cacheState = '';
@@ -480,6 +480,21 @@ class ethplorerController {
 
     public function getLastBlock(){
         $result = array('lastBlock' => $this->db->getLastBlock());
+        $this->sendResult($result);
+    }
+
+    /**
+     * /getPoolAddresses method implementation.
+     *
+     * @undocumented
+     * @return array
+     */
+    public function getPoolAddresses(){
+        $result = array('addresses' => array());
+        $poolId = $this->getParam(0, '');
+        if($poolId){
+            $result = array('addresses' => $this->db->getPoolAddresses($poolId));
+        }
         $this->sendResult($result);
     }
 
