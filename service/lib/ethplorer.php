@@ -497,6 +497,7 @@ class Ethplorer {
             if($tokenAddr){
                 if($token = $this->getToken($tokenAddr)){
                     $result['token'] = $token;
+                    $result['token']['priceHistoric'] = $this->_getRateByDate($address, date("Y-m-d", $tx['timestamp']));
                 }
             }
             $result["operations"] = $this->getOperations($hash);
