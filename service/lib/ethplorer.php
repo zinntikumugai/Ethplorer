@@ -118,7 +118,7 @@ class Ethplorer {
             evxMongoScanner::init($this->aSettings['mongo']);
             $this->oMongo = evxMongoScanner::getInstance();
         }
-        if(isset($this->aSettings['mongo']) && is_array($this->aSettings['mongo'])){
+        if(isset($this->aSettings['bundles']) && is_array($this->aSettings['bundles'])){
             evxMongoPools::init($this->aSettings['bundles']);
             $this->oMongoPools = evxMongoPools::getInstance();
         }
