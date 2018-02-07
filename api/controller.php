@@ -491,7 +491,7 @@ class ethplorerController {
      */
     public function getPoolAddresses(){
         $result = array('addresses' => array());
-        $poolId = $this->getParam(0, '');
+        $poolId = $this->getRequest('poolId', FALSE);
         if($poolId){
             $result = array('addresses' => $this->db->getPoolAddresses($poolId));
         }
