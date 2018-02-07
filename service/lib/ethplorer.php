@@ -2317,7 +2317,7 @@ class Ethplorer {
         $cache = 'pool_transactions-' . $poolId;
         $aTxs = $this->oCache->get($cache, false, true, 300);
         if($updateCache || (false === $aTxs)){
-            $cursor = $this->oMongo->find('transactions', array('id' => $poolId));
+            $cursor = $this->oMongoPools->find('transactions', array('id' => $poolId));
             $aTxs = array();
             foreach($cursor as $tx){
                 $aAddresses = [$tx["from"], $tx["to"]];
