@@ -201,10 +201,10 @@ ethplorerWidget = {
     },
     Utils: {
         link: function(data, text, title, hash, addClass){
-            if(data === '0x0000000000000000000000000000000000000000'){
-                return text;
-            }
             title = title || text;
+            if(data === '0x0000000000000000000000000000000000000000'){
+                return '<a class="tx-link" href="#" title="' + title + '">' + text + '</a>';
+            }
             hash = hash || false;
             if((false !== hash) && hash){
                 hash = '#' + hash;
