@@ -2312,12 +2312,12 @@ class Ethplorer {
      * @param int $poolId  Pool id
      * @return array
      */
-    public function getPoolLastTransactions($poolId, $updateCache = FALSE){
+    public function getPoolLastTransactions($poolId, $period, $updateCache = FALSE){
         evxProfiler::checkpoint('getPoolLastTransactions', 'START');
-        $cache = 'pool_transactions-' . $poolId;
+        $cache = 'pool_transactions-' . $poolId. '-' . $period;
         $aTxs = $this->oCache->get($cache, false, true, 300);
         if($updateCache || (false === $aTxs)){
-            $cursor = $this->oMongoPools->find('transactions', array('id' => $poolId));
+            $cursor = $this->oMongoPools->find('transactions', array('id' => $poolId, 'timestamp' => array('$gte' => time() - $period)), array("timestamp" => -1));
             $aTxs = array();
             foreach($cursor as $tx){
                 $aAddresses = [$tx["from"], $tx["to"]];

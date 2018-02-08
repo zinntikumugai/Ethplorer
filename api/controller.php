@@ -507,8 +507,9 @@ class ethplorerController {
     public function getPoolLastTransactions(){
         $result = array();
         $poolId = $this->getRequest('poolId', FALSE);
+        $period = max(min(abs((int)$this->getRequest('period', 86400)), 864000), 1);
         if($poolId){
-            $result = $this->db->getPoolLastTransactions($poolId);
+            $result = $this->db->getPoolLastTransactions($poolId, $period);
         }
         $this->sendResult($result);
     }
