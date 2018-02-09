@@ -2088,6 +2088,21 @@ class Ethplorer {
         return $result;
     }
 
+    public function getTokenCapHistory($period = 0, $updateCache = FALSE){
+        evxProfiler::checkpoint('getTokenCapHistory', 'START', 'period=' . $period);
+        $cache = 'cap-history';// . ($period > 0 ? ('period-' . $period) : '');
+        $result = $this->oCache->get($cache, false, true);
+        if($updateCache || (FALSE === $result)){
+            $method = 'getTokensCapHistory';
+            $result = $this->_jsonrpcall($this->aSettings['currency'], $method, array());
+            if($result){
+                $this->oCache->save($cache, $result);
+            }
+        }
+        evxProfiler::checkpoint('getTokenCapHistory', 'FINISH');
+        return $result;
+    }
+
     protected function getTokenPriceCurrent($address){
         $this->_getRateByDate($address, date("Y-m-d"));
     }

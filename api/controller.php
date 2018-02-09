@@ -396,6 +396,7 @@ class ethplorerController {
     public function getTokenHistoryGrouped(){
         $period = min(abs((int)$this->getRequest('period', 30)), 90);
         $address = $this->getParam(0, FALSE);
+        $cap = $this->getRequest('cap');
         if($address){
             $address = strtolower($address);
             if(!$this->db->isValidAddress($address)){
@@ -403,6 +404,9 @@ class ethplorerController {
             }
         }
         $result = array('countTxs' => $this->db->getTokenHistoryGrouped($period, $address));
+        if($cap){
+            $result['cap'] = $this->db->getTokenCapHistory($period);
+        }
         $this->sendResult($result);
     }
 
