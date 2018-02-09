@@ -2310,6 +2310,7 @@ class Ethplorer {
      * Returns pool transactions.
      *
      * @param int $poolId  Pool id
+     * @param int $period  Period
      * @return array
      */
     public function getPoolLastTransactions($poolId, $period, $updateCache = FALSE){
@@ -2320,7 +2321,10 @@ class Ethplorer {
             $cursor = $this->oMongoPools->find('transactions', array('id' => $poolId, 'timestamp' => array('$gte' => time() - $period)), array("timestamp" => -1));
             $aTxs = array();
             foreach($cursor as $tx){
-                $aAddresses = [$tx["from"], $tx["to"]];
+                $aAddresses = [$tx["from"]];
+                if($tx["from"] != $tx["to"]){
+                    $aAddresses[] = $tx["to"];
+                }
                 for($i = 0; $i < sizeof($aAddresses); $i++){
                     if(!isset($aTxs[$aAddresses[$i]])){
                         $aTxs[$aAddresses[$i]] = array();
@@ -2331,6 +2335,7 @@ class Ethplorer {
                     $success = isset($tx['status']) ? !!$tx['status'] : $success;
                     $aTxs[$aAddresses[$i]][] = array(
                         'timestamp' => $tx["timestamp"],
+                        'blockNumber' => $tx["blockNumber"],
                         'from' => $tx["from"],
                         'to' => $tx["to"],
                         'hash' => $tx["hash"],
@@ -2346,6 +2351,45 @@ class Ethplorer {
         }
         evxProfiler::checkpoint('getPoolLastTransactions', 'FINISH');
         return $aTxs;
+    }
+
+    /**
+     * Returns pool operations.
+     *
+     * @param int $poolId  Pool id
+     * @param int $period  Period
+     * @return array
+     */
+    public function getPoolLastOperations($poolId, $period, $updateCache = FALSE){
+        evxProfiler::checkpoint('getPoolLastOperations', 'START');
+        $cache = 'pool_operations-' . $poolId. '-' . $period;
+        $aOps = $this->oCache->get($cache, false, true, 300);
+        if($updateCache || (false === $aOps)){
+            $cursor = $this->oMongoPools->find('operations', array('id' => $poolId, 'timestamp' => array('$gte' => time() - $period)), array("timestamp" => -1));
+            $aOps = array();
+            foreach($cursor as $op){
+                $aAddresses = [$op["from"]];
+                if($op["from"] != $op["to"]){
+                    $aAddresses[] = $op["to"];
+                }
+                foreach($op['addresses'] as $addr){
+                    if(!in_array($addr, $aAddresses)) $aAddresses[] = $addr;
+                }
+                for($i = 0; $i < sizeof($aAddresses); $i++){
+                    if(!isset($aOps[$aAddresses[$i]])){
+                        $aOps[$aAddresses[$i]] = array();
+                    }
+                    unset($op['_id']);
+                    unset($op['pool']);
+                    $aOps[$aAddresses[$i]][] = $op;
+                }
+            }
+            if($aOps){
+                $this->oCache->save($cache, $aOps);
+            }
+        }
+        evxProfiler::checkpoint('getPoolLastOperations', 'FINISH');
+        return $aOps;
     }
 
     protected function _getRateByTimestamp($address, $timestamp){
