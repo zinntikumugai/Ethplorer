@@ -761,7 +761,7 @@ class apiTest extends TestCase
     }
 
     protected function getCommandLineParameter($param, $default){
-        foreach($argv as $arg){
+        foreach($_SERVER['argv'] as $arg){
             $args = explode('=', $arg);
             if(2 === count($args)){
                 if(("--" . $param) === $args[0]){
