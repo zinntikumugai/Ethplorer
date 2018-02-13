@@ -19,7 +19,7 @@ class ethplorerController {
     protected $db;
     protected $command;
     protected $params = array();
-    protected $apiCommands = array('getTxInfo', 'getTokenHistory', 'getAddressTransactions', 'getAddressInfo', 'getTokenInfo', 'getAddressHistory', 'getTopTokens', 'getTop', 'getTokenHistoryGrouped', 'getPriceHistoryGrouped', 'getTokenPriceHistoryGrouped', 'getAddressPriceHistoryGrouped', 'getBlockTransactions', 'getLastBlock', 'getPoolAddresses', 'getPoolLastTransactions');
+    protected $apiCommands = array('getTxInfo', 'getTokenHistory', 'getAddressTransactions', 'getAddressInfo', 'getTokenInfo', 'getAddressHistory', 'getTopTokens', 'getTop', 'getTokenHistoryGrouped', 'getPriceHistoryGrouped', 'getTokenPriceHistoryGrouped', 'getAddressPriceHistoryGrouped', 'getBlockTransactions', 'getLastBlock', 'getPoolAddresses', 'getPoolLastTransactions', 'getPoolLastOperations');
     protected $defaults;
     protected $startTime;
     protected $cacheState = '';
@@ -396,6 +396,7 @@ class ethplorerController {
     public function getTokenHistoryGrouped(){
         $period = min(abs((int)$this->getRequest('period', 30)), 90);
         $address = $this->getParam(0, FALSE);
+        $cap = $this->getRequest('cap');
         if($address){
             $address = strtolower($address);
             if(!$this->db->isValidAddress($address)){
@@ -403,6 +404,9 @@ class ethplorerController {
             }
         }
         $result = array('countTxs' => $this->db->getTokenHistoryGrouped($period, $address));
+        if($cap){
+            $result['cap'] = $this->db->getTokenCapHistory($period);
+        }
         $this->sendResult($result);
     }
 
@@ -507,8 +511,25 @@ class ethplorerController {
     public function getPoolLastTransactions(){
         $result = array();
         $poolId = $this->getRequest('poolId', FALSE);
+        $period = max(min(abs((int)$this->getRequest('period', 86400)), 864000), 1);
         if($poolId){
-            $result = $this->db->getPoolLastTransactions($poolId);
+            $result = $this->db->getPoolLastTransactions($poolId, $period);
+        }
+        $this->sendResult($result);
+    }
+
+    /**
+     * /getPoolLastOperations method implementation.
+     *
+     * @undocumented
+     * @return array
+     */
+    public function getPoolLastOperations(){
+        $result = array();
+        $poolId = $this->getRequest('poolId', FALSE);
+        $period = max(min(abs((int)$this->getRequest('period', 86400)), 864000), 1);
+        if($poolId){
+            $result = $this->db->getPoolLastOperations($poolId, $period);
         }
         $this->sendResult($result);
     }
