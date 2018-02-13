@@ -1897,14 +1897,18 @@ class Ethplorer {
                 $receipt = isset($tx['receipt']) ? $tx['receipt'] : false;
                 $tx['gasLimit'] = $tx['gas'];
                 $tx['gasUsed'] = $receipt ? $receipt['gasUsed'] : 0;
-                $transactions[] = array(
+                $transaction = array(
                     'timestamp' => $tx['timestamp'],
                     'from' => $tx['from'],
-                    'to' => $tx['to'],
+                    'to' => $tx['to'] ? $tx['to'] : "",
                     'hash' => $tx['hash'],
                     'value' => $tx['value'],
                     'success' => (($tx['gasUsed'] < $tx['gasLimit']) || ($receipt && !empty($receipt['logs'])))
                 );
+                if(isset($tx['creates']) && $tx['creates']){
+                    $transaction['creates'] = $tx['creates'];
+                }
+                $transactions[] = $transaction;
             }
             $this->oCache->save($cache, $transactions);
         }
