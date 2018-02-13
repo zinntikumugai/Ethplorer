@@ -508,6 +508,7 @@ class Ethplorer {
             }
             $result["contracts"] = array_values(array_unique($result["contracts"]));
             if($tokenAddr){
+                // If no price, but token have price, save current and set cache lifetime for 1 hour
                 if($token = $this->getToken($tokenAddr)){
                     $result['token'] = $token;
                     $result['token']['priceHistoric'] = $this->_getRateByDate($tokenAddr, date("Y-m-d", $tx['timestamp']));
@@ -1883,7 +1884,7 @@ class Ethplorer {
     }
 
     public function getBlockTransactions($block, $showZero = false){
-        $cache = 'block-txs-' . $block;
+        $cache = 'block-txs-' . $block . ($showZero ? '-zero' : '');
         $transactions = $this->oCache->get($cache, false, true);
         if(!$transactions){
             $transactions = array();
