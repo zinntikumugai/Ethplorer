@@ -14,6 +14,8 @@ class apiTest extends TestCase
      */
     public function testAPI($test)
     {
+        // Can override $url property using "--url=" commandline parameter
+        $this->url = $this->getCommandLineParameter('url', $this->url);
         $this->_iterateTest($test);
     }
 
@@ -735,7 +737,11 @@ class apiTest extends TestCase
                 'method' => 'getBlockTransactions',
                 'GET_params' =>  ['apiKey' => apiTest::APIKey, 'block' => 'last'],
                 'asserts' => [
-                    ['type' => 'checkTransaction', 'fields' => [''], 'count' => 5],
+                    ['type' => 'compareArrays', 'count' => 5, 'callback' => function($hash){
+                        $url = "https://api.etherscan.io/api?module=proxy&action=eth_getTransactionByHash&txhash=%s&apikey=YourApiKeyToken";
+                        $result = json_decode(file_get_contents(sprintf($url, $hash)), JSON_OBJECT_AS_ARRAY)['result'];
+                        return ['from' => $result['from'], 'to' => $result['to'], 'value' => hexdec($result['value']) / (float) pow(10, 18)];
+                    }],
                 ]
             ]],
             //Errors
@@ -752,5 +758,17 @@ class apiTest extends TestCase
                 ]
             ]]
         ];
+    }
+
+    protected function getCommandLineParameter($param, $default){
+        foreach($argv as $arg){
+            $args = explode('=', $arg);
+            if(2 === count($args)){
+                if(("--" . $param) === $args[0]){
+                    return $args[1];
+                }
+            }
+        }
+        return $default;
     }
 }
