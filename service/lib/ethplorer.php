@@ -459,7 +459,7 @@ class Ethplorer {
             // $toContract = !!$this->getContract($tx['to']); // <-- too slow
 
             $success = ((21000 == $tx['gasUsed']) || /*!$toContract ||*/ ($tx['gasUsed'] < $tx['gasLimit']) || ($receipt && !empty($receipt['logs'])));
-            $success = isset($tx['status']) ? txSuccessStatus($tx) : $success;
+            $success = isset($tx['status']) ? $this->txSuccessStatus($tx) : $success;
 
             $result[] = array(
                 'timestamp' => $tx['timestamp'],
@@ -610,7 +610,7 @@ class Ethplorer {
             $result['gasUsed'] = isset($result['gasUsed']) ? $result['gasUsed'] : ($receipt ? $receipt['gasUsed'] : 0);
 
             $success = ((21000 == $result['gasUsed']) || ($result['gasUsed'] < $result['gasLimit']) || ($receipt && !empty($receipt['logs'])));
-            $result['success'] = isset($result['status']) ? txSuccessStatus($result) : $success;
+            $result['success'] = isset($result['status']) ? $this->txSuccessStatus($result) : $success;
 
             $methodsFile = dirname(__FILE__) . "/../methods.sha3.php";
             if(file_exists($methodsFile)){
@@ -2352,7 +2352,7 @@ class Ethplorer {
                     $gasLimit = $tx['gas'];
                     $gasUsed = isset($tx['gasUsed']) ? $tx['gasUsed'] : 0;
                     $success = ((21000 == $gasUsed) || ($gasUsed < $gasLimit));
-                    $success = isset($tx['status']) ? txSuccessStatus($tx) : $success;
+                    $success = isset($tx['status']) ? $this->txSuccessStatus($tx) : $success;
                     $aTxs[$aAddresses[$i]][] = array(
                         'timestamp' => $tx["timestamp"],
                         'blockNumber' => $tx["blockNumber"],
