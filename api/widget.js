@@ -35,7 +35,8 @@ ethplorerWidget = {
             return;
         }
         if(type == 'tokenHistoryGrouped'){
-            ethplorerWidget.addGoogleLoader = true;
+            if(options && options.full) ethplorerWidget.addGoogleAPI = true;
+            else ethplorerWidget.addGoogleLoader = true;
         }
         if(type == 'tokenPriceHistoryGrouped' || type == 'addressPriceHistoryGrouped'){
             ethplorerWidget.addGoogleAPI = true;
@@ -90,6 +91,51 @@ ethplorerWidget = {
         if(ethplorerWidget.chartControlWidgets && ethplorerWidget.chartControlWidgets.length)
             for(var i=0; i<ethplorerWidget.chartControlWidgets.length; i++)
                     ethplorerWidget.chartControlWidgets[i].load();
+    },
+    getGoogleControlOptions: function(dteRangeStart, dteRangeEnd, options, series){
+        var controlOptions = {
+            controlType: 'ChartRangeFilter',
+            containerId: 'control',
+            state: {
+                range: {
+                    start: dteRangeStart,
+                    end: dteRangeEnd
+                }
+            },
+            options: {
+                filterColumnIndex: 0,
+                ui: {
+                    chartType: 'ComboChart',
+                    minRangeSize: (options.period <= 7) ? 86400000 * 2 : 86400000 * 7,
+                    chartOptions: {
+                        colors: ['#65A5DF'],
+                        lineWidth: 0,
+                        hAxis : {
+                            title: '',
+                            titleTextStyle: {
+                                italic: false
+                            },
+                            slantedText: false,
+                            maxAlternation: 1,
+                            maxTextLines: 1,
+                            format: 'MM/dd',
+                            gridlines: {
+                                color: "none"
+                            },
+                        },
+                        series: series
+                    }
+                }
+            }
+        };
+        if(options['theme'] == 'dark'){
+            controlOptions.options.ui.chartOptions.colors = ['#DEDEDE'];
+            controlOptions.options.ui.chartOptions.backgroundColor = {fill: 'transparent'};
+            controlOptions.options.ui.chartOptions.hAxis.textStyle = {color: '#DEDEDE'};
+            controlOptions.options.ui.chartOptions.hAxis.titleTextStyle.color = '#DEDEDE';
+            controlOptions.options.ui.chartOptions.hAxis.baselineColor = '#DEDEDE';
+        }
+        return controlOptions;
     },
     preloadData: function(methods){
         for(var i=0; i<methods.length; i++){
@@ -1076,6 +1122,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
     this.el = element;
     this.widgetData = null;
     this.resizeTimer = null;
+    this.cachedWidth = $(window).width();
 
     this.options = {
         period: 30,
@@ -1103,15 +1150,40 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         $.getJSON(this.api, this.getRequestParams(), this.refreshWidget);
     };
 
-    this.drawChart = function(aTxData){
+    this.getTooltip = function(date, cnt, cap){
+        var tooltipDateFormatter = new google.visualization.DateFormat({ 
+            pattern: "MMM dd, yyyy '+UTC'"
+        });
+        var numFormatter = new google.visualization.NumberFormat({ 
+            pattern: "#,### K"
+        });
+        var currencyFormatter = new google.visualization.NumberFormat({ 
+            pattern: '$ #,### B'
+        });
+        var tooltip = '<div style="display: block !important; text-align: left; opacity: 1 !important; color: #000000 !important; padding: 5px;">';
+        tooltip += '<span class="tooltipRow">' + tooltipDateFormatter.formatValue(date) + '</span><br/>' +
+            '<span class="tooltipRow"><b>Token operations:</b> ' + numFormatter.formatValue(cnt) + '</span><br/>' +
+            '<span class="tooltipRow"><b>Tokens Cap:</b> ' + currencyFormatter.formatValue(cap) + '</span>' +
+            '</div>';
+        return tooltip;
+    }
+
+    this.drawChart = function(aTxData, aCap){
         var aData = [];
-        aData.push(['Day', 'Token operations']);
+        if(this.options.cap && aCap){
+            aData.push(['Day', 'Token operations', {type: 'string', role: 'tooltip', 'p': {'html': true}}, 'Tokens Cap', {type: 'string', role: 'tooltip', 'p': {'html': true}}]);
+        }else{
+            aData.push(['Day', 'Token operations']);
+        }
 
         var stDate = new Date(),
             fnDate = new Date();
         var date = stDate.getDate();
         stDate.setDate(date - 1);
         fnDate.setDate(date - this.options.period - 1);
+        var dteRangeStart = fnDate,
+            dteRangeEnd = new Date();
+        dteRangeEnd.setDate(stDate.getDate());
 
         var aCountData = {};
         for(var i = 0; i < aTxData.length; i++){
@@ -1123,21 +1195,45 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         while(stDate > fnDate){
             var key = stDate.getFullYear() + '-' + (stDate.getMonth() + 1) + '-' + stDate.getDate();
             var cnt = ('undefined' !== typeof(aCountData[key])) ? aCountData[key] : 0;
+            if(this.options.cap && aCap) cnt = Math.round(cnt / 1000);
             if(curDate && cnt == 0){
                 curDate = false;
                 continue;
             }
-            aData.push([new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt]);
+            if(this.options.cap && aCap){
+                var capKeyMonth = stDate.getMonth() + 1;
+                if(capKeyMonth < 10) capKeyMonth = '0' + capKeyMonth;
+                var capKeyDay = stDate.getDate();
+                if(capKeyDay < 10) capKeyDay = '0' + capKeyDay;
+                var capKey = stDate.getFullYear() + '-' + capKeyMonth + '-' + capKeyDay;
+                var cap = ('undefined' !== typeof(aCap[capKey])) ? aCap[capKey] : 0;
+                cap = Math.round(cap / 1000000000);
+                var tooltip = this.getTooltip(new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt, cap);
+                aData.push([new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt, tooltip, cap, tooltip]);
+            }else{
+                aData.push([new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt]);
+            }
             var newDate = stDate.setDate(stDate.getDate() - 1);
+            dteRangeStart = new Date(newDate);
             stDate = new Date(newDate);
+        }
+        if(this.options.period > 90){
+            dteRangeStart = new Date();
+            dteRangeStart.setDate(date - 90);
         }
 
         var data = google.visualization.arrayToDataTable(aData);
-        var def = {
+        var tooltipFormatter = new google.visualization.DateFormat({ 
+            pattern: "MMM dd, yyyy '+UTC'"
+        });
+        tooltipFormatter.format(data, 0);
+
+        var defOptions = {
             title: '',
             legend: { position: 'none' },
             tooltip: {
                 format: 'MMM d',
+                isHtml: (this.options.cap && aCap) ? true : false
             },
             hAxis : {
                 title: '',
@@ -1172,29 +1268,87 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
             pointSize: 5,
         };
         if(this.options['theme'] == 'dark'){
-            def.colors = ['#47C2FF'];
-            def.titleTextStyle = {color: '#DEDEDE'};
-            def.backgroundColor = {fill: 'transparent'};
+            defOptions.colors = ['#47C2FF', '#FCEC0F'];
+            defOptions.titleTextStyle = {color: '#DEDEDE'};
+            defOptions.backgroundColor = {fill: 'transparent'};
 
-            def.hAxis.textStyle = {color: '#DEDEDE'};
-            def.hAxis.titleTextStyle.color = '#DEDEDE';
-            def.hAxis.baselineColor = '#DEDEDE';
+            defOptions.hAxis.textStyle = {color: '#DEDEDE'};
+            defOptions.hAxis.titleTextStyle.color = '#DEDEDE';
+            defOptions.hAxis.baselineColor = '#DEDEDE';
 
-            def.vAxis.textStyle = {color: '#DEDEDE'};
-            def.vAxis.titleTextStyle.color = '#DEDEDE';
-            def.vAxis.baselineColor = 'none';
+            defOptions.vAxis.textStyle = {color: '#DEDEDE'};
+            defOptions.vAxis.titleTextStyle.color = '#DEDEDE';
+            defOptions.vAxis.baselineColor = 'none';
         }
-        var options = $.extend(true, def, this.options['options']);
 
-        var tooltipFormatter = new google.visualization.DateFormat({ 
-            pattern: "MMM dd, yyyy '+UTC'"
-        });
-        tooltipFormatter.format(data, 0);
+        if(this.options.cap && aCap){
+            var series = {
+                0: {
+                    type: 'line',
+                    targetAxisIndex: 0,
+                    lineWidth: 1
+                },
+                1: {
+                    type: 'area',
+                    targetAxisIndex: 1,
+                    lineWidth: 1
+                }
+            };
+            var vAxes = {
+                0: {
+                    title: 'Token operations',
+                    format: '#,### K',
+                },
+                1: {
+                    title: 'Tokens Cap',
+                    format: '$ #,### B'
+                }
+            };
+            defOptions.series = series;
+            defOptions.vAxes = vAxes;
+        }
 
-        if(this.options['type'] == 'area') var chart = new google.visualization.AreaChart(this.el[0]);
-        else if(this.options['type'] == 'line') var chart = new google.visualization.LineChart(this.el[0]);
-        else var chart = new google.visualization.ColumnChart(this.el[0]);
-        chart.draw(data, options);
+        if(this.options.full){
+            this.el.append($('<div>', {id: 'chart'}));
+            this.el.append($('<div>', {id: 'control'}));
+            $('#control').attr('style', 'height: 50px;');
+
+            var dashboard = new google.visualization.Dashboard(this.el);
+            var controlSeries = {
+                0: {
+                    type: 'area',
+                    lineWidth: 0
+                },
+                1: {
+                    targetAxisIndex: 1,
+                    type: 'area',
+                    lineWidth: 1
+                }
+            };
+
+            var defControlOptions = ethplorerWidget.getGoogleControlOptions(dteRangeStart, dteRangeEnd, this.options, controlSeries);
+            var controlOptions = $.extend(true, defControlOptions, this.options['controlOptions']);
+            var control = new google.visualization.ControlWrapper(controlOptions);
+
+            var def = {
+                chartType: 'ComboChart',
+                containerId: 'chart',
+                options: defOptions
+            };
+
+            def.options = $.extend(true, def.options, this.options['options']);
+            var chart = new google.visualization.ChartWrapper(def);
+            dashboard.bind(control, chart);
+            dashboard.draw(data);
+        }else{
+            var options = $.extend(true, defOptions, this.options['options']);
+
+            if(this.options['type'] == 'area') var chart = new google.visualization.AreaChart(this.el[0]);
+            else if(this.options['type'] == 'line') var chart = new google.visualization.LineChart(this.el[0]);
+            else var chart = new google.visualization.ColumnChart(this.el[0]);
+
+            chart.draw(data, options);
+        }
     };
 
     this.init = function(){
@@ -1202,11 +1356,10 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         this.el.addClass('widget-tokenHistoryGrouped');
         this.el.addClass('theme-' + (this.options.theme ? this.options.theme : 'ethplorer'));
         this.el.html(this.templates.loader);
-        //this.load();
     };
 
     this.getRequestParams = function(additionalParams){
-        var requestOptions = ['period', 'address', 'type', 'theme'];
+        var requestOptions = ['period', 'address', 'type', 'theme', 'cap'];
         var params = {
             apiKey: 'freekey'
         };
@@ -1229,21 +1382,30 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         return params;
     };
 
+    this.showWidget = function(obj, data){
+        obj.el.find('.txs-loading').remove();
+        obj.drawChart(data.countTxs, data.cap);
+        ethplorerWidget.appendEthplorerLink(obj);
+        if('function' === typeof(obj.options.onLoad)){
+            obj.options.onLoad();
+        }
+        setTimeout(ethplorerWidget.fixTilda, 300);
+    }
+
     this.refreshWidget = function(obj){
         return function(data){
-            if(data && !data.error && data.countTxs /*&& data.countTxs.length*/){
+            if(data && !data.error && data.countTxs){
                 obj.widgetData = data.countTxs;
-                google.charts.setOnLoadCallback(
-                    function(){
-                        obj.el.find('.txs-loading').remove();
-                        obj.drawChart(data.countTxs);
-                        ethplorerWidget.appendEthplorerLink(obj);
-                        if('function' === typeof(obj.options.onLoad)){
-                            obj.options.onLoad();
+                obj.widgetDataCap = data.cap;
+                if(obj.options.full){
+                    obj.showWidget(obj, data);
+                }else{
+                    google.charts.setOnLoadCallback(
+                        function(){
+                            obj.showWidget(obj, data);
                         }
-                        setTimeout(ethplorerWidget.fixTilda, 300);
-                    }
-                );
+                    );
+                }
             }else{
                 obj.el.find('.txs-loading').remove();
             }
@@ -1251,19 +1413,27 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
     }(this);
 
     $(window).resize(this, function(){
+        var newWidth = $(window).width();
         var obj = arguments[0].data;
+        if(newWidth !== obj.cachedWidth){
+            obj.cachedWidth = newWidth;
+        }else{
+            return;
+        }
         if(obj.resizeTimer) clearTimeout(obj.resizeTimer);
         obj.resizeTimer = setTimeout(function(){
             if(obj.widgetData){
                 obj.el.empty();
-                obj.drawChart(obj.widgetData);
+                obj.drawChart(obj.widgetData, obj.widgetDataCap);
                 ethplorerWidget.appendEthplorerLink(obj);
             }
         }, 500);
     });
 
     this.init();
-    ethplorerWidget.chartWidgets.push(this);
+
+    if(this.options.full) ethplorerWidget.chartControlWidgets.push(this);
+    else ethplorerWidget.chartWidgets.push(this);
 };
 
 /**
@@ -1554,52 +1724,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                 }
             };
         }
-        var defControlOptions = {
-            controlType: 'ChartRangeFilter',
-            containerId: 'control',
-            state: {
-                range: {
-                    start: rangeStart,
-                    end: new Date(strFirstDate)
-                }
-            },
-            options: {
-                filterColumnIndex: 0,
-                ui: {
-                    chartType: 'ComboChart',
-                    minRangeSize: 86400000 * 7,
-                    chartOptions: {
-                        /*chartArea: {
-                            height: '30%',
-                        },*/
-                        colors: ['#65A5DF'],
-                        lineWidth: 0,
-                        hAxis : {
-                            title: '',
-                            titleTextStyle: {
-                                italic: false
-                            },
-                            slantedText: false,
-                            maxAlternation: 1,
-                            maxTextLines: 1,
-                            format: 'MM/dd',
-                            gridlines: {
-                                color: "none"
-                            },
-                        },
-                        series: controlSeries
-                    }
-                }
-            }
-        };
-        if(this.options['theme'] == 'dark'){
-            defControlOptions.options.ui.chartOptions.colors = ['#DEDEDE'];
-            defControlOptions.options.ui.chartOptions.backgroundColor = {fill: 'transparent'};
-
-            defControlOptions.options.ui.chartOptions.hAxis.textStyle = {color: '#DEDEDE'};
-            defControlOptions.options.ui.chartOptions.hAxis.titleTextStyle.color = '#DEDEDE';
-            defControlOptions.options.ui.chartOptions.hAxis.baselineColor = '#DEDEDE';
-        }
+        var defControlOptions = ethplorerWidget.getGoogleControlOptions(rangeStart, new Date(strFirstDate), this.options, controlSeries);
         var controlOptions = $.extend(true, defControlOptions, this.options['controlOptions']);
         var control = new google.visualization.ControlWrapper(controlOptions);
 
@@ -2035,49 +2160,7 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
                 lineWidth: 1
             }
         };
-        var defControlOptions = {
-            controlType: 'ChartRangeFilter',
-            containerId: 'control',
-            state: {
-                range: {
-                    start: dteRangeStart,
-                    end: dteRangeEnd
-                }
-            },
-            options: {
-                filterColumnIndex: 0,
-                ui: {
-                    chartType: 'ComboChart',
-                    minRangeSize: (this.options.period <= 7) ? 86400000 * 2 : 86400000 * 7,
-                    chartOptions: {
-                        colors: ['#65A5DF'],
-                        lineWidth: 0,
-                        hAxis : {
-                            title: '',
-                            titleTextStyle: {
-                                italic: false
-                            },
-                            slantedText: false,
-                            maxAlternation: 1,
-                            maxTextLines: 1,
-                            format: 'MM/dd',
-                            gridlines: {
-                                color: "none"
-                            },
-                        },
-                        series: controlSeries
-                    }
-                }
-            }
-        };
-        if(this.options['theme'] == 'dark'){
-            defControlOptions.options.ui.chartOptions.colors = ['#DEDEDE'];
-            defControlOptions.options.ui.chartOptions.backgroundColor = {fill: 'transparent'};
-
-            defControlOptions.options.ui.chartOptions.hAxis.textStyle = {color: '#DEDEDE'};
-            defControlOptions.options.ui.chartOptions.hAxis.titleTextStyle.color = '#DEDEDE';
-            defControlOptions.options.ui.chartOptions.hAxis.baselineColor = '#DEDEDE';
-        }
+        var defControlOptions = ethplorerWidget.getGoogleControlOptions(dteRangeStart, dteRangeEnd, this.options, controlSeries);
         var controlOptions = $.extend(true, defControlOptions, this.options['controlOptions']);
         var control = new google.visualization.ControlWrapper(controlOptions);
 
