@@ -1705,7 +1705,7 @@ class Ethplorer {
             $tsEnd += 7776000;
         }
         //$history['numIter'] = $numIter;
-        return $history;
+        return array_values($history);
     }
 
     /**
