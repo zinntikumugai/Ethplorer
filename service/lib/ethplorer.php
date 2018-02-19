@@ -1612,7 +1612,6 @@ class Ethplorer {
      */
     public function getTokenHistoryGrouped($period = 30, $address = FALSE, $type = 'daily', $cacheLifetime = 600){
         $cache = 'token_history_grouped-' . ($address ? ($address . '-') : '') . $period . (($type == 'hourly') ? '-hourly' : '');
-        if($type == 'full') $cache = 'token_history_grouped-full';
         $result = $this->oCache->get($cache, false, true, $cacheLifetime);
         if(FALSE === $result){
             // Chainy
@@ -1621,8 +1620,7 @@ class Ethplorer {
             }
 
             $tsStart = gmmktime(0, 0, 0, date('n'), date('j') - $period, date('Y'));
-            if($type == 'full') $aMatch = array();
-            else $aMatch = array("timestamp" => array('$gt' => $tsStart));
+            $aMatch = array("timestamp" => array('$gt' => $tsStart));
             if($address) $aMatch["contract"] = $address;
             $result = array();
             $_id = array(
@@ -1654,6 +1652,60 @@ class Ethplorer {
             }
         }
         return $result;
+    }
+
+    /**
+     * Returns transactions grouped by days for all period.
+     *
+     * @return array
+     */
+    public function getTokenFullHistoryGrouped(){
+        $tsNow = time();
+        $tsStart = 0;
+        $tsEnd = 1454112000;
+
+        $history = array();
+        $numIter = 0;
+        while($tsStart <= $tsNow){
+            $numIter++;
+            $cache = 'token_full_history_grouped-' . $tsEnd;
+            $result = $this->oCache->get($cache, FALSE, TRUE);
+            if(FALSE === $result){
+                $result = array();
+
+                $aMatch = array("timestamp" => array('$gte' => $tsStart + 1, '$lte' => $tsEnd));
+                $_id = array(
+                    "year"  => array('$year' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
+                    "month"  => array('$month' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
+                    "day"  => array('$dayOfMonth' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
+                );
+                $dbData = $this->oMongo->aggregate(
+                    'operations',
+                    array(
+                        array('$match' => $aMatch),
+                        array(
+                            '$group' => array(
+                                "_id" => $_id,
+                                'ts' =>  array('$first' => '$timestamp'),
+                                'cnt' => array('$sum' => 1)
+                            )
+                        ),
+                        array('$sort' => array('ts' => -1))
+                    )
+                );
+                if(is_array($dbData) && !empty($dbData['result'])){
+                    $result = $dbData['result'];
+                    $this->oCache->save($cache, $result);
+                }
+            }
+            if(is_array($result) && sizeof($result)){
+                $history = array_merge($history, $result);
+            }
+            $tsStart = $tsEnd;
+            $tsEnd += 7776000;
+        }
+        //$history['numIter'] = $numIter;
+        return $history;
     }
 
     /**
