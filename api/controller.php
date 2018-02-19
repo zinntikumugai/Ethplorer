@@ -397,13 +397,15 @@ class ethplorerController {
         $period = min(abs((int)$this->getRequest('period', 30)), 90);
         $address = $this->getParam(0, FALSE);
         $cap = $this->getRequest('cap');
+        $full = $this->getRequest('full');
         if($address){
             $address = strtolower($address);
             if(!$this->db->isValidAddress($address)){
                 $this->sendError(104, 'Invalid token address format');
             }
         }
-        $result = array('countTxs' => $this->db->getTokenHistoryGrouped($period, $address));
+        $type = $full ? 'full' : 'daily';
+        $result = array('countTxs' => $this->db->getTokenHistoryGrouped($period, $address, $type));
         if($cap){
             $result['cap'] = $this->db->getTokenCapHistory($period);
         }

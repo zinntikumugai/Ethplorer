@@ -1612,6 +1612,7 @@ class Ethplorer {
      */
     public function getTokenHistoryGrouped($period = 30, $address = FALSE, $type = 'daily', $cacheLifetime = 600){
         $cache = 'token_history_grouped-' . ($address ? ($address . '-') : '') . $period . (($type == 'hourly') ? '-hourly' : '');
+        if($type == 'full') $cache = 'token_history_grouped-full';
         $result = $this->oCache->get($cache, false, true, $cacheLifetime);
         if(FALSE === $result){
             // Chainy
@@ -1620,7 +1621,8 @@ class Ethplorer {
             }
 
             $tsStart = gmmktime(0, 0, 0, date('n'), date('j') - $period, date('Y'));
-            $aMatch = array("timestamp" => array('$gt' => $tsStart));
+            if($type == 'full') $aMatch = array();
+            else $aMatch = array("timestamp" => array('$gt' => $tsStart));
             if($address) $aMatch["contract"] = $address;
             $result = array();
             $_id = array(
