@@ -1186,10 +1186,23 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         dteRangeEnd.setDate(stDate.getDate());
 
         var aCountData = {};
+        var minTs = 0,
+            minYear,
+            minMonth,
+            minDate;
         for(var i = 0; i < aTxData.length; i++){
             var aDayData = aTxData[i];
             aCountData[aDayData._id.year + '-' + aDayData._id.month + '-' + aDayData._id.day] = aDayData.cnt;
+            if((minTs == 0) || (minTs > aDayData.ts)){
+                minTs = aDayData.ts;
+                minYear = aDayData._id.year;
+                minMonth = aDayData._id.month;
+                if(aDayData._id.month < 10) minMonth = '0' + minMonth;
+                minDate = aDayData._id.day;
+                if(aDayData._id.day < 10) minDate = '0' + minDate;
+            }
         }
+        if(this.options.full) fnDate = new Date(minYear + '-' + minMonth + '-' + minDate + 'T00:00:00Z');
 
         var curDate = true;
         while(stDate > fnDate){
@@ -1217,7 +1230,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
             dteRangeStart = new Date(newDate);
             stDate = new Date(newDate);
         }
-        if(this.options.period > 90){
+        if(this.options.period > 90 || this.options.full){
             dteRangeStart = new Date();
             dteRangeStart.setDate(date - 90);
         }
@@ -1359,7 +1372,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
     };
 
     this.getRequestParams = function(additionalParams){
-        var requestOptions = ['period', 'address', 'type', 'theme', 'cap'];
+        var requestOptions = ['period', 'address', 'type', 'theme', 'cap', 'full'];
         var params = {
             apiKey: 'freekey'
         };
