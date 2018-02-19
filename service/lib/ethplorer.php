@@ -1661,15 +1661,19 @@ class Ethplorer {
      */
     public function getTokenFullHistoryGrouped(){
         $tsNow = time();
-        $tsStart = 0;
-        $tsEnd = 1454112000;
+        $tsStart = 1451606400; // 01.01.2016
+        $tsEnd = 1459468800;
 
         $history = array();
         $numIter = 0;
         while($tsStart <= $tsNow){
             $numIter++;
             $cache = 'token_full_history_grouped-' . $tsEnd;
-            $result = $this->oCache->get($cache, FALSE, TRUE);
+            $cacheLifetime = FALSE;
+            if($tsEnd > $tsNow){
+                $cacheLifetime = 24 * 60 * 60;
+            }
+            $result = $this->oCache->get($cache, FALSE, TRUE, $cacheLifetime);
             if(FALSE === $result){
                 $result = array();
 
