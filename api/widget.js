@@ -118,7 +118,7 @@ ethplorerWidget = {
                             slantedText: false,
                             maxAlternation: 1,
                             maxTextLines: 1,
-                            format: 'MM/dd',
+                            format: options.full ? 'MMM yy' : 'MM/dd',
                             gridlines: {
                                 color: "none"
                             },
@@ -1162,8 +1162,8 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         });
         var tooltip = '<div style="display: block !important; text-align: left; opacity: 1 !important; color: #000000 !important; padding: 5px;">';
         tooltip += '<span class="tooltipRow">' + tooltipDateFormatter.formatValue(date) + '</span><br/>' +
-            '<span class="tooltipRow"><b>Token operations:</b> ' + numFormatter.formatValue(cnt) + '</span><br/>' +
-            '<span class="tooltipRow"><b>Tokens Cap:</b> ' + currencyFormatter.formatValue(cap) + '</span>' +
+            '<span class="tooltipRow"><b>Token operations:</b> ' + ((cnt < 1) ? '<1 K' : numFormatter.formatValue(cnt)) + '</span><br/>' +
+            '<span class="tooltipRow"><b>Tokens Cap:</b> ' + ((cap < 1) ? '<1 B' : currencyFormatter.formatValue(cap)) + '</span>' +
             '</div>';
         return tooltip;
     }
@@ -1257,7 +1257,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                 slantedText: false,
                 maxAlternation: 1,
                 maxTextLines: 1,
-                format: 'MMM d',
+                format: this.options.full ? 'MMM yy' : 'MMM d',
                 gridlines: {
                     count: 10,
                     color: "none"
