@@ -1672,6 +1672,64 @@ class Ethplorer {
     }
 
     /**
+     * Returns transactions grouped by days for all period.
+     *
+     * @return array
+     */
+    public function getTokenFullHistoryGrouped(){
+        $tsNow = time();
+        $tsStart = 1451606400; // 01.01.2016
+        $tsEnd = 1459468800;
+
+        $history = array();
+        $numIter = 0;
+        while($tsStart <= $tsNow){
+            $numIter++;
+            $cache = 'token_full_history_grouped-' . $tsEnd;
+            $cacheLifetime = FALSE;
+            if($tsEnd > $tsNow){
+                $cacheLifetime = 24 * 60 * 60;
+            }
+            $result = $this->oCache->get($cache, FALSE, TRUE, $cacheLifetime);
+            if(FALSE === $result){
+                $result = array();
+
+                $aMatch = array("timestamp" => array('$gte' => $tsStart + 1, '$lte' => $tsEnd));
+                $_id = array(
+                    "year"  => array('$year' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
+                    "month"  => array('$month' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
+                    "day"  => array('$dayOfMonth' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
+                );
+                $dbData = $this->oMongo->aggregate(
+                    'operations',
+                    array(
+                        array('$match' => $aMatch),
+                        array(
+                            '$group' => array(
+                                "_id" => $_id,
+                                'ts' =>  array('$first' => '$timestamp'),
+                                'cnt' => array('$sum' => 1)
+                            )
+                        ),
+                        array('$sort' => array('ts' => -1))
+                    )
+                );
+                if(is_array($dbData) && !empty($dbData['result'])){
+                    $result = $dbData['result'];
+                    $this->oCache->save($cache, $result);
+                }
+            }
+            if(is_array($result) && sizeof($result)){
+                $history = array_merge($history, $result);
+            }
+            $tsStart = $tsEnd;
+            $tsEnd += 7776000;
+        }
+        //$history['numIter'] = $numIter;
+        return array_values($history);
+    }
+
+    /**
      * Returns count transactions for last day grouped by tokens.
      *
      * @param int $limit  Number of tokens

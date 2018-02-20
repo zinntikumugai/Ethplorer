@@ -403,7 +403,11 @@ class ethplorerController {
                 $this->sendError(104, 'Invalid token address format');
             }
         }
-        $result = array('countTxs' => $this->db->getTokenHistoryGrouped($period, $address));
+        if($this->getRequest('full')){
+            $result = array('countTxs' => $this->db->getTokenFullHistoryGrouped());
+        }else{
+            $result = array('countTxs' => $this->db->getTokenHistoryGrouped($period, $address));
+        }
         if($cap){
             $result['cap'] = $this->db->getTokenCapHistory($period);
         }
