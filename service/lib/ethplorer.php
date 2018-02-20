@@ -445,32 +445,49 @@ class Ethplorer {
      */
     public function getTransactions($address, $limit = 10, $showZero = FALSE){
         $result = array();
-        $search = array('$or' => array(array("from" => $address), array("to" => $address)));
-        if(!$showZero){
-            $search = array('$and' => array($search, array('value' => array('$gt' => 0))));
-        }
-        $cursor = $this->oMongo->find('transactions', $search, array("timestamp" => -1), $limit);
-        foreach($cursor as $tx){
-            $receipt = isset($tx['receipt']) ? $tx['receipt'] : false;
-            $tx['gasLimit'] = $tx['gas'];
-            $tx['gasUsed'] = isset($tx['gasUsed']) ? $tx['gasUsed'] : ($receipt ? $receipt['gasUsed'] : 0);
-            // @todo: research
-            // $toContract = !!$tx['input'];
-            // $toContract = !!$this->getContract($tx['to']); // <-- too slow
+        $fields = ['from', 'to'];
+        foreach($fields as $field){
+            $search = array();
+            $search[$field] = $address;
+            if(!$showZero){
+                $search['value'] = array('$gt' => 0);
+            }
+            $cursor = $this->oMongo->find('transactions', $search, array("timestamp" => -1), $limit);
+            foreach($cursor as $tx){
+                $receipt = isset($tx['receipt']) ? $tx['receipt'] : false;
+                $tx['gasLimit'] = $tx['gas'];
+                $tx['gasUsed'] = isset($tx['gasUsed']) ? $tx['gasUsed'] : ($receipt ? $receipt['gasUsed'] : 0);
+                // @todo: research
+                // $toContract = !!$tx['input'];
+                // $toContract = !!$this->getContract($tx['to']); // <-- too slow
 
-            $success = ((21000 == $tx['gasUsed']) || /*!$toContract ||*/ ($tx['gasUsed'] < $tx['gasLimit']) || ($receipt && !empty($receipt['logs'])));
-            $success = isset($tx['status']) ? $this->txSuccessStatus($tx) : $success;
+                $success = ((21000 == $tx['gasUsed']) || /*!$toContract ||*/ ($tx['gasUsed'] < $tx['gasLimit']) || ($receipt && !empty($receipt['logs'])));
+                $success = isset($tx['status']) ? $this->txSuccessStatus($tx) : $success;
 
-            $result[] = array(
-                'timestamp' => $tx['timestamp'],
-                'from' => $tx['from'],
-                'to' => $tx['to'],
-                'hash' => $tx['hash'],
-                'value' => $tx['value'],
-                'input' => $tx['input'],
-                'success' => $success
-            );
+                $result[] = array(
+                    'timestamp' => $tx['timestamp'],
+                    'from' => $tx['from'],
+                    'to' => $tx['to'],
+                    'hash' => $tx['hash'],
+                    'value' => $tx['value'],
+                    'input' => $tx['input'],
+                    'success' => $success
+                );
+            }
         }
+        usort($result, function($a, $b){
+            return ($a['timestamp'] > $b['timestamp']) ? 1 : (($a['timestamp'] < $b['timestamp']) ? -1 : 0);
+        });
+
+        if(count($result) > $limit){
+            $limitedResult = [];
+            foreach($result as $index => $record){
+                if($index == $limit) break;
+                $limitedResult[] = $record;
+            }
+            $result = $limitedResult;
+        }
+        
         return $result;
     }
 
