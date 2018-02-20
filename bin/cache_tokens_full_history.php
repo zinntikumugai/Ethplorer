@@ -22,3 +22,4 @@ $es = Ethplorer::db($aConfig);
 $es->createProcessLock('tokens.full.history.lock');
 
 $es->getTokenFullHistoryGrouped();
+$es->getTokenCapHistory(0, TRUE);
