@@ -1381,6 +1381,7 @@ class Ethplorer {
             foreach($aTokens as $aToken){
                 $address = $aToken['address'];
                 $curHour = (int)date('H');
+                $aTotals['tokens'] += 1;
 
                 $isEth = false;
                 if($address == '0x0000000000000000000000000000000000000000'){
@@ -1426,7 +1427,6 @@ class Ethplorer {
                     $aPrice = $this->getTokenPrice($address);
                 }
                 if($aPrice && ($isEth || $aToken['totalSupply'])){
-                    $aTotals['tokens'] += 1;
                     $aToken['volume'] = 0;
                     $aToken['cap'] = 0;
                     $aToken['availableSupply'] = 0;
