@@ -1851,7 +1851,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
             }
         };
         if(this.options['theme'] == 'dark'){
-            def.options.colors = noPrice ? ['#FCEC0F']: ['#989795', '#FCEC0F', '#DEDEDE'];
+            def.options.colors = noPrice ? ['#FCEC0F']: ['#999999', '#FCEC0F', '#DEDEDE'];
             def.options.titleTextStyle = {color: '#DEDEDE'};
             def.options.backgroundColor = {fill: 'transparent'};
 
@@ -1866,7 +1866,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
         def.options = $.extend(true, def.options, this.options['options']);
         var chart = new google.visualization.ChartWrapper(def);
 
-        if(!noPrice){
+        /*if(!noPrice){
             google.visualization.events.addListener(chart, 'ready', function(){
                 var svgElements = document.getElementsByTagNameNS("http://www.w3.org/2000/svg", "svg");
                 for(var i=0; i<1; i++){
@@ -1880,7 +1880,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                     }
                 }
             });
-        }
+        }*/
 
         // draw chart
         dashboard.bind(control, chart);
