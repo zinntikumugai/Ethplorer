@@ -1371,22 +1371,21 @@ class Ethplorer {
                 }
             }
 
-            //if($criteria != 'count'){
-                $aTokens[] = array(
-                    'address' => '0x0000000000000000000000000000000000000000',
-                    'name' => 'Ethereum',
-                    'symbol' => 'ETH'
-                );
-            //}
+            $aTokens[] = array(
+                'address' => '0x0000000000000000000000000000000000000000',
+                'name' => 'Ethereum',
+                'symbol' => 'ETH'
+            );
 
             foreach($aTokens as $aToken){
                 $address = $aToken['address'];
                 $curHour = (int)date('H');
-                $aTotals['tokens'] += 1;
 
                 $isEth = false;
                 if($address == '0x0000000000000000000000000000000000000000'){
                     $isEth = true;
+                }else{
+                    $aTotals['tokens'] += 1;
                 }
 
                 if(!$isEth && $criteria == 'count'){
@@ -1419,7 +1418,6 @@ class Ethplorer {
                         if(!$aToken['symbol']) $aToken['symbol'] = 'N/A';
                         $result[] = $aToken;
                     }
-                    //continue;
                 }
 
                 if($isEth){
@@ -1428,11 +1426,11 @@ class Ethplorer {
                     $aPrice = $this->getTokenPrice($address);
                 }
                 if($aPrice && ($isEth || $aToken['totalSupply'])){
-                    $aTotals['tokensWithPrice'] += 1;
-                    if(isset($aPrice['marketCapUsd'])){
+                    if(!$isEth) $aTotals['tokensWithPrice'] += 1;
+                    if(!$isEth && isset($aPrice['marketCapUsd'])){
                         $aTotals['cap'] += $aPrice['marketCapUsd'];
                     }
-                    if(isset($aPrice['volume24h'])){
+                    if(!$isEth && isset($aPrice['volume24h'])){
                         $aTotals['volume24h'] += $aPrice['volume24h'];
                     }
                     if($criteria == 'count') continue;
