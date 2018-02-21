@@ -1343,6 +1343,7 @@ class Ethplorer {
         $cache = 'top_tokens_' . $criteria;
         $aTotals = array(
             'tokens' => 0,
+            'tokensWithPrice' => 0,
             'cap' => 0,
             'volume24h' => 0
         );
@@ -1427,6 +1428,7 @@ class Ethplorer {
                     $aPrice = $this->getTokenPrice($address);
                 }
                 if($aPrice && ($isEth || $aToken['totalSupply'])){
+                    $aTotals['tokensWithPrice'] += 1;
                     $aToken['volume'] = 0;
                     $aToken['cap'] = 0;
                     $aToken['availableSupply'] = 0;
