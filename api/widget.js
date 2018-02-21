@@ -118,7 +118,7 @@ ethplorerWidget = {
                             slantedText: false,
                             maxAlternation: 1,
                             maxTextLines: 1,
-                            format: options.full ? 'MMM yy' : 'MM/dd',
+                            format: options.full ? 'yyyy' : 'MM/dd',
                             gridlines: {
                                 color: "none"
                             },
@@ -1257,7 +1257,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                 slantedText: false,
                 maxAlternation: 1,
                 maxTextLines: 1,
-                format: this.options.full ? 'MMM yy' : 'MMM d',
+                format: this.options.full ? "MMM ''yy" : 'MMM d',
                 gridlines: {
                     count: 10,
                     color: "none"
