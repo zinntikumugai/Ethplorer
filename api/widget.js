@@ -802,6 +802,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
     this.api = ethplorerWidget.api + '/getTop';
 
     this.templates = {
+        total: (this.options.total ? '<div style="margin-bottom:15px;">Tokens Cap: $ %cap% B for %tokens% Tokens. Trade Vol (24h): $ %volume24h% B</div>' : ''),
         header: '<div class="txs-header">' +
                     '<div class="widget-topTokens-tabs-row">' +
                         '<div class="widget-topTokens-tabs-wrapper">' +
@@ -975,6 +976,13 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                     obj.cache[obj.options.criteria] = data;
                 }
                 obj.el.find('.txs-loading, .txs').remove();
+
+                if(data.totals){
+                    var cap = data.totals.cap ? (ethplorerWidget.Utils.formatNum(data.totals.cap / 1000000000, true, 0, true)) : '?';
+                    var volume24h = data.totals.volume24h ? (ethplorerWidget.Utils.formatNum(data.totals.volume24h / 1000000000, true, 0, true)) : '?';
+                    obj.el.append(ethplorerWidget.parseTemplate(obj.templates.total, {cap: cap, tokens: data.totals.tokensWithPrice, volume24h: volume24h}));
+                }
+
                 var txTable = '<table class="txs txs-top-tokens">';
                 var txMobileTable = '<table class="txs txs-top-tokens-mobile">';
                 txTable += obj.templates.rowHeader;
