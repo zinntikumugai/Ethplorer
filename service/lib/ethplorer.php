@@ -1371,13 +1371,13 @@ class Ethplorer {
                 }
             }
 
-            if($criteria != 'count'){
+            //if($criteria != 'count'){
                 $aTokens[] = array(
                     'address' => '0x0000000000000000000000000000000000000000',
                     'name' => 'Ethereum',
                     'symbol' => 'ETH'
                 );
-            }
+            //}
 
             foreach($aTokens as $aToken){
                 $address = $aToken['address'];
@@ -1419,7 +1419,7 @@ class Ethplorer {
                         if(!$aToken['symbol']) $aToken['symbol'] = 'N/A';
                         $result[] = $aToken;
                     }
-                    continue;
+                    //continue;
                 }
 
                 if($isEth){
@@ -1429,16 +1429,20 @@ class Ethplorer {
                 }
                 if($aPrice && ($isEth || $aToken['totalSupply'])){
                     $aTotals['tokensWithPrice'] += 1;
+                    if(isset($aPrice['marketCapUsd'])){
+                        $aTotals['cap'] += $aPrice['marketCapUsd'];
+                    }
+                    if(isset($aPrice['volume24h'])){
+                        $aTotals['volume24h'] += $aPrice['volume24h'];
+                    }
+                    if($criteria == 'count') continue;
+
                     $aToken['volume'] = 0;
                     $aToken['cap'] = 0;
                     $aToken['availableSupply'] = 0;
                     $aToken['price'] = $aPrice;
                     if(isset($aPrice['marketCapUsd'])){
-                        $aToken['cap'] = $aPrice['marketCapUsd'];
-                        $aTotals['cap'] += $aPrice['marketCapUsd'];
-                    }
-                    if(isset($aPrice['volume24h'])){
-                        $aTotals['volume24h'] += $aPrice['volume24h'];
+                        $aToken['cap'] = $aPrice['marketCapUsd'];];
                     }
                     if(isset($aPrice['availableSupply'])){
                         $aToken['availableSupply'] = $aPrice['availableSupply'];
