@@ -1442,7 +1442,7 @@ class Ethplorer {
                     $aToken['availableSupply'] = 0;
                     $aToken['price'] = $aPrice;
                     if(isset($aPrice['marketCapUsd'])){
-                        $aToken['cap'] = $aPrice['marketCapUsd'];];
+                        $aToken['cap'] = $aPrice['marketCapUsd'];
                     }
                     if(isset($aPrice['availableSupply'])){
                         $aToken['availableSupply'] = $aPrice['availableSupply'];
