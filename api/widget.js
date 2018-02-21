@@ -120,7 +120,7 @@ ethplorerWidget = {
                             maxTextLines: 1,
                             format: options.full ? 'yyyy' : 'MM/dd',
                             gridlines: {
-                                color: "none"
+                                color: options.full ? '#999999' : "none"
                             },
                         },
                         series: series
@@ -242,7 +242,7 @@ ethplorerWidget = {
     fixPath: function(){
         if((document.location.host !== 'ethplorer.io') && (document.location.host.indexOf('ethplorer') >= 0)){
             ethplorerWidget.api = '//' + document.location.host + '/api';
-            ethplorerWidget.url = '//' + document.location.host
+            ethplorerWidget.url = '//' + document.location.host;
         }
     },
     Utils: {
