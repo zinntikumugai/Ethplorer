@@ -1341,6 +1341,11 @@ class Ethplorer {
         $topLimit = 100;
         if($limit > $topLimit) $limit = $topLimit;
         $cache = 'top_tokens_' . $criteria;
+        $aTotals = array(
+            'tokens' => 0,
+            'cap' => 0,
+            'volume24h' => 0
+        );
         $result = $this->oCache->get($cache, false, true);
         if($updateCache || (FALSE === $result)){
             $aTokens = $this->getTokens();
@@ -1421,12 +1426,17 @@ class Ethplorer {
                     $aPrice = $this->getTokenPrice($address);
                 }
                 if($aPrice && ($isEth || $aToken['totalSupply'])){
+                    $aTotals['tokens'] += 1;
                     $aToken['volume'] = 0;
                     $aToken['cap'] = 0;
                     $aToken['availableSupply'] = 0;
                     $aToken['price'] = $aPrice;
                     if(isset($aPrice['marketCapUsd'])){
                         $aToken['cap'] = $aPrice['marketCapUsd'];
+                        $aTotals['cap'] += $aPrice['marketCapUsd'];
+                    }
+                    if(isset($aPrice['volume24h'])){
+                        $aTotals['volume24h'] += $aPrice['volume24h'];
                     }
                     if(isset($aPrice['availableSupply'])){
                         $aToken['availableSupply'] = $aPrice['availableSupply'];
@@ -1506,20 +1516,21 @@ class Ethplorer {
                     $res[] = $item;
                 }
             }
-            $result = $res;
+            //$result = $res;
+            $result = array('tokens' => $res, 'totals' => $aTotals);
             $this->oCache->save($cache, $result);
         }
 
         $res = [];
         if($limit < $topLimit){
-            foreach($result as $i => $item){
+            foreach($result['tokens'] as $i => $item){
                 if($i < $limit){
                     $res[] = $item;
                 }else{
                     break;
                 }
             }
-            $result = $res;
+            $result['tokens'] = $res;
         }
         return $result;
     }

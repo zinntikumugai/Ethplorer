@@ -341,7 +341,7 @@ class ethplorerController {
         $maxLimit = is_array($this->defaults) && isset($this->defaults['limit']) ? $this->defaults['limit'] : 100;
         $limit = max(min(abs((int)$this->getRequest('limit', 50)), $maxLimit), 1);
         $criteria = $this->getRequest('criteria', 'trade');
-        $result = array('tokens' => $this->db->getTokensTop($limit, $criteria));
+        $result = $this->db->getTokensTop($limit, $criteria);
         $this->sendResult($result);
     }
 
