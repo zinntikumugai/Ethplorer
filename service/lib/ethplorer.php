@@ -1523,6 +1523,7 @@ class Ethplorer {
             //$result = $res;
             $result = array('tokens' => $res, 'totals' => $aTotals);
             $this->oCache->save($cache, $result);
+            $this->oCache->save('top_tokens_totals', $result['totals']);
         }
 
         $res = [];
@@ -1535,6 +1536,19 @@ class Ethplorer {
                 }
             }
             $result['tokens'] = $res;
+        }
+        return $result;
+    }
+
+    /**
+     * Returns top tokens totals.
+     *
+     * @return array
+     */
+    public function getTokensTopTotals(){
+        $result = $this->oCache->get('top_tokens_totals', FALSE, FALSE);
+        if(FALSE === $result){
+            return array();
         }
         return $result;
     }

@@ -411,6 +411,7 @@ class ethplorerController {
         if($cap){
             $result['cap'] = $this->db->getTokenCapHistory($period);
         }
+        $result['totals'] = $this->db->getTokensTopTotals();
         $this->sendResult($result);
     }
 
