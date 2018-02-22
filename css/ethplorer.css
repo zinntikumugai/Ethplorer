@@ -1133,9 +1133,11 @@ a.token-update {
 }
 
 .adsbygoogle {
-    display: inline-block;
+    display: block;
     width: 900px;
     height: 17px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 @media screen and (max-width: 979px) {
