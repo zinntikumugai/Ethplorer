@@ -782,7 +782,8 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
 
     this.options = {
         limit: 50,
-        periods: [1, 7, 30]
+        periods: [1, 7, 30],
+        totalPlace: 'up'
     };
 
     if(options){
@@ -801,8 +802,12 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
 
     this.api = ethplorerWidget.api + '/getTop';
 
+    var marginTotalUp = 0,
+        marginTotalDown = 10;
+    if(this.options.totalPlace == 'down') marginTotalUp = marginTotalDown = 20;
+
     this.templates = {
-        total: (this.options.total ? '<div class="widget-top-totals" style="margin-bottom:15px;">Tokens Cap: <span class="tx-field-price">$ %cap% B</span> for <span class="tx-field-price">%tokens%</span> Tokens. <span class="widget-top-total-trade">Trade Vol (24h): <span class="tx-field-price">$ %volume24h%</span></span></div>' : ''),
+        total: (this.options.total ? '<div class="widget-top-totals" style="margin-top:' + marginTotalUp + 'px;margin-bottom:' + marginTotalDown + 'px;">Tokens Cap: <span class="tx-field-price">$ %cap% B</span> for <span class="tx-field-price">%tokens%</span> Tokens. <span class="widget-top-total-trade">Trade Vol (24h): <span class="tx-field-price">$ %volume24h%</span></span></div>' : ''),
         header: '<div class="txs-header">' +
                     '<div class="widget-topTokens-tabs-row">' +
                         '<div class="widget-topTokens-tabs-wrapper">' +
@@ -975,14 +980,14 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                 if('undefined' === typeof(obj.cache[obj.options.criteria])){
                     obj.cache[obj.options.criteria] = data;
                 }
-                obj.el.find('.txs-loading, .txs').remove();
-
+                var totalsHtml = '';
                 if(data.totals){
                     var cap = data.totals.cap ? (ethplorerWidget.Utils.formatNum(data.totals.cap / 1000000000, true, 0, true)) : '?';
                     var volume24h = data.totals.volume24h ? (ethplorerWidget.Utils.formatNum(data.totals.volume24h, true, 0, true, true, 99999999)) : '?';
-                    obj.el.append(ethplorerWidget.parseTemplate(obj.templates.total, {cap: cap, tokens: data.totals.tokensWithPrice, volume24h: volume24h}));
+                    totalsHtml = ethplorerWidget.parseTemplate(obj.templates.total, {cap: cap, tokens: data.totals.tokensWithPrice, volume24h: volume24h});
                 }
-
+                obj.el.find('.txs-loading, .txs').remove();
+                if(totalsHtml && obj.options.totalPlace != 'down') obj.el.append(totalsHtml);
                 var txTable = '<table class="txs txs-top-tokens">';
                 var txMobileTable = '<table class="txs txs-top-tokens-mobile">';
                 txTable += obj.templates.rowHeader;
@@ -996,6 +1001,9 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                 txMobileTable += '</table>';
                 obj.el.append(txTable);
                 obj.el.append(txMobileTable);
+                if(totalsHtml && obj.options.totalPlace == 'down'){
+                    obj.el.append(totalsHtml);
+                }
             }else{
                 obj.el.find('.txs-loading, .txs').remove();
                 var noDataMessage = '<div id="ethpNoData">No data...<div>';
