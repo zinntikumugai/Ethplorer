@@ -16,7 +16,7 @@ ethplorerWidget = {
     chartControlWidgets: [],
     preloadPriceHistory: {},
 
-    cssVersion: 12,
+    cssVersion: 13,
 
     // Widget initialization
     init: function(selector, type, options, templates){
@@ -802,7 +802,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
     this.api = ethplorerWidget.api + '/getTop';
 
     this.templates = {
-        total: (this.options.total ? '<div style="margin-bottom:15px;">Tokens Cap: $ %cap% B for %tokens% Tokens. Trade Vol (24h): $ %volume24h% B</div>' : ''),
+        total: (this.options.total ? '<div class="widget-top-totals" style="margin-bottom:15px;">Tokens Cap: $ %cap% B for %tokens% Tokens. <span class="widget-top-total-trade">Trade Vol (24h): $ %volume24h%</span></div>' : ''),
         header: '<div class="txs-header">' +
                     '<div class="widget-topTokens-tabs-row">' +
                         '<div class="widget-topTokens-tabs-wrapper">' +
@@ -979,7 +979,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
 
                 if(data.totals){
                     var cap = data.totals.cap ? (ethplorerWidget.Utils.formatNum(data.totals.cap / 1000000000, true, 0, true)) : '?';
-                    var volume24h = data.totals.volume24h ? (ethplorerWidget.Utils.formatNum(data.totals.volume24h / 1000000000, true, 0, true)) : '?';
+                    var volume24h = data.totals.volume24h ? (ethplorerWidget.Utils.formatNum(data.totals.volume24h, true, 2, true, true, 99999999)) : '?';
                     obj.el.append(ethplorerWidget.parseTemplate(obj.templates.total, {cap: cap, tokens: data.totals.tokensWithPrice, volume24h: volume24h}));
                 }
 

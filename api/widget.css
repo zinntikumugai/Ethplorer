@@ -330,6 +330,9 @@
 	.tx-field-mob, .txs-top-tokens-mobile .tx-field {
 		font-size: 14px !important;
 	}
+    .ethplorer-widget .widget-top-totals {
+        font-size: 14px !important;
+    }
 }
 @media screen and (min-width: 700px) {
     .txs-top-tokens {
@@ -337,6 +340,11 @@
     }
     .txs-top-tokens-mobile {
         display: none;
+    }
+}
+@media screen and (max-width: 520px) {
+    .ethplorer-widget .widget-top-total-trade {
+        display: block !important;
     }
 }
 
@@ -367,7 +375,7 @@
 @media screen and (max-width: 360px) {
     .ethplorer-widget .txs.small-screen-table .tx-link {
         max-width: 140px;
-    }    
+    }
 }
 
 /* THEME: ethplorer */
