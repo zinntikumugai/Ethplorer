@@ -215,6 +215,10 @@
 	color: #dedede !important;
 }
 
+.ethplorer-widget.widget-topTokens .tx-link {
+	max-width: 200px !important;
+}
+
 .widget-topTokens-tabs-row {
     margin: 0 auto;
     width: 100%;
