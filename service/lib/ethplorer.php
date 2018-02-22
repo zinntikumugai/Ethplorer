@@ -1367,7 +1367,7 @@ class Ethplorer {
             if($criteria == 'count'){
                 $aTokensCountRes = $this->getTokensCountForLastDay($topLimit);
                 foreach($aTokensCountRes as $aTokensCountRecord){
-                    $aTokensCount[$aTokensCountRecord['_id']] = $aTokensCountRecord['cnt'];
+                    if(isset($aTokensCountRecord['_id'])) $aTokensCount[$aTokensCountRecord['_id']] = $aTokensCountRecord['cnt'];
                 }
             }
 
@@ -1497,7 +1497,7 @@ class Ethplorer {
                     // $item['percentage'] = round(($item['volume'] / $total) * 100);
 
                     // get tx's other trends
-                    if(!$isEth && $criteria == 'count'){
+                    if(($item['address'] != '0x0000000000000000000000000000000000000000') && $criteria == 'count'){
                         unset($aPeriods[0]);
                         $aHistoryCount = $this->getTokenHistoryGrouped(60, $item['address'], 'daily', 3600);
                         if(is_array($aHistoryCount)){
