@@ -1316,7 +1316,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
             pointSize: 5,
         };
         if(this.options['theme'] == 'dark'){
-            defOptions.colors = ['#FCEC0F', '#47C2FF'];
+            defOptions.colors = this.options.cap ? ['#FCEC0F', '#47C2FF'] : ['#47C2FF', '#FCEC0F'];
             defOptions.titleTextStyle = {color: '#DEDEDE'};
             defOptions.backgroundColor = {fill: 'transparent'};
 
