@@ -346,7 +346,7 @@
         display: none;
     }
 }
-@media screen and (max-width: 520px) {
+@media screen and (max-width: 615px) {
     .ethplorer-widget .widget-top-total-trade {
         display: block !important;
     }

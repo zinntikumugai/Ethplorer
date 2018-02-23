@@ -16,7 +16,7 @@ ethplorerWidget = {
     chartControlWidgets: [],
     preloadPriceHistory: {},
 
-    cssVersion: 14,
+    cssVersion: 15,
 
     // Widget initialization
     init: function(selector, type, options, templates){
@@ -807,7 +807,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
     if(this.options.totalPlace == 'down') marginTotalUp = marginTotalDown = 20;
 
     this.templates = {
-        total: (this.options.total ? '<div class="widget-top-totals" style="margin-top:' + marginTotalUp + 'px;margin-bottom:' + marginTotalDown + 'px;">Tokens Cap: <span class="tx-field-price">$ %cap% B</span> for <span class="tx-field-price">%tokens%</span> Tokens. <span class="widget-top-total-trade">Trade Vol (24h): <span class="tx-field-price">$ %volume24h%</span></span></div>' : ''),
+        total: (this.options.total ? '<div class="widget-top-totals" style="margin-top:' + marginTotalUp + 'px;margin-bottom:' + marginTotalDown + 'px;">Tokens Cap: <span class="tx-field-price">$ %cap% B</span>%capTrend% for <span class="tx-field-price">%tokens%</span> Tokens. <span class="widget-top-total-trade">Trade Vol (24h): <span class="tx-field-price">$ %volume24h%</span>%volumeTrend%</span></div>' : ''),
         header: '<div class="txs-header">' +
                     '<div class="widget-topTokens-tabs-row">' +
                         '<div class="widget-topTokens-tabs-wrapper">' +
@@ -984,7 +984,26 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                 if(data.totals){
                     var cap = data.totals.cap ? (ethplorerWidget.Utils.formatNum(data.totals.cap / 1000000000, true, 0, true)) : '?';
                     var volume24h = data.totals.volume24h ? (ethplorerWidget.Utils.formatNum(data.totals.volume24h, true, 0, true, true, 99999999)) : '?';
-                    totalsHtml = ethplorerWidget.parseTemplate(obj.templates.total, {cap: cap, tokens: data.totals.tokensWithPrice, volume24h: volume24h});
+
+                    var ivdiff = ethplorerWidget.Utils.pdiff(data.totals.cap, data.totals.capPrevious, true);
+                    var numDec = Math.abs(ivdiff) > 99 ? 0 : 1;
+                    if('x' === ivdiff){
+                        var capTrend = '';
+                    }else{
+                        var vdiff = ethplorerWidget.Utils.formatNum(ivdiff, true, numDec, false, true);
+                        var capTrend = ' <span class="ewDiff"><span class="ewDiff' + ((ivdiff >= 0) ? 'Up' : 'Down') + '">(' + vdiff + ' %' + ')</span></span>';
+                    }
+
+                    var ivdiff = ethplorerWidget.Utils.pdiff(data.totals.volume24h, data.totals.volumePrevious, true);
+                    var numDec = Math.abs(ivdiff) > 99 ? 0 : 1;
+                    if('x' === ivdiff){
+                        var volumeTrend = '';
+                    }else{
+                        var vdiff = ethplorerWidget.Utils.formatNum(ivdiff, true, numDec, false, true);
+                        var volumeTrend = ' <span class="ewDiff"><span class="ewDiff' + ((ivdiff >= 0) ? 'Up' : 'Down') + '">(' + vdiff + ' %' + ')</span></span>';
+                    }
+
+                    totalsHtml = ethplorerWidget.parseTemplate(obj.templates.total, {cap: cap, capTrend: capTrend, tokens: data.totals.tokensWithPrice, volume24h: volume24h, volumeTrend: volumeTrend});
                 }
                 obj.el.find('.txs-loading, .txs').remove();
                 if(totalsHtml && obj.options.totalPlace != 'down') obj.el.append(totalsHtml);
