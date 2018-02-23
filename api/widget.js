@@ -1316,7 +1316,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
             pointSize: 5,
         };
         if(this.options['theme'] == 'dark'){
-            defOptions.colors = ['#47C2FF', '#FCEC0F'];
+            defOptions.colors = ['#FCEC0F', '#47C2FF'];
             defOptions.titleTextStyle = {color: '#DEDEDE'};
             defOptions.backgroundColor = {fill: 'transparent'};
 
@@ -1332,20 +1332,23 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         if(this.options.cap && aCap){
             var series = {
                 0: {
-                    type: 'line',
+                    type: 'steppedArea',
                     targetAxisIndex: 0,
-                    lineWidth: 1
+                    lineWidth: 1,
                 },
                 1: {
-                    type: 'area',
+                    type: 'line',
                     targetAxisIndex: 1,
-                    lineWidth: 1
+                    lineWidth: 3
                 }
             };
             var vAxes = {
                 0: {
                     title: 'Token operations',
                     format: '#,### K',
+                    viewWindow: {
+                        max: 700
+                    },
                 },
                 1: {
                     title: 'Tokens Cap',
