@@ -1462,6 +1462,7 @@ class Ethplorer {
                     }
                     $aHistory = $this->getTokenPriceHistory($address, 60, 'hourly');
                     if(is_array($aHistory)){
+                        $previousTokenCapAdded = false;
                         foreach($aHistory as $aRecord){
                             foreach($aPeriods as $aPeriod){
                                 $period = $aPeriod['period'];
@@ -1482,12 +1483,17 @@ class Ethplorer {
                                             $aToken['cap-' . $period . 'd-previous'] = $aRecord['volumeConverted'] / $aRecord['volume'];
                                         }
                                     }
+
+                                    // get total cap for previous day
+                                    if((1 == $period) && !$isEth && !$previousTokenCapAdded && isset($aToken['cap'])){
+                                        $aTotals['capPrevious'] += $aToken['cap'];
+                                        $previousTokenCapAdded = true;
+                                    }
                                 }
                             }
                         }
-                        // get totals for previous day cap-1d-previous
+                        // get total volume for previous day
                         if(!$isEth){
-                            $aTotals['capPrevious'] += $aToken['cap-1d-previous'];
                             $aTotals['volumePrevious'] += $aToken['volume-1d-previous'];
                         }
                     }
