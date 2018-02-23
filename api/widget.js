@@ -1197,8 +1197,8 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         });
         var tooltip = '<div style="display: block !important; text-align: left; opacity: 1 !important; color: #000000 !important; padding: 5px;">';
         tooltip += '<span class="tooltipRow">' + tooltipDateFormatter.formatValue(date) + '</span><br/>' +
-            '<span class="tooltipRow"><b>Token operations:</b> ' + ((cnt < 1) ? '<1 K' : numFormatter.formatValue(cnt)) + '</span><br/>' +
-            '<span class="tooltipRow"><b>Tokens Cap:</b> ' + ((cap < 1) ? '<1 B' : currencyFormatter.formatValue(cap)) + '</span>' +
+            '<span class="tooltipRow"><b class="tooltipRowOps">Token operations:</b> ' + ((cnt < 1) ? '<1 K' : numFormatter.formatValue(cnt)) + '</span><br/>' +
+            '<span class="tooltipRow"><b class="tooltipRowCap">Tokens Cap:</b> ' + ((cap < 1) ? '<1 B' : currencyFormatter.formatValue(cap)) + '</span>' +
             '</div>';
         return tooltip;
     }
@@ -1582,8 +1582,8 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                 '<span class="tooltipRow"><b>Open:</b> ' + currencyFormatter.formatValue(open) + ' <b>Close:</b> ' + currencyFormatter.formatValue(close) + diffHtml +'</span><br/>' +
                 '<span class="tooltipRow"><b>High:</b> ' + currencyFormatter.formatValue(high) + ' <b>Low:</b> ' + currencyFormatter.formatValue(low) + '</span><br/>';
             }
-            tooltip += '<span class="tooltipRow"><b>Token operations:</b> ' + numFormatter.formatValue(operations) + '</span><br/>' +
-                '<span class="tooltipRow"><b>Volume:</b> ' + numFormatter.formatValue(volume.toFixed(0)) + ' (' + numFormatter.formatValue(convertedVolume.toFixed(2)) + ' USD)</span>';
+            tooltip += '<span class="tooltipRow"><b class="tooltipRowOps">Token operations:</b> ' + numFormatter.formatValue(operations) + '</span><br/>' +
+                '<span class="tooltipRow"><b class="tooltipRowVol">Volume:</b> ' + numFormatter.formatValue(volume.toFixed(0)) + ' (' + numFormatter.formatValue(convertedVolume.toFixed(2)) + ' USD)</span>';
         }
         tooltip += '</div>';
         return tooltip;

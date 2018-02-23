@@ -425,3 +425,12 @@
 	white-space: nowrap;
 	margin-top: 5px;
 }
+.tooltipRowCap {
+	color: #25A6DD !important;
+}
+.tooltipRowOps {
+	color: #B7A714 !important;
+}
+.tooltipRowVol {
+	color: #727272 !important;
+}
