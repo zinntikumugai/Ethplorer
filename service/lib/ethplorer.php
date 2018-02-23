@@ -33,6 +33,11 @@ class Ethplorer {
     const ADDRESS_CHAINY = '0xf3763c30dd6986b53402d41a8552b8f7f6a6089b';
 
     /**
+     * Ethereum address
+     */
+    const ADDRESS_ETH = '0x0000000000000000000000000000000000000000';
+
+    /**
      * Settings
      *
      * @var array
@@ -1345,7 +1350,9 @@ class Ethplorer {
             'tokens' => 0,
             'tokensWithPrice' => 0,
             'cap' => 0,
-            'volume24h' => 0
+            'capPrevious' => 0,
+            'volume24h' => 0,
+            'volumePrevious' => 0
         );
         $result = $this->oCache->get($cache, false, true);
         if($updateCache || (FALSE === $result)){
@@ -1372,7 +1379,7 @@ class Ethplorer {
             }
 
             $aTokens[] = array(
-                'address' => '0x0000000000000000000000000000000000000000',
+                'address' => self::ADDRESS_ETH,
                 'name' => 'Ethereum',
                 'symbol' => 'ETH'
             );
@@ -1382,7 +1389,7 @@ class Ethplorer {
                 $curHour = (int)date('H');
 
                 $isEth = false;
-                if($address == '0x0000000000000000000000000000000000000000'){
+                if($address == self::ADDRESS_ETH){
                     $isEth = true;
                 }else{
                     $aTotals['tokens'] += 1;
@@ -1433,7 +1440,7 @@ class Ethplorer {
                     if(!$isEth && isset($aPrice['volume24h'])){
                         $aTotals['volume24h'] += $aPrice['volume24h'];
                     }
-                    if($criteria == 'count') continue;
+                    //if($criteria == 'count') continue;
 
                     $aToken['volume'] = 0;
                     $aToken['cap'] = 0;
@@ -1455,7 +1462,6 @@ class Ethplorer {
                     }
                     $aHistory = $this->getTokenPriceHistory($address, 60, 'hourly');
                     if(is_array($aHistory)){
-
                         foreach($aHistory as $aRecord){
                             foreach($aPeriods as $aPeriod){
                                 $period = $aPeriod['period'];
@@ -1479,11 +1485,16 @@ class Ethplorer {
                                 }
                             }
                         }
+                        // get totals for previous day cap-1d-previous
+                        if(!$isEth){
+                            $aTotals['capPrevious'] += $aToken['cap-1d-previous'];
+                            $aTotals['volumePrevious'] += $aToken['volume-1d-previous'];
+                        }
                     }
                     if(isset($aPrice['volume24h']) && $aPrice['volume24h'] > 0){
                         $aToken['volume'] = $aToken['volume-1d-current'] = $aPrice['volume24h'];
                     }
-                    $result[] = $aToken;
+                    if($criteria != 'count') $result[] = $aToken;
                 }
             }
             $sortMethod = '_sortByVolume';
@@ -1497,7 +1508,7 @@ class Ethplorer {
                     // $item['percentage'] = round(($item['volume'] / $total) * 100);
 
                     // get tx's other trends
-                    if(($item['address'] != '0x0000000000000000000000000000000000000000') && $criteria == 'count'){
+                    if(($item['address'] != self::ADDRESS_ETH) && $criteria == 'count'){
                         unset($aPeriods[0]);
                         $aHistoryCount = $this->getTokenHistoryGrouped(60, $item['address'], 'daily', 3600);
                         if(is_array($aHistoryCount)){
