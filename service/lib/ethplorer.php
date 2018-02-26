@@ -1567,7 +1567,7 @@ class Ethplorer {
      * @return array
      */
     public function getTokensTopTotals(){
-        $result = $this->oCache->get('top_tokens_totals', FALSE, FALSE);
+        $result = $this->oCache->get('top_tokens_totals', FALSE, TRUE);
         if(FALSE === $result){
             return array();
         }
