@@ -1210,7 +1210,32 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         return tooltip;
     }
 
-    this.drawChart = function(aTxData, aCap){
+    this.drawChart = function(aTxData, aCap, aTotals){
+
+        if(this.options.total && aTotals && aTotals.cap){
+            var cap = aTotals.cap ? (ethplorerWidget.Utils.formatNum(aTotals.cap / 1000000000, true, 0, true)) : '?';
+            var volume24h = aTotals.volume24h ? (ethplorerWidget.Utils.formatNum(aTotals.volume24h, true, 0, true, true, 99999999)) : '?';
+            var ivdiff = ethplorerWidget.Utils.pdiff(aTotals.cap, aTotals.capPrevious, true);
+            var numDec = Math.abs(ivdiff) > 99 ? 0 : 1;
+            if('x' === ivdiff){
+                var capTrend = '';
+            }else{
+                var vdiff = ethplorerWidget.Utils.formatNum(ivdiff, true, numDec, false, true);
+                var capTrend = ' <span class="ewDiff"><span class="ewDiff' + ((ivdiff >= 0) ? 'Up' : 'Down') + '">(' + vdiff + ' %' + ')</span></span>';
+            }
+            var ivdiff = ethplorerWidget.Utils.pdiff(aTotals.volume24h, aTotals.volumePrevious, true);
+            var numDec = Math.abs(ivdiff) > 99 ? 0 : 1;
+            if('x' === ivdiff){
+                var volumeTrend = '';
+            }else{
+                var vdiff = ethplorerWidget.Utils.formatNum(ivdiff, true, numDec, false, true);
+                var volumeTrend = ' <span class="ewDiff"><span class="ewDiff' + ((ivdiff >= 0) ? 'Up' : 'Down') + '">(' + vdiff + ' %' + ')</span></span>';
+            }
+            var tpl = '<div class="widget-top-totals" style="margin-bottom:-20px;">Tokens Cap: <span class="tx-field-price">$ %cap% B</span>%capTrend% for <span class="tx-field-price">%tokens%</span> Tokens. <span class="widget-top-total-trade">Trade Vol (24h): <span class="tx-field-price">$ %volume24h%</span>%volumeTrend%</span></div>'
+            totalsHtml = ethplorerWidget.parseTemplate(tpl, {cap: cap, capTrend: capTrend, tokens: aTotals.tokensWithPrice, volume24h: volume24h, volumeTrend: volumeTrend});
+            this.el.append(totalsHtml);
+        }
+
         var aData = [];
         if(this.options.cap && aCap){
             aData.push(['Day', 'Token operations', {type: 'string', role: 'tooltip', 'p': {'html': true}}, 'Tokens Cap', {type: 'string', role: 'tooltip', 'p': {'html': true}}]);
@@ -1246,8 +1271,10 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         }
         if(this.options.full) fnDate = new Date(minYear + '-' + minMonth + '-' + minDate + 'T00:00:00Z');
 
-        var curDate = true;
+        var curDate = true,
+            firstDate = true;
         while(stDate > fnDate){
+            var skipDate = false;
             var key = stDate.getFullYear() + '-' + (stDate.getMonth() + 1) + '-' + stDate.getDate();
             var cnt = ('undefined' !== typeof(aCountData[key])) ? aCountData[key] : 0;
             if(this.options.cap && aCap) cnt = Math.round(cnt / 1000);
@@ -1262,12 +1289,14 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                 if(capKeyDay < 10) capKeyDay = '0' + capKeyDay;
                 var capKey = stDate.getFullYear() + '-' + capKeyMonth + '-' + capKeyDay;
                 var cap = ('undefined' !== typeof(aCap[capKey])) ? aCap[capKey] : 0;
+                if(cap == 0 && firstDate) skipDate = true;
                 cap = Math.round(cap / 1000000000);
                 var tooltip = this.getTooltip(new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt, cap);
-                aData.push([new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt, tooltip, cap, tooltip]);
+                if(!skipDate) aData.push([new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt, tooltip, cap, tooltip]);
             }else{
                 aData.push([new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt]);
             }
+            firstDate = false;
             var newDate = stDate.setDate(stDate.getDate() - 1);
             dteRangeStart = new Date(newDate);
             stDate = new Date(newDate);
@@ -1442,7 +1471,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
 
     this.showWidget = function(obj, data){
         obj.el.find('.txs-loading').remove();
-        obj.drawChart(data.countTxs, data.cap);
+        obj.drawChart(data.countTxs, data.cap, data.totals);
         ethplorerWidget.appendEthplorerLink(obj);
         if('function' === typeof(obj.options.onLoad)){
             obj.options.onLoad();
@@ -1455,6 +1484,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
             if(data && !data.error && data.countTxs){
                 obj.widgetData = data.countTxs;
                 obj.widgetDataCap = data.cap;
+                obj.widgetDataTotals = data.totals;
                 if(obj.options.full){
                     obj.showWidget(obj, data);
                 }else{
@@ -1482,7 +1512,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         obj.resizeTimer = setTimeout(function(){
             if(obj.widgetData){
                 obj.el.empty();
-                obj.drawChart(obj.widgetData, obj.widgetDataCap);
+                obj.drawChart(obj.widgetData, obj.widgetDataCap, obj.widgetDataTotals);
                 ethplorerWidget.appendEthplorerLink(obj);
             }
         }, 500);
