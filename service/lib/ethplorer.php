@@ -1344,6 +1344,10 @@ class Ethplorer {
      */
     public function getTokensTop($limit = 50, $criteria = 'trade', $updateCache = false){
         $topLimit = 100;
+        if($criteria != 'count'){
+            $topLimit++;
+            $limit++;
+        }
         if($limit > $topLimit) $limit = $topLimit;
         $cache = 'top_tokens_' . $criteria;
         $aTotals = array(

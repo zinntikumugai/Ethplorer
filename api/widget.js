@@ -1015,7 +1015,11 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                 txTable += obj.templates.rowHeader;
                 for(var i=0; i<data.tokens.length; i++){
                     var rowData = obj.prepareData(data.tokens[i], obj.options.criteria);
-                    rowData['position'] = i+1;
+                    if(obj.options.criteria != 'count'){
+                        rowData['position'] = (i == 0) ? '' : i;
+                    }else{
+                        rowData['position'] = i+1;
+                    }
                     txTable += ethplorerWidget.parseTemplate(obj.templates.row, rowData);
                     txMobileTable += ethplorerWidget.parseTemplate(obj.templates.rowMobile, rowData);
                 }
