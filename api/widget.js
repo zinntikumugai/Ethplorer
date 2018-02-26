@@ -917,7 +917,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
         }
     }
 
-    this.load = function(){
+    this.load = function(hash){
         if('undefined' !== typeof(this.templates.criteria[this.options.criteria])){
             var criteriaTpl = this.templates.criteria[this.options.criteria];
             if(criteriaTpl.header){
@@ -939,6 +939,9 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
         }else{
             this.el.html(ethplorerWidget.parseTemplate(this.templates.header, this.options));
             this.refreshWidget(this.cache[this.options.criteria]);
+        }
+        if(hash){
+            window.location.hash = this.options.criteria;
         }
     };
 
@@ -1038,7 +1041,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                         $(this).addClass('ewSelected');                            
                         _obj.options.criteria = $(this).attr('data-criteria');
                         $('#widgetTopTokensSelect').val(_obj.options.criteria);
-                        _obj.load();
+                        _obj.load(true);
                     }
                 };
             }(obj))
@@ -1047,10 +1050,10 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                     _obj.el.find('.ewSelected').removeClass('ewSelected');
                     _obj.options.criteria = $(this).val();
                     $('#widgetTopTokensSelect').val(_obj.options.criteria);
-                    _obj.load();
+                    _obj.load(true);
                 };
             }(obj))
-            window.location.hash = obj.options.criteria;
+            //window.location.hash = obj.options.criteria;
             obj.el.find('[data-criteria="' + obj.options.criteria + '"]').addClass('ewSelected');
             obj.el.find('[data-tab="' + obj.options.criteria + '"]').removeClass('widget-topTokens-tab').addClass('widget-topTokens-tab-active');
             $('#widgetTopTokensSelect').val(obj.options.criteria);
