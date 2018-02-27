@@ -1289,7 +1289,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                 if(capKeyDay < 10) capKeyDay = '0' + capKeyDay;
                 var capKey = stDate.getFullYear() + '-' + capKeyMonth + '-' + capKeyDay;
                 var cap = ('undefined' !== typeof(aCap[capKey])) ? aCap[capKey] : 0;
-                if(cap == 0 && firstDate) skipDate = true;
+                if(cap <= 1000000000 && firstDate) skipDate = true;
                 cap = Math.round(cap / 1000000000);
                 var tooltip = this.getTooltip(new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt, cap);
                 if(!skipDate) aData.push([new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt, tooltip, cap, tooltip]);
