@@ -342,6 +342,9 @@
     .ethplorer-widget .widget-top-totals {
         font-size: 14px !important;
     }
+    .ethplorer-widget .widget-topTokens-totals {
+        font-size: 14px !important;
+    }
 }
 @media screen and (min-width: 700px) {
     .txs-top-tokens {

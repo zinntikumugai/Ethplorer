@@ -16,7 +16,7 @@ ethplorerWidget = {
     chartControlWidgets: [],
     preloadPriceHistory: {},
 
-    cssVersion: 18,
+    cssVersion: 19,
 
     // Widget initialization
     init: function(selector, type, options, templates){
@@ -807,7 +807,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
     if(this.options.totalPlace == 'down') marginTotalUp = marginTotalDown = 20;
 
     this.templates = {
-        total: (this.options.total ? '<div class="widget-top-totals" style="margin-top:' + marginTotalUp + 'px;margin-bottom:' + marginTotalDown + 'px;">Tokens Cap: <span class="tx-field-price">$ %cap% B</span>%capTrend% for <span class="tx-field-price">%tokens%</span> Tokens. <span class="widget-top-total-trade">Trade Vol (24h): <span class="tx-field-price">$ %volume24h%</span>%volumeTrend%</span></div>' : ''),
+        total: (this.options.total ? '<div class="widget-topTokens-totals" style="margin-top:' + marginTotalUp + 'px;margin-bottom:' + marginTotalDown + 'px;">Tokens Cap: <span class="tx-field-price">$ %cap% B</span>%capTrend% for <span class="tx-field-price">%tokens%</span> Tokens. <span class="widget-top-total-trade">Trade Vol (24h): <span class="tx-field-price">$ %volume24h%</span>%volumeTrend%</span></div>' : ''),
         header: '<div class="txs-header">' +
                     '<div class="widget-topTokens-tabs-row">' +
                         '<div class="widget-topTokens-tabs-wrapper">' +
