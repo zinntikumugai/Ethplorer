@@ -202,10 +202,12 @@
     text-align: right;
 }
 
+.ethplorer-widget.widget-tokenHistoryGrouped .ewDiff .ewDiffUp,
 .ethplorer-widget.widget-topTokens .ewDiff .ewDiffUp {
     color: #1e8c1e;
 }
 
+.ethplorer-widget.widget-tokenHistoryGrouped .ewDiff .ewDiffDown,
 .ethplorer-widget.widget-topTokens .ewDiff .ewDiffDown {
     color: #ae2525;
 }

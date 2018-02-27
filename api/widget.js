@@ -16,7 +16,7 @@ ethplorerWidget = {
     chartControlWidgets: [],
     preloadPriceHistory: {},
 
-    cssVersion: 16,
+    cssVersion: 17,
 
     // Widget initialization
     init: function(selector, type, options, templates){
