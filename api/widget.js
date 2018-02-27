@@ -16,7 +16,7 @@ ethplorerWidget = {
     chartControlWidgets: [],
     preloadPriceHistory: {},
 
-    cssVersion: 17,
+    cssVersion: 18,
 
     // Widget initialization
     init: function(selector, type, options, templates){
@@ -1232,7 +1232,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                 var vdiff = ethplorerWidget.Utils.formatNum(ivdiff, true, numDec, false, true);
                 var volumeTrend = ' <span class="ewDiff"><span class="ewDiff' + ((ivdiff >= 0) ? 'Up' : 'Down') + '">(' + vdiff + ' %' + ')</span></span>';
             }
-            var tpl = '<div class="widget-top-totals" style="margin-bottom:-20px;">Tokens Cap: <span class="tx-field-price">$ %cap% B</span>%capTrend% for <span class="tx-field-price">%tokens%</span> Tokens. <span class="widget-top-total-trade">Trade Vol (24h): <span class="tx-field-price">$ %volume24h%</span>%volumeTrend%</span></div>';
+            var tpl = '<div class="widget-top-totals">Tokens Cap: <span class="tx-field-price">$ %cap% B</span>%capTrend% for <span class="tx-field-price">%tokens%</span> Tokens. <span class="widget-top-total-trade">Trade Vol (24h): <span class="tx-field-price">$ %volume24h%</span>%volumeTrend%</span></div>';
             totalsHtml = ethplorerWidget.parseTemplate(tpl, {cap: cap, capTrend: capTrend, tokens: aTotals.tokensWithPrice, volume24h: volume24h, volumeTrend: volumeTrend});
             if(this.options.full) this.el.append(totalsHtml);
         }

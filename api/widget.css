@@ -300,6 +300,9 @@
 .tx-field-price{
 	color: #47C2FF !important;
 }
+.ethplorer-widget .widget-top-totals {
+	margin-bottom: -20px;
+}
 @media screen and (max-width: 768px) {
     .widget-topTokens-tabs-wrapper {
         display: none;
