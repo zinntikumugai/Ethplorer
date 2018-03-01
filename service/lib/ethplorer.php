@@ -663,6 +663,7 @@ class Ethplorer {
         if($type){
             $search['type'] = $type;
         }
+        $search['contract'] = array('$ne' => 'ETH');
         $cursor = $this->oMongo->find('operations', $search, array('priority' => 1));
         $result = array();
         foreach($cursor as $res){
@@ -967,6 +968,7 @@ class Ethplorer {
                     $aSearchFields = array('from', 'to', 'address');
                     foreach($aSearchFields as $searchField){
                         $search = array($searchField => $address);
+                        $search['contract'] = array('$ne' => 'ETH');
                         if($useFilter && $this->filter){
                             $search = array(
                                 '$and' => array(
@@ -1151,6 +1153,7 @@ class Ethplorer {
         if(isset($options['timestamp']) && ($options['timestamp'] > 0)){
             $search['timestamp'] = array('$gt' => $options['timestamp']);
         }
+        $search['contract'] = array('$ne' => 'ETH');
         $limit = isset($options['limit']) ? (int)$options['limit'] : false;
         $cursor = $this->oMongo->find('operations', $search, $sort, $limit);
 
@@ -1175,6 +1178,7 @@ class Ethplorer {
 
         $result = array();
         $search = array('addresses' => $address);
+        $search['contract'] = array('$ne' => 'ETH');
 
         // @todo: remove $or, use special field with from-to-address-txHash concatination maybe
         if($this->filter){
@@ -1296,7 +1300,7 @@ class Ethplorer {
             $prevData = $this->oMongo->aggregate(
                 'operations',
                 array(
-                    array('$match' => array("timestamp" => array('$gt' => time() - $period * 2 * 24 * 3600, '$lte' => time() - $period * 24 * 3600))),
+                    array('$match' => array("contract" => array('$ne' => 'ETH'), "timestamp" => array('$gt' => time() - $period * 2 * 24 * 3600, '$lte' => time() - $period * 24 * 3600))),
                     array(
                         '$group' => array(
                             "_id" => '$contract',
@@ -1310,7 +1314,7 @@ class Ethplorer {
             $dbData = $this->oMongo->aggregate(
                 'operations',
                 array(
-                    array('$match' => array("timestamp" => array('$gt' => time() - $period * 24 * 3600))),
+                    array('$match' => array("contract" => array('$ne' => 'ETH'), "timestamp" => array('$gt' => time() - $period * 24 * 3600))),
                     array(
                         '$group' => array(
                             "_id" => '$contract',
@@ -1689,6 +1693,7 @@ class Ethplorer {
             $tsStart = gmmktime(0, 0, 0, date('n'), date('j') - $period, date('Y'));
             $aMatch = array("timestamp" => array('$gt' => $tsStart));
             if($address) $aMatch["contract"] = $address;
+            else $aMatch["contract"] = array('$ne' => 'ETH');
             $result = array();
             $_id = array(
                 "year"  => array('$year' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
@@ -1744,7 +1749,7 @@ class Ethplorer {
             if(FALSE === $result){
                 $result = array();
 
-                $aMatch = array("timestamp" => array('$gte' => $tsStart + 1, '$lte' => $tsEnd));
+                $aMatch = array("contract" => array('$ne' => 'ETH'), "timestamp" => array('$gte' => $tsStart + 1, '$lte' => $tsEnd));
                 $_id = array(
                     "year"  => array('$year' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
                     "month"  => array('$month' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
@@ -1790,7 +1795,7 @@ class Ethplorer {
         $result = $this->oCache->get($cache, false, true, 3600);
         if(FALSE === $result){
             $tsStart = gmmktime((int)date('G'), 0, 0, date('n'), date('j') - 1, date('Y'));
-            $aMatch = array("timestamp" => array('$gte' => $tsStart));
+            $aMatch = array("contract" => array('$ne' => 'ETH'), "timestamp" => array('$gte' => $tsStart));
             $result = array();
             $dbData = $this->oMongo->aggregate(
                 'operations',
