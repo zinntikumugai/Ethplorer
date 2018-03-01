@@ -2289,6 +2289,7 @@ class Ethplorer {
 
             foreach($aSearch as $cond){
                 $search = array($cond => $address);
+                $search['contract'] = array('$ne' => 'ETH');
                 if($updateCache){
                     $search = array('$and' => array($search, array('timestamp' => array('$gt' => $result['timestamp']))));
                 }
