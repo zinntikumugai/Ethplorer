@@ -591,6 +591,9 @@ class ethplorerController {
                     'type'              => $operation['type'],
                     'value'             => $operation['value'],
                 );
+                if($showEth && isset($operation['isEth'])){
+                    $res['isEth'] = $operation['isEth'];
+                }
                 if(isset($operation['address'])){
                     $res['address'] = $operation['address'];
                 }
