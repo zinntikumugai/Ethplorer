@@ -19,7 +19,7 @@ class ethplorerController {
     protected $db;
     protected $command;
     protected $params = array();
-    protected $apiCommands = array('getTxInfo', 'getTokenHistory', 'getAddressTransactions', 'getAddressInfo', 'getTokenInfo', 'getAddressHistory', 'getTopTokens', 'getTop', 'getTokenHistoryGrouped', 'getPriceHistoryGrouped', 'getTokenPriceHistoryGrouped', 'getAddressPriceHistoryGrouped', 'getBlockTransactions', 'getLastBlock');
+    protected $apiCommands = array('getTxInfo', 'getTokenHistory', 'getAddressTransactions', 'getAddressInfo', 'getTokenInfo', 'getAddressHistory', 'getTopTokens', 'getTop', 'getTokenHistoryGrouped', 'getPriceHistoryGrouped', 'getTokenPriceHistoryGrouped', 'getAddressPriceHistoryGrouped', 'getBlockTransactions', 'getLastBlock', 'getPoolAddresses', 'getPoolLastTransactions', 'getPoolLastOperations');
     protected $defaults;
     protected $startTime;
     protected $cacheState = '';
@@ -50,14 +50,19 @@ class ethplorerController {
     }
 
     public function __destruct(){
+        $logsDir = __DIR__ . '/../service/log';
+        $cacheDir = __DIR__ . '/../service/cache';
         $ms = round(microtime(TRUE) - $this->startTime, 4);
         $date = date("Y-m-d H:i");
         $key = $this->getRequest('apiKey', "-");
+        if($key && ('freekey' !== $key)){
+            file_put_contents($cacheDir . '/apiKey-' . md5($key) . '.tmp', $date);
+        }
         $source = $this->getRequest('domain', FALSE);
         if($source){
-            file_put_contents(__DIR__ . '/../service/log/widget-request.log', "[$date] Widget: {$this->command}, source: {$source}\n", FILE_APPEND);
+            file_put_contents($logsDir . '/widget-request.log', "[$date] Widget: {$this->command}, source: {$source}\n", FILE_APPEND);
         }
-        file_put_contents(__DIR__ . '/../service/log/api-request.log', "[$date] Call: {$this->command}, Key: {$key} URI: {$_SERVER["REQUEST_URI"]}, IP: {$_SERVER['REMOTE_ADDR']}, {$ms} s." . $this->cacheState . "\n", FILE_APPEND);
+        file_put_contents($logsDir . '/api-request.log', "[$date] Call: {$this->command}, Key: {$key} URI: {$_SERVER["REQUEST_URI"]}, IP: {$_SERVER['REMOTE_ADDR']}, {$ms} s." . $this->cacheState . "\n", FILE_APPEND);
     }
 
     public function getCommand(){
@@ -336,7 +341,7 @@ class ethplorerController {
         $maxLimit = is_array($this->defaults) && isset($this->defaults['limit']) ? $this->defaults['limit'] : 100;
         $limit = max(min(abs((int)$this->getRequest('limit', 50)), $maxLimit), 1);
         $criteria = $this->getRequest('criteria', 'trade');
-        $result = array('tokens' => $this->db->getTokensTop($limit, $criteria));
+        $result = $this->db->getTokensTop($limit, $criteria);
         $this->sendResult($result);
     }
 
@@ -391,13 +396,22 @@ class ethplorerController {
     public function getTokenHistoryGrouped(){
         $period = min(abs((int)$this->getRequest('period', 30)), 90);
         $address = $this->getParam(0, FALSE);
+        $cap = $this->getRequest('cap');
         if($address){
             $address = strtolower($address);
             if(!$this->db->isValidAddress($address)){
                 $this->sendError(104, 'Invalid token address format');
             }
         }
-        $result = array('countTxs' => $this->db->getTokenHistoryGrouped($period, $address));
+        if($this->getRequest('full')){
+            $result = array('countTxs' => $this->db->getTokenFullHistoryGrouped());
+        }else{
+            $result = array('countTxs' => $this->db->getTokenHistoryGrouped($period, $address));
+        }
+        if($cap){
+            $result['cap'] = $this->db->getTokenCapHistory($period);
+        }
+        $result['totals'] = $this->db->getTokensTopTotals();
         $this->sendResult($result);
     }
 
@@ -419,7 +433,7 @@ class ethplorerController {
             $this->sendResult($result);
             return;
         }
-        if($token = $this->db->getToken($address)){
+        if($token = $this->db->getToken($address) || $address == $this->db->ADDRESS_CHAINY){
             $this->getTokenPriceHistoryGrouped();
         }else{
             $this->getAddressPriceHistoryGrouped();
@@ -473,9 +487,55 @@ class ethplorerController {
         $this->sendResult($result);
     }
 
-
     public function getLastBlock(){
         $result = array('lastBlock' => $this->db->getLastBlock());
+        $this->sendResult($result);
+    }
+
+    /**
+     * /getPoolAddresses method implementation.
+     *
+     * @undocumented
+     * @return array
+     */
+    public function getPoolAddresses(){
+        $result = array('addresses' => array());
+        $poolId = $this->getRequest('poolId', FALSE);
+        if($poolId){
+            $result = array('addresses' => $this->db->getPoolAddresses($poolId));
+        }
+        $this->sendResult($result);
+    }
+
+    /**
+     * /getPoolLastTransactions method implementation.
+     *
+     * @undocumented
+     * @return array
+     */
+    public function getPoolLastTransactions(){
+        $result = array();
+        $poolId = $this->getRequest('poolId', FALSE);
+        $period = max(min(abs((int)$this->getRequest('period', 86400)), 864000), 1);
+        if($poolId){
+            $result = $this->db->getPoolLastTransactions($poolId, $period);
+        }
+        $this->sendResult($result);
+    }
+
+    /**
+     * /getPoolLastOperations method implementation.
+     *
+     * @undocumented
+     * @return array
+     */
+    public function getPoolLastOperations(){
+        $result = array();
+        $poolId = $this->getRequest('poolId', FALSE);
+        $period = max(min(abs((int)$this->getRequest('period', 86400)), 864000), 1);
+        if($poolId){
+            $result = $this->db->getPoolLastOperations($poolId, $period);
+        }
         $this->sendResult($result);
     }
 
@@ -491,6 +551,7 @@ class ethplorerController {
             'operations' => array()
         );
         $address = $this->getParam(0, FALSE);
+        $showEth = !!$this->getRequest('showEth', FALSE);
         if($address){
             $address = strtolower($address);
         }
@@ -519,7 +580,7 @@ class ethplorerController {
             }
             $options['history'] = TRUE;
         }
-        $operations = $this->db->getLastTransfers($options);
+        $operations = $this->db->getLastTransfers($options, $showEth);
         if(is_array($operations) && count($operations)){
             for($i = 0; $i < count($operations); $i++){
                 $operation = $operations[$i];

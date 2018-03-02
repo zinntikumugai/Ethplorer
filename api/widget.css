@@ -202,10 +202,12 @@
     text-align: right;
 }
 
+.ethplorer-widget.widget-tokenHistoryGrouped .ewDiff .ewDiffUp,
 .ethplorer-widget.widget-topTokens .ewDiff .ewDiffUp {
     color: #1e8c1e;
 }
 
+.ethplorer-widget.widget-tokenHistoryGrouped .ewDiff .ewDiffDown,
 .ethplorer-widget.widget-topTokens .ewDiff .ewDiffDown {
     color: #ae2525;
 }
@@ -213,6 +215,10 @@
 .ethplorer-widget.widget-topTokens .tx-field-sort {
 	text-align: right !important;
 	color: #dedede !important;
+}
+
+.ethplorer-widget.widget-topTokens .tx-link {
+	max-width: 200px !important;
 }
 
 .widget-topTokens-tabs-row {
@@ -294,6 +300,9 @@
 .tx-field-price{
 	color: #47C2FF !important;
 }
+.ethplorer-widget .widget-top-totals {
+	margin-bottom: -20px;
+}
 @media screen and (max-width: 768px) {
     .widget-topTokens-tabs-wrapper {
         display: none;
@@ -317,11 +326,25 @@
     .txs-top-tokens-mobile {
         display: table;
     }
+	.tx-field-mob, .txs-top-tokens-mobile .tx-field {
+		font-size: 16px !important;
+	}
+	.txs-top-tokens-mobile .tx-field {
+	}
 }
 @media screen and (max-width: 450px) {
 	.txs-top-tokens-mobile {
 		width: 80% !important;
 	}
+	.tx-field-mob, .txs-top-tokens-mobile .tx-field {
+		font-size: 14px !important;
+	}
+    .ethplorer-widget .widget-top-totals {
+        font-size: 14px !important;
+    }
+    .ethplorer-widget .widget-topTokens-totals {
+        font-size: 14px !important;
+    }
 }
 @media screen and (min-width: 700px) {
     .txs-top-tokens {
@@ -329,6 +352,11 @@
     }
     .txs-top-tokens-mobile {
         display: none;
+    }
+}
+@media screen and (max-width: 615px) {
+    .ethplorer-widget .widget-top-total-trade {
+        display: block !important;
     }
 }
 
@@ -359,7 +387,7 @@
 @media screen and (max-width: 360px) {
     .ethplorer-widget .txs.small-screen-table .tx-link {
         max-width: 140px;
-    }    
+    }
 }
 
 /* THEME: ethplorer */
@@ -404,4 +432,13 @@
 	display: inline-block;
 	white-space: nowrap;
 	margin-top: 5px;
+}
+.tooltipRowCap {
+	color: #25A6DD !important;
+}
+.tooltipRowOps {
+	color: #B7A714 !important;
+}
+.tooltipRowVol {
+	color: #727272 !important;
 }

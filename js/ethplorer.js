@@ -996,7 +996,8 @@ Ethplorer = {
         var oToken = Ethplorer.prepareToken(data.token);
         var address = Ethplorer.currentAddress;
         if(('undefined' !== typeof(ethplorerWidget)) && (true || !Ethplorer.isProd)){
-            if(data.token){
+            if(data.token || (data.isContract && data.contract.isChainy)){
+                if(data.isContract && data.contract.isChainy) oToken.name = 'Chainy';
                 var widgetTitle = (oToken && oToken.name) ? ($('<textarea />').html(oToken.name).text() + ' token pulse') : '';
 
                 $('#widget-block').show();
@@ -1422,9 +1423,9 @@ Ethplorer = {
             var pages = Math.ceil(recordsCount / Ethplorer.pageSize);
             var lastPage = true;
             for(var i=1; i<=pages; i++){
-                var page = $('<LI>');
-                page.addClass('page-item');
                 if((i <= 1) || ((i <= 5) &&(currentPage <= 4)) || ((i >= (pages - 4)) &&(currentPage >= (pages - 3))) || (i >= (pages)) || ((i >= (currentPage - 1)) && (i <= (currentPage + 1)))){
+                    var page = $('<LI>');
+                    page.addClass('page-item');                   
                     var link = $('<a>');
                     link.html(i);
                     if(i === currentPage){
@@ -1446,6 +1447,8 @@ Ethplorer = {
                     page.html(link);
                     lastPage = true;
                 }else if(lastPage){
+                    var page = $('<LI>');
+                    page.addClass('page-item');
                     lastPage = false;
                     var splitter = $('<a>');
                     splitter.html('...');

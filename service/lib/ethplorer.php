@@ -17,6 +17,8 @@
 
 require_once __DIR__ . '/cache.php';
 require_once __DIR__ . '/mongo.php';
+require_once __DIR__ . '/mongo_scanner.php';
+require_once __DIR__ . '/mongo_pools.php';
 require_once __DIR__ . '/profiler.php';
 require_once __DIR__ . '/lock.php';
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -31,6 +33,11 @@ class Ethplorer {
     const ADDRESS_CHAINY = '0xf3763c30dd6986b53402d41a8552b8f7f6a6089b';
 
     /**
+     * Ethereum address
+     */
+    const ADDRESS_ETH = '0x0000000000000000000000000000000000000000';
+
+    /**
      * Settings
      *
      * @var array
@@ -40,9 +47,16 @@ class Ethplorer {
     /**
      * MongoDB.
      *
-     * @var evxMongo
+     * @var evxMongoScanner
      */
     protected $oMongo;
+
+    /**
+     * MongoDB.
+     *
+     * @var evxMongoPools
+     */
+    protected $oMongoPools;
 
     /**
      * Singleton instance.
@@ -106,8 +120,12 @@ class Ethplorer {
         $cacheDriver = isset($this->aSettings['cacheDriver']) ? $this->aSettings['cacheDriver'] : 'file';
         $this->oCache = new evxCache($this->aSettings['cacheDir'], $cacheDriver);
         if(isset($this->aSettings['mongo']) && is_array($this->aSettings['mongo'])){
-            evxMongo::init($this->aSettings['mongo']);
-            $this->oMongo = evxMongo::getInstance();
+            evxMongoScanner::init($this->aSettings['mongo']);
+            $this->oMongo = evxMongoScanner::getInstance();
+        }
+        if(isset($this->aSettings['bundles']) && is_array($this->aSettings['bundles'])){
+            evxMongoPools::init($this->aSettings['bundles']);
+            $this->oMongoPools = evxMongoPools::getInstance();
         }
     }
 
@@ -432,32 +450,49 @@ class Ethplorer {
      */
     public function getTransactions($address, $limit = 10, $showZero = FALSE){
         $result = array();
-        $search = array('$or' => array(array("from" => $address), array("to" => $address)));
-        if(!$showZero){
-            $search = array('$and' => array($search, array('value' => array('$gt' => 0))));
-        }
-        $cursor = $this->oMongo->find('transactions', $search, array("timestamp" => -1), $limit);
-        foreach($cursor as $tx){
-            $receipt = isset($tx['receipt']) ? $tx['receipt'] : false;
-            $tx['gasLimit'] = $tx['gas'];
-            $tx['gasUsed'] = isset($tx['gasUsed']) ? $tx['gasUsed'] : ($receipt ? $receipt['gasUsed'] : 0);
-            // @todo: research
-            // $toContract = !!$tx['input'];
-            // $toContract = !!$this->getContract($tx['to']); // <-- too slow
+        $fields = ['from', 'to'];
+        foreach($fields as $field){
+            $search = array();
+            $search[$field] = $address;
+            if(!$showZero){
+                $search['value'] = array('$gt' => 0);
+            }
+            $cursor = $this->oMongo->find('transactions', $search, array("timestamp" => -1), $limit);
+            foreach($cursor as $tx){
+                $receipt = isset($tx['receipt']) ? $tx['receipt'] : false;
+                $tx['gasLimit'] = $tx['gas'];
+                $tx['gasUsed'] = isset($tx['gasUsed']) ? $tx['gasUsed'] : ($receipt ? $receipt['gasUsed'] : 0);
+                // @todo: research
+                // $toContract = !!$tx['input'];
+                // $toContract = !!$this->getContract($tx['to']); // <-- too slow
 
-            $success = ((21000 == $tx['gasUsed']) || /*!$toContract ||*/ ($tx['gasUsed'] < $tx['gasLimit']) || ($receipt && !empty($receipt['logs'])));
-            $success = isset($tx['status']) ? !!$tx['status'] : $success;
+                $success = ((21000 == $tx['gasUsed']) || /*!$toContract ||*/ ($tx['gasUsed'] < $tx['gasLimit']) || ($receipt && !empty($receipt['logs'])));
+                $success = isset($tx['status']) ? $this->txSuccessStatus($tx) : $success;
 
-            $result[] = array(
-                'timestamp' => $tx['timestamp'],
-                'from' => $tx['from'],
-                'to' => $tx['to'],
-                'hash' => $tx['hash'],
-                'value' => $tx['value'],
-                'input' => $tx['input'],
-                'success' => $success
-            );
+                $result[] = array(
+                    'timestamp' => $tx['timestamp'],
+                    'from' => $tx['from'],
+                    'to' => $tx['to'],
+                    'hash' => $tx['hash'],
+                    'value' => $tx['value'],
+                    'input' => $tx['input'],
+                    'success' => $success
+                );
+            }
         }
+        usort($result, function($a, $b){
+            return ($a['timestamp'] > $b['timestamp']) ? 1 : (($a['timestamp'] < $b['timestamp']) ? -1 : 0);
+        });
+
+        if(count($result) > $limit){
+            $limitedResult = [];
+            foreach($result as $index => $record){
+                if($index == $limit) break;
+                $limitedResult[] = $record;
+            }
+            $result = $limitedResult;
+        }
+        
         return $result;
     }
 
@@ -495,8 +530,10 @@ class Ethplorer {
             }
             $result["contracts"] = array_values(array_unique($result["contracts"]));
             if($tokenAddr){
+                // If no price, but token have price, save current and set cache lifetime for 1 hour
                 if($token = $this->getToken($tokenAddr)){
                     $result['token'] = $token;
+                    $result['token']['priceHistoric'] = $this->_getRateByDate($tokenAddr, date("Y-m-d", $tx['timestamp']));
                 }
             }
             $result["operations"] = $this->getOperations($hash);
@@ -595,7 +632,7 @@ class Ethplorer {
             $result['gasUsed'] = isset($result['gasUsed']) ? $result['gasUsed'] : ($receipt ? $receipt['gasUsed'] : 0);
 
             $success = ((21000 == $result['gasUsed']) || ($result['gasUsed'] < $result['gasLimit']) || ($receipt && !empty($receipt['logs'])));
-            $result['success'] = isset($result['status']) ? !!$result['status'] : $success;
+            $result['success'] = isset($result['status']) ? $this->txSuccessStatus($result) : $success;
 
             $methodsFile = dirname(__FILE__) . "/../methods.sha3.php";
             if(file_exists($methodsFile)){
@@ -620,12 +657,13 @@ class Ethplorer {
      * @param string  $tx  Transaction hash
      * @return array
      */
-    public function getOperations($tx, $type = FALSE){
+    public function getOperations($tx, $type = FALSE, $showEth = FALSE){
         evxProfiler::checkpoint('getOperations', 'START', 'hash=' . $tx);
         $search = array("transactionHash" => $tx);
         if($type){
             $search['type'] = $type;
         }
+        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
         $cursor = $this->oMongo->find('operations', $search, array('priority' => 1));
         $result = array();
         foreach($cursor as $res){
@@ -910,9 +948,9 @@ class Ethplorer {
      * @param string $address  Contract address
      * @return int
      */
-    public function countOperations($address, $useFilter = TRUE){        
+    public function countOperations($address, $useFilter = TRUE, $showEth = FALSE){        
         evxProfiler::checkpoint('countOperations', 'START', 'address=' . $address . ', useFilter = ' . ($useFilter ? 'ON' : 'OFF'));
-        $cache = 'countOperations-' . $address;
+        $cache = 'countOperations-' . $address . ($showEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true, 30);
         if(FALSE === $result){
             $result = 0;
@@ -930,6 +968,7 @@ class Ethplorer {
                     $aSearchFields = array('from', 'to', 'address');
                     foreach($aSearchFields as $searchField){
                         $search = array($searchField => $address);
+                        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
                         if($useFilter && $this->filter){
                             $search = array(
                                 '$and' => array(
@@ -1089,7 +1128,7 @@ class Ethplorer {
      * @param int $limit       Maximum number of records
      * @return array
      */
-    public function getLastTransfers(array $options = array()){
+    public function getLastTransfers(array $options = array(), $showEth = FALSE){
         $search = array();
         if(!isset($options['type'])){
             $search['type'] = 'transfer';
@@ -1114,6 +1153,7 @@ class Ethplorer {
         if(isset($options['timestamp']) && ($options['timestamp'] > 0)){
             $search['timestamp'] = array('$gt' => $options['timestamp']);
         }
+        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
         $limit = isset($options['limit']) ? (int)$options['limit'] : false;
         $cursor = $this->oMongo->find('operations', $search, $sort, $limit);
 
@@ -1133,11 +1173,12 @@ class Ethplorer {
      * @param int $limit       Maximum number of records
      * @return array
      */
-    public function getAddressOperations($address, $limit = 10, $offset = false, array $aTypes = NULL){
+    public function getAddressOperations($address, $limit = 10, $offset = FALSE, array $aTypes = NULL, $showEth = FALSE){
         evxProfiler::checkpoint('getAddressOperations', 'START', 'address=' . $address . ', limit=' . $limit . ', offset=' . (int)$offset);
 
         $result = array();
         $search = array('addresses' => $address);
+        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
 
         // @todo: remove $or, use special field with from-to-address-txHash concatination maybe
         if($this->filter){
@@ -1251,15 +1292,17 @@ class Ethplorer {
      * @param bool $updateCache  Force unexpired cache update
      * @return array
      */
-    public function getTopTokens($limit = 10, $period = 30, $updateCache = false){
-        $cache = 'top_tokens-' . $period . '-' . $limit;
+    public function getTopTokens($limit = 10, $period = 30, $updateCache = FALSE, $showEth = FALSE){
+        $cache = 'top_tokens-' . $period . '-' . $limit . ($showEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true, 24 * 3600);
         if($updateCache || (FALSE === $result)){
             $result = array();
+            $aMatch = array("timestamp" => array('$gt' => time() - $period * 2 * 24 * 3600, '$lte' => time() - $period * 24 * 3600));
+            if(!$showEth) $aMatch['contract'] = array('$ne' => 'ETH');
             $prevData = $this->oMongo->aggregate(
                 'operations',
                 array(
-                    array('$match' => array("timestamp" => array('$gt' => time() - $period * 2 * 24 * 3600, '$lte' => time() - $period * 24 * 3600))),
+                    array('$match' => $aMatch),
                     array(
                         '$group' => array(
                             "_id" => '$contract',
@@ -1270,10 +1313,11 @@ class Ethplorer {
                     array('$limit' => $limit)
                 )
             );
+            $aMatch['timestamp'] = array('$gt' => time() - $period * 24 * 3600);
             $dbData = $this->oMongo->aggregate(
                 'operations',
                 array(
-                    array('$match' => array("timestamp" => array('$gt' => time() - $period * 24 * 3600))),
+                    array('$match' => $aMatch),
                     array(
                         '$group' => array(
                             "_id" => '$contract',
@@ -1307,8 +1351,20 @@ class Ethplorer {
      */
     public function getTokensTop($limit = 50, $criteria = 'trade', $updateCache = false){
         $topLimit = 100;
+        if($criteria != 'count'){
+            $topLimit++;
+            $limit++;
+        }
         if($limit > $topLimit) $limit = $topLimit;
         $cache = 'top_tokens_' . $criteria;
+        $aTotals = array(
+            'tokens' => 0,
+            'tokensWithPrice' => 0,
+            'cap' => 0,
+            'capPrevious' => 0,
+            'volume24h' => 0,
+            'volumePrevious' => 0
+        );
         $result = $this->oCache->get($cache, false, true);
         if($updateCache || (FALSE === $result)){
             $aTokens = $this->getTokens();
@@ -1329,15 +1385,28 @@ class Ethplorer {
             if($criteria == 'count'){
                 $aTokensCountRes = $this->getTokensCountForLastDay($topLimit);
                 foreach($aTokensCountRes as $aTokensCountRecord){
-                    $aTokensCount[$aTokensCountRecord['_id']] = $aTokensCountRecord['cnt'];
+                    if(isset($aTokensCountRecord['_id'])) $aTokensCount[$aTokensCountRecord['_id']] = $aTokensCountRecord['cnt'];
                 }
             }
+
+            $aTokens[] = array(
+                'address' => self::ADDRESS_ETH,
+                'name' => 'Ethereum',
+                'symbol' => 'ETH'
+            );
 
             foreach($aTokens as $aToken){
                 $address = $aToken['address'];
                 $curHour = (int)date('H');
 
-                if($criteria == 'count'){
+                $isEth = false;
+                if($address == self::ADDRESS_ETH){
+                    $isEth = true;
+                }else{
+                    $aTotals['tokens'] += 1;
+                }
+
+                if(!$isEth && $criteria == 'count'){
                     if(isset($aTokensCount[$address])){
                         $aToken['txsCount24'] = $aTokensCount[$address];
                         foreach($aPeriods as $aPeriod){
@@ -1367,11 +1436,23 @@ class Ethplorer {
                         if(!$aToken['symbol']) $aToken['symbol'] = 'N/A';
                         $result[] = $aToken;
                     }
-                    continue;
                 }
 
-                $aPrice = $this->getTokenPrice($address);
-                if($aPrice && $aToken['totalSupply']){
+                if($isEth){
+                    $aPrice = $this->getETHPrice();
+                }else{
+                    $aPrice = $this->getTokenPrice($address);
+                }
+                if($aPrice && ($isEth || $aToken['totalSupply'])){
+                    if(!$isEth) $aTotals['tokensWithPrice'] += 1;
+                    if(!$isEth && isset($aPrice['marketCapUsd'])){
+                        $aTotals['cap'] += $aPrice['marketCapUsd'];
+                    }
+                    if(!$isEth && isset($aPrice['volume24h'])){
+                        $aTotals['volume24h'] += $aPrice['volume24h'];
+                    }
+                    //if($criteria == 'count') continue;
+
                     $aToken['volume'] = 0;
                     $aToken['cap'] = 0;
                     $aToken['availableSupply'] = 0;
@@ -1392,7 +1473,7 @@ class Ethplorer {
                     }
                     $aHistory = $this->getTokenPriceHistory($address, 60, 'hourly');
                     if(is_array($aHistory)){
-
+                        $previousTokenCapAdded = false;
                         foreach($aHistory as $aRecord){
                             foreach($aPeriods as $aPeriod){
                                 $period = $aPeriod['period'];
@@ -1413,14 +1494,24 @@ class Ethplorer {
                                             $aToken['cap-' . $period . 'd-previous'] = $aRecord['volumeConverted'] / $aRecord['volume'];
                                         }
                                     }
+
+                                    // get total cap for previous day
+                                    if((1 == $period) && !$isEth && !$previousTokenCapAdded && isset($aToken['cap'])){
+                                        $aTotals['capPrevious'] += $aToken['cap'];
+                                        $previousTokenCapAdded = true;
+                                    }
                                 }
                             }
+                        }
+                        // get total volume for previous day
+                        if(!$isEth){
+                            $aTotals['volumePrevious'] += $aToken['volume-1d-previous'];
                         }
                     }
                     if(isset($aPrice['volume24h']) && $aPrice['volume24h'] > 0){
                         $aToken['volume'] = $aToken['volume-1d-current'] = $aPrice['volume24h'];
                     }
-                    $result[] = $aToken;
+                    if($criteria != 'count') $result[] = $aToken;
                 }
             }
             $sortMethod = '_sortByVolume';
@@ -1434,7 +1525,7 @@ class Ethplorer {
                     // $item['percentage'] = round(($item['volume'] / $total) * 100);
 
                     // get tx's other trends
-                    if($criteria == 'count'){
+                    if(($item['address'] != self::ADDRESS_ETH) && $criteria == 'count'){
                         unset($aPeriods[0]);
                         $aHistoryCount = $this->getTokenHistoryGrouped(60, $item['address'], 'daily', 3600);
                         if(is_array($aHistoryCount)){
@@ -1457,20 +1548,35 @@ class Ethplorer {
                     $res[] = $item;
                 }
             }
-            $result = $res;
+            //$result = $res;
+            $result = array('tokens' => $res, 'totals' => $aTotals);
             $this->oCache->save($cache, $result);
+            $this->oCache->save('top_tokens_totals', $result['totals']);
         }
 
         $res = [];
         if($limit < $topLimit){
-            foreach($result as $i => $item){
+            foreach($result['tokens'] as $i => $item){
                 if($i < $limit){
                     $res[] = $item;
                 }else{
                     break;
                 }
             }
-            $result = $res;
+            $result['tokens'] = $res;
+        }
+        return $result;
+    }
+
+    /**
+     * Returns top tokens totals.
+     *
+     * @return array
+     */
+    public function getTokensTopTotals(){
+        $result = $this->oCache->get('top_tokens_totals', FALSE, TRUE);
+        if(FALSE === $result){
+            return array();
         }
         return $result;
     }
@@ -1567,6 +1673,7 @@ class Ethplorer {
     }
 
     protected function _sortByTxCount($a, $b){
+        if(!isset($a['txsCount24']) || !isset($b['txsCount24'])) return 1;
         return ($a['txsCount24'] == $b['txsCount24']) ? 0 : (($a['txsCount24'] > $b['txsCount24']) ? -1 : 1);
     }
 
@@ -1577,8 +1684,8 @@ class Ethplorer {
      * @param string $address  Address
      * @return array
      */
-    public function getTokenHistoryGrouped($period = 30, $address = FALSE, $type = 'daily', $cacheLifetime = 600){
-        $cache = 'token_history_grouped-' . ($address ? ($address . '-') : '') . $period . (($type == 'hourly') ? '-hourly' : '');
+    public function getTokenHistoryGrouped($period = 30, $address = FALSE, $type = 'daily', $cacheLifetime = 1800, $showEth = FALSE){
+        $cache = 'token_history_grouped-' . ($address ? ($address . '-') : '') . $period . (($type == 'hourly') ? '-hourly' : '') . ($showEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true, $cacheLifetime);
         if(FALSE === $result){
             // Chainy
@@ -1589,6 +1696,7 @@ class Ethplorer {
             $tsStart = gmmktime(0, 0, 0, date('n'), date('j') - $period, date('Y'));
             $aMatch = array("timestamp" => array('$gt' => $tsStart));
             if($address) $aMatch["contract"] = $address;
+            else if(!$showEth) $aMatch["contract"] = array('$ne' => 'ETH');
             $result = array();
             $_id = array(
                 "year"  => array('$year' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
@@ -1622,17 +1730,77 @@ class Ethplorer {
     }
 
     /**
+     * Returns transactions grouped by days for all period.
+     *
+     * @return array
+     */
+    public function getTokenFullHistoryGrouped($showEth = FALSE){
+        $tsNow = time();
+        $tsStart = 1451606400; // 01.01.2016
+        $tsEnd = 1459468800;
+
+        $history = array();
+        $numIter = 0;
+        while($tsStart <= $tsNow){
+            $numIter++;
+            $cache = 'token_full_history_grouped-' . $tsEnd;
+            $cacheLifetime = FALSE;
+            if($tsEnd > $tsNow){
+                $cacheLifetime = 24 * 60 * 60;
+            }
+            $result = $this->oCache->get($cache, FALSE, TRUE, $cacheLifetime);
+            if(FALSE === $result){
+                $result = array();
+
+                $aMatch = array("timestamp" => array('$gte' => $tsStart + 1, '$lte' => $tsEnd));
+                if(!$showEth) $aMatch["contract"] = array('$ne' => 'ETH');
+                $_id = array(
+                    "year"  => array('$year' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
+                    "month"  => array('$month' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
+                    "day"  => array('$dayOfMonth' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
+                );
+                $dbData = $this->oMongo->aggregate(
+                    'operations',
+                    array(
+                        array('$match' => $aMatch),
+                        array(
+                            '$group' => array(
+                                "_id" => $_id,
+                                'ts' =>  array('$first' => '$timestamp'),
+                                'cnt' => array('$sum' => 1)
+                            )
+                        ),
+                        array('$sort' => array('ts' => -1))
+                    )
+                );
+                if(is_array($dbData) && !empty($dbData['result'])){
+                    $result = $dbData['result'];
+                    $this->oCache->save($cache, $result);
+                }
+            }
+            if(is_array($result) && sizeof($result)){
+                $history = array_merge($history, $result);
+            }
+            $tsStart = $tsEnd;
+            $tsEnd += 7776000;
+        }
+        //$history['numIter'] = $numIter;
+        return array_values($history);
+    }
+
+    /**
      * Returns count transactions for last day grouped by tokens.
      *
      * @param int $limit  Number of tokens
      * @return array
      */
-    public function getTokensCountForLastDay($limit = 30){
-        $cache = 'tokens_count-' . $limit;
+    public function getTokensCountForLastDay($limit = 30, $showEth = FALSE){
+        $cache = 'tokens_count-' . $limit . ($showEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true, 3600);
         if(FALSE === $result){
             $tsStart = gmmktime((int)date('G'), 0, 0, date('n'), date('j') - 1, date('Y'));
             $aMatch = array("timestamp" => array('$gte' => $tsStart));
+            if(!$showEth) $aMatch["contract"] = array('$ne' => 'ETH');
             $result = array();
             $dbData = $this->oMongo->aggregate(
                 'operations',
@@ -1851,7 +2019,7 @@ class Ethplorer {
     }
 
     public function getBlockTransactions($block, $showZero = false){
-        $cache = 'block-txs-' . $block;
+        $cache = 'block-txs-' . $block . ($showZero ? '-zero' : '');
         $transactions = $this->oCache->get($cache, false, true);
         if(!$transactions){
             $transactions = array();
@@ -1864,14 +2032,18 @@ class Ethplorer {
                 $receipt = isset($tx['receipt']) ? $tx['receipt'] : false;
                 $tx['gasLimit'] = $tx['gas'];
                 $tx['gasUsed'] = $receipt ? $receipt['gasUsed'] : 0;
-                $transactions[] = array(
+                $transaction = array(
                     'timestamp' => $tx['timestamp'],
                     'from' => $tx['from'],
-                    'to' => $tx['to'],
+                    'to' => $tx['to'] ? $tx['to'] : "",
                     'hash' => $tx['hash'],
                     'value' => $tx['value'],
                     'success' => (($tx['gasUsed'] < $tx['gasLimit']) || ($receipt && !empty($receipt['logs'])))
                 );
+                if(isset($tx['creates']) && $tx['creates']){
+                    $transaction['creates'] = $tx['creates'];
+                }
+                $transactions[] = $transaction;
             }
             $this->oCache->save($cache, $transactions);
         }
@@ -2056,6 +2228,21 @@ class Ethplorer {
         return $result;
     }
 
+    public function getTokenCapHistory($period = 0, $updateCache = FALSE){
+        evxProfiler::checkpoint('getTokenCapHistory', 'START', 'period=' . $period);
+        $cache = 'cap-history';// . ($period > 0 ? ('period-' . $period) : '');
+        $result = $this->oCache->get($cache, false, true);
+        if($updateCache || (FALSE === $result)){
+            $method = 'getTokensCapHistory';
+            $result = $this->_jsonrpcall($this->aSettings['currency'], $method, array());
+            if($result){
+                $this->oCache->save($cache, $result);
+            }
+        }
+        evxProfiler::checkpoint('getTokenCapHistory', 'FINISH');
+        return $result;
+    }
+
     protected function getTokenPriceCurrent($address){
         $this->_getRateByDate($address, date("Y-m-d"));
     }
@@ -2078,10 +2265,10 @@ class Ethplorer {
         return $aResult;
     }
 
-    public function getAddressPriceHistoryGrouped($address, $updateCache = FALSE){
+    public function getAddressPriceHistoryGrouped($address, $updateCache = FALSE, $showEth = FALSE){
         evxProfiler::checkpoint('getAddressPriceHistoryGrouped', 'START', 'address=' . $address);
 
-        $cache = 'address_operations_history-' . $address;
+        $cache = 'address_operations_history-' . $address . ($showEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true);
         $updateCache = false;
         if($result && isset($result['timestamp'])){
@@ -2107,6 +2294,7 @@ class Ethplorer {
 
             foreach($aSearch as $cond){
                 $search = array($cond => $address);
+                if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
                 if($updateCache){
                     $search = array('$and' => array($search, array('timestamp' => array('$gt' => $result['timestamp']))));
                 }
@@ -2249,6 +2437,115 @@ class Ethplorer {
 
         evxProfiler::checkpoint('getAddressPriceHistoryGrouped', 'FINISH');
         return $result;
+    }
+
+    /**
+     * Returns pool addresses.
+     *
+     * @param int $poolId  Pool id
+     * @return array
+     */
+    public function getPoolAddresses($poolId, $updateCache = FALSE){
+        evxProfiler::checkpoint('getPoolAddresses', 'START');
+        $cache = 'pool_addresses-' . $poolId;
+        $aAddresses = $this->oCache->get($cache, false, true, 600);
+        if($updateCache || (false === $aAddresses)){
+            $cursor = $this->oMongoPools->find('pools', array('id' => $poolId));
+            $result = array();
+            foreach($cursor as $result) break;
+            if($result){
+                $aAddresses = explode(",", $result['addresses']);
+                $this->oCache->save($cache, $aAddresses);
+            }
+        }
+        evxProfiler::checkpoint('getPoolAddresses', 'FINISH');
+        return $aAddresses;
+    }
+
+    /**
+     * Returns pool transactions.
+     *
+     * @param int $poolId  Pool id
+     * @param int $period  Period
+     * @return array
+     */
+    public function getPoolLastTransactions($poolId, $period, $updateCache = FALSE){
+        evxProfiler::checkpoint('getPoolLastTransactions', 'START');
+        $cache = 'pool_transactions-' . $poolId. '-' . $period;
+        $aTxs = $this->oCache->get($cache, false, true, 300);
+        if($updateCache || (false === $aTxs)){
+            $cursor = $this->oMongoPools->find('transactions', array('pool' => $poolId, 'timestamp' => array('$gte' => time() - $period)), array("timestamp" => -1));
+            $aTxs = array();
+            foreach($cursor as $tx){
+                $aAddresses = [$tx["from"]];
+                if($tx["from"] != $tx["to"]){
+                    $aAddresses[] = $tx["to"];
+                }
+                for($i = 0; $i < sizeof($aAddresses); $i++){
+                    if(!isset($aTxs[$aAddresses[$i]])){
+                        $aTxs[$aAddresses[$i]] = array();
+                    }
+                    $gasLimit = $tx['gas'];
+                    $gasUsed = isset($tx['gasUsed']) ? $tx['gasUsed'] : 0;
+                    $success = ((21000 == $gasUsed) || ($gasUsed < $gasLimit));
+                    $success = isset($tx['status']) ? $this->txSuccessStatus($tx) : $success;
+                    $aTxs[$aAddresses[$i]][] = array(
+                        'timestamp' => $tx["timestamp"],
+                        'blockNumber' => $tx["blockNumber"],
+                        'from' => $tx["from"],
+                        'to' => $tx["to"],
+                        'hash' => $tx["hash"],
+                        'value' => $tx["value"],
+                        'input' => $tx["input"],
+                        'success' => $success,
+                    );
+                }
+            }
+            if($aTxs){
+                $this->oCache->save($cache, $aTxs);
+            }
+        }
+        evxProfiler::checkpoint('getPoolLastTransactions', 'FINISH');
+        return $aTxs;
+    }
+
+    /**
+     * Returns pool operations.
+     *
+     * @param int $poolId  Pool id
+     * @param int $period  Period
+     * @return array
+     */
+    public function getPoolLastOperations($poolId, $period, $updateCache = FALSE){
+        evxProfiler::checkpoint('getPoolLastOperations', 'START');
+        $cache = 'pool_operations-' . $poolId. '-' . $period;
+        $aOps = $this->oCache->get($cache, false, true, 300);
+        if($updateCache || (false === $aOps)){
+            $cursor = $this->oMongoPools->find('operations', array('pool' => $poolId, 'timestamp' => array('$gte' => time() - $period)), array("timestamp" => -1));
+            $aOps = array();
+            foreach($cursor as $op){
+                $aAddresses = [$op["from"]];
+                if($op["from"] != $op["to"]){
+                    $aAddresses[] = $op["to"];
+                }
+                foreach($op['addresses'] as $addr){
+                    if(!in_array($addr, $aAddresses)) $aAddresses[] = $addr;
+                }
+                for($i = 0; $i < sizeof($aAddresses); $i++){
+                    if(!isset($aOps[$aAddresses[$i]])){
+                        $aOps[$aAddresses[$i]] = array();
+                    }
+                    unset($op['_id']);
+                    unset($op['pool']);
+                    $aOps[$aAddresses[$i]][] = $op;
+                }
+            }
+            if($aOps){
+                $this->oCache->save($cache, $aOps);
+            }
+        }
+        evxProfiler::checkpoint('getPoolLastOperations', 'FINISH');
+        return $aOps;
     }
 
     protected function _getRateByTimestamp($address, $timestamp){
@@ -2401,6 +2698,13 @@ class Ethplorer {
             }
         }
         return $result;
+    }
+
+    protected function txSuccessStatus(array $tx){
+        if(isset($tx['status']) && $tx['status'] && is_string($tx['status'])){
+            $tx['status'] = str_replace("0x", "", $tx['status']);
+        }
+        return !!$tx['status'];
     }
 
     protected function _cliDebug($message){

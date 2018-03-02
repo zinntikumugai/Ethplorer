@@ -1132,6 +1132,28 @@ a.token-update {
     color: #337ab7 !important;
 }
 
+.adsbygoogle {
+    display: block;
+    width: 900px;
+    height: 17px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media screen and (max-width: 979px) {
+    .adsbygoogle {
+        width: 480px !important;
+    }
+}
+
+@media screen and (max-width: 479px) {
+    .adsbygoogle {
+        display: none !important;
+    }
+}
+
+
+
 @media screen and (max-width: 991px) {
     #topmenu li {
         padding-right: 0px;

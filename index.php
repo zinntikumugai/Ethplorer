@@ -18,7 +18,7 @@ $aConfig = require dirname(__FILE__) . '/service/config.php';
 require dirname(__FILE__) . '/service/lib/ethplorer.php';
 $es = Ethplorer::db(array());
 
-$codeVersion = isset($aConfig['codeVersion']) ? $aConfig['codeVersion'] : "179";
+$codeVersion = isset($aConfig['codeVersion']) ? $aConfig['codeVersion'] : "180";
 
 $error = TRUE;
 $header = "";
@@ -174,6 +174,12 @@ if(is_array($rParts) && isset($rParts[2])){
     <div class="container">
         <div class="starter-template">
             <div id="page-create" class="page">
+                <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                <!-- ethp-links-728x15 -->
+                <ins class="adsbygoogle" data-ad-client="ca-pub-6084233468074023" data-ad-slot="5655598045"></ins>
+                <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
                 <?php if($error): ?>
                 <div id="error" class="content-page text-center">
                     <h1 class="text-danger">ERROR</h1>
@@ -689,7 +695,7 @@ if(is_array($rParts) && isset($rParts[2])){
                 <div class="col-xs-7 col-sm-3">
                     <a href="#"><img src="/images/ethplorerlogowhite400.png" style="max-width: 140px;" alt=""></a>
                     <div>
-                        <div style="color:#eeeeee;">© 2016-2017 <a href="https://everex.one/" target="_blank" class="small-link">Everex</a>
+                        <div style="color:#eeeeee;">© 2016-2018 <a href="https://everex.one/" target="_blank" class="small-link">Everex</a>
                             <br><a href="/privacy" class="small-link">Privacy &amp; Terms</a><br>
                         </div>
                     </div>
