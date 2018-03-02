@@ -551,6 +551,7 @@ class ethplorerController {
             'operations' => array()
         );
         $address = $this->getParam(0, FALSE);
+        $showEth = !!$this->getRequest('showEth', FALSE);
         if($address){
             $address = strtolower($address);
         }
@@ -579,7 +580,7 @@ class ethplorerController {
             }
             $options['history'] = TRUE;
         }
-        $operations = $this->db->getLastTransfers($options);
+        $operations = $this->db->getLastTransfers($options, $showEth);
         if(is_array($operations) && count($operations)){
             for($i = 0; $i < count($operations); $i++){
                 $operation = $operations[$i];

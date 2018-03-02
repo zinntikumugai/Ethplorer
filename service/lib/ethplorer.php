@@ -657,13 +657,13 @@ class Ethplorer {
      * @param string  $tx  Transaction hash
      * @return array
      */
-    public function getOperations($tx, $type = FALSE){
+    public function getOperations($tx, $type = FALSE, $showEth = FALSE){
         evxProfiler::checkpoint('getOperations', 'START', 'hash=' . $tx);
         $search = array("transactionHash" => $tx);
         if($type){
             $search['type'] = $type;
         }
-        $search['contract'] = array('$ne' => 'ETH');
+        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
         $cursor = $this->oMongo->find('operations', $search, array('priority' => 1));
         $result = array();
         foreach($cursor as $res){
@@ -948,9 +948,9 @@ class Ethplorer {
      * @param string $address  Contract address
      * @return int
      */
-    public function countOperations($address, $useFilter = TRUE){        
+    public function countOperations($address, $useFilter = TRUE, $showEth = FALSE){        
         evxProfiler::checkpoint('countOperations', 'START', 'address=' . $address . ', useFilter = ' . ($useFilter ? 'ON' : 'OFF'));
-        $cache = 'countOperations-' . $address;
+        $cache = 'countOperations-' . $address . ($showEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true, 30);
         if(FALSE === $result){
             $result = 0;
@@ -968,7 +968,7 @@ class Ethplorer {
                     $aSearchFields = array('from', 'to', 'address');
                     foreach($aSearchFields as $searchField){
                         $search = array($searchField => $address);
-                        $search['contract'] = array('$ne' => 'ETH');
+                        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
                         if($useFilter && $this->filter){
                             $search = array(
                                 '$and' => array(
@@ -1128,7 +1128,7 @@ class Ethplorer {
      * @param int $limit       Maximum number of records
      * @return array
      */
-    public function getLastTransfers(array $options = array()){
+    public function getLastTransfers(array $options = array(), $showEth = FALSE){
         $search = array();
         if(!isset($options['type'])){
             $search['type'] = 'transfer';
@@ -1153,7 +1153,7 @@ class Ethplorer {
         if(isset($options['timestamp']) && ($options['timestamp'] > 0)){
             $search['timestamp'] = array('$gt' => $options['timestamp']);
         }
-        $search['contract'] = array('$ne' => 'ETH');
+        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
         $limit = isset($options['limit']) ? (int)$options['limit'] : false;
         $cursor = $this->oMongo->find('operations', $search, $sort, $limit);
 
@@ -1173,12 +1173,12 @@ class Ethplorer {
      * @param int $limit       Maximum number of records
      * @return array
      */
-    public function getAddressOperations($address, $limit = 10, $offset = false, array $aTypes = NULL){
+    public function getAddressOperations($address, $limit = 10, $offset = FALSE, array $aTypes = NULL, $showEth = FALSE){
         evxProfiler::checkpoint('getAddressOperations', 'START', 'address=' . $address . ', limit=' . $limit . ', offset=' . (int)$offset);
 
         $result = array();
         $search = array('addresses' => $address);
-        $search['contract'] = array('$ne' => 'ETH');
+        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
 
         // @todo: remove $or, use special field with from-to-address-txHash concatination maybe
         if($this->filter){
@@ -1292,15 +1292,17 @@ class Ethplorer {
      * @param bool $updateCache  Force unexpired cache update
      * @return array
      */
-    public function getTopTokens($limit = 10, $period = 30, $updateCache = false){
-        $cache = 'top_tokens-' . $period . '-' . $limit;
+    public function getTopTokens($limit = 10, $period = 30, $updateCache = FALSE, $showEth = FALSE){
+        $cache = 'top_tokens-' . $period . '-' . $limit . ($showEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true, 24 * 3600);
         if($updateCache || (FALSE === $result)){
             $result = array();
+            $aMatch = array("timestamp" => array('$gt' => time() - $period * 2 * 24 * 3600, '$lte' => time() - $period * 24 * 3600));
+            if(!$showEth) $aMatch['contract'] = array('$ne' => 'ETH');
             $prevData = $this->oMongo->aggregate(
                 'operations',
                 array(
-                    array('$match' => array("contract" => array('$ne' => 'ETH'), "timestamp" => array('$gt' => time() - $period * 2 * 24 * 3600, '$lte' => time() - $period * 24 * 3600))),
+                    array('$match' => $aMatch),
                     array(
                         '$group' => array(
                             "_id" => '$contract',
@@ -1311,10 +1313,11 @@ class Ethplorer {
                     array('$limit' => $limit)
                 )
             );
+            $aMatch['timestamp'] = array('$gt' => time() - $period * 24 * 3600);
             $dbData = $this->oMongo->aggregate(
                 'operations',
                 array(
-                    array('$match' => array("contract" => array('$ne' => 'ETH'), "timestamp" => array('$gt' => time() - $period * 24 * 3600))),
+                    array('$match' => $aMatch),
                     array(
                         '$group' => array(
                             "_id" => '$contract',
@@ -1681,8 +1684,8 @@ class Ethplorer {
      * @param string $address  Address
      * @return array
      */
-    public function getTokenHistoryGrouped($period = 30, $address = FALSE, $type = 'daily', $cacheLifetime = 1800){
-        $cache = 'token_history_grouped-' . ($address ? ($address . '-') : '') . $period . (($type == 'hourly') ? '-hourly' : '');
+    public function getTokenHistoryGrouped($period = 30, $address = FALSE, $type = 'daily', $cacheLifetime = 1800, $showEth = FALSE){
+        $cache = 'token_history_grouped-' . ($address ? ($address . '-') : '') . $period . (($type == 'hourly') ? '-hourly' : '') . ($showEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true, $cacheLifetime);
         if(FALSE === $result){
             // Chainy
@@ -1693,7 +1696,7 @@ class Ethplorer {
             $tsStart = gmmktime(0, 0, 0, date('n'), date('j') - $period, date('Y'));
             $aMatch = array("timestamp" => array('$gt' => $tsStart));
             if($address) $aMatch["contract"] = $address;
-            else $aMatch["contract"] = array('$ne' => 'ETH');
+            else if(!$showEth) $aMatch["contract"] = array('$ne' => 'ETH');
             $result = array();
             $_id = array(
                 "year"  => array('$year' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
@@ -1731,7 +1734,7 @@ class Ethplorer {
      *
      * @return array
      */
-    public function getTokenFullHistoryGrouped(){
+    public function getTokenFullHistoryGrouped($showEth = FALSE){
         $tsNow = time();
         $tsStart = 1451606400; // 01.01.2016
         $tsEnd = 1459468800;
@@ -1749,7 +1752,8 @@ class Ethplorer {
             if(FALSE === $result){
                 $result = array();
 
-                $aMatch = array("contract" => array('$ne' => 'ETH'), "timestamp" => array('$gte' => $tsStart + 1, '$lte' => $tsEnd));
+                $aMatch = array("timestamp" => array('$gte' => $tsStart + 1, '$lte' => $tsEnd));
+                if(!$showEth) $aMatch["contract"] = array('$ne' => 'ETH');
                 $_id = array(
                     "year"  => array('$year' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
                     "month"  => array('$month' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
@@ -1790,12 +1794,13 @@ class Ethplorer {
      * @param int $limit  Number of tokens
      * @return array
      */
-    public function getTokensCountForLastDay($limit = 30){
-        $cache = 'tokens_count-' . $limit;
+    public function getTokensCountForLastDay($limit = 30, $showEth = FALSE){
+        $cache = 'tokens_count-' . $limit . ($showEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true, 3600);
         if(FALSE === $result){
             $tsStart = gmmktime((int)date('G'), 0, 0, date('n'), date('j') - 1, date('Y'));
-            $aMatch = array("contract" => array('$ne' => 'ETH'), "timestamp" => array('$gte' => $tsStart));
+            $aMatch = array("timestamp" => array('$gte' => $tsStart));
+            if(!$showEth) $aMatch["contract"] = array('$ne' => 'ETH');
             $result = array();
             $dbData = $this->oMongo->aggregate(
                 'operations',
@@ -2260,10 +2265,10 @@ class Ethplorer {
         return $aResult;
     }
 
-    public function getAddressPriceHistoryGrouped($address, $updateCache = FALSE){
+    public function getAddressPriceHistoryGrouped($address, $updateCache = FALSE, $showEth = FALSE){
         evxProfiler::checkpoint('getAddressPriceHistoryGrouped', 'START', 'address=' . $address);
 
-        $cache = 'address_operations_history-' . $address;
+        $cache = 'address_operations_history-' . $address . ($showEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true);
         $updateCache = false;
         if($result && isset($result['timestamp'])){
@@ -2289,7 +2294,7 @@ class Ethplorer {
 
             foreach($aSearch as $cond){
                 $search = array($cond => $address);
-                $search['contract'] = array('$ne' => 'ETH');
+                if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
                 if($updateCache){
                     $search = array('$and' => array($search, array('timestamp' => array('$gt' => $result['timestamp']))));
                 }
