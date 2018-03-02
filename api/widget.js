@@ -475,7 +475,7 @@ ethplorerWidget.Type['tokenHistory'] = function(element, options, templates){
     };
 
     this.getRequestParams = function(additionalParams){
-        var requestOptions = ['limit', 'address', 'timestamp'];
+        var requestOptions = ['limit', 'address', 'timestamp', 'showEth'];
         var params = {
             apiKey: 'ethplorer.widget',
             type: 'transfer'
@@ -614,6 +614,10 @@ ethplorerWidget.Type['tokenHistory'] = function(element, options, templates){
             tr.tokenInfo.symbol = tr.tokenInfo.name;
         }
         var k = Math.pow(10, tr.tokenInfo.decimals);
+        if(tr.isEth){
+            k = 1;
+            tr.tokenInfo = {symbol: "ETH", decimals: 18, address: '0x0000000000000000000000000000000000000000'};
+        }
         var amount = ethplorerWidget.Utils.formatNum(tr.value / k, true, parseInt(tr.tokenInfo.decimals), true);
 
         var hash = tr.priority ? tr.priority : false;
