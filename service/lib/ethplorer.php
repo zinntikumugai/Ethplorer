@@ -1146,6 +1146,8 @@ class Ethplorer {
 
         if(isset($options['token']) && isset($options['history'])){
             $search['contract'] = $options['token'];
+        }elseif(!$showEth){
+            $search['contract'] = array('$ne' => 'ETH');   
         }
 
         $sort = array("timestamp" => -1);
@@ -1153,7 +1155,6 @@ class Ethplorer {
         if(isset($options['timestamp']) && ($options['timestamp'] > 0)){
             $search['timestamp'] = array('$gt' => $options['timestamp']);
         }
-        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
         $limit = isset($options['limit']) ? (int)$options['limit'] : false;
         $cursor = $this->oMongo->find('operations', $search, $sort, $limit);
 
