@@ -39,9 +39,9 @@ class everexTest extends TestCase
                 'compareFrom' => 'USD',
                 'compareTo' => ['BTC'],
                 'compareReplace' => 'MKPRU',
-                'compareSource' => 'quandl',
+                'compareSource' => 'quandl-reverse',
                 'compareSourceParam' => 'BCHAIN'
-            ]]           
+            ]]        
         ];
     }
 
