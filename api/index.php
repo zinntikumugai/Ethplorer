@@ -17,6 +17,7 @@
 
 // Allow cross-domain ajax requests
 header('Access-Control-Allow-Origin: *');
+header('Content-Type: application/json');
 
 require dirname(__FILE__) . '/../service/lib/ethplorer.php';
 require dirname(__FILE__) . '/controller.php';
