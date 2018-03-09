@@ -288,6 +288,8 @@ class evxCache {
             $aCachedData = $this->loadCachedData($entryName, $default, $cacheLifetime);
             $result = $aCachedData['data'];
             $isExpired = $aCachedData['expired'];
+        }else{
+            return $result;
         }
 
         if($result && !$isExpired){
