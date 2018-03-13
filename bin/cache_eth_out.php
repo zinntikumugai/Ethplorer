@@ -15,25 +15,10 @@
  * limitations under the License.
  */
 
-// Allow cross-domain ajax requests
-header('Access-Control-Allow-Origin: *');
-header('Content-Type: application/json');
-
 require dirname(__FILE__) . '/../service/lib/ethplorer.php';
-require dirname(__FILE__) . '/controller.php';
+$aConfig = require_once dirname(__FILE__) . '/../service/config.php';
 
-try {
-    $es = Ethplorer::db(require_once dirname(__FILE__) . '/../service/config.php');
-}catch(Exception $e){
-    // MongoDB connection error
-    $es = FALSE;
-}
-
-$ctr = new ethplorerController($es);
-$result = $ctr->run();
-
-if(!$result){
-    $ctr->sendError(17, 'Invalid request, check API manual there: https://github.com/EverexIO/Ethplorer/wiki/Ethplorer-API');
-}
-
-$ctr->sendResult($result);
+$es = Ethplorer::db($aConfig);
+$es->createProcessLock('ethOut.lock');
+$aHolders = $es->getAllHolders();
+var_dump(count($aHolders));
