@@ -177,7 +177,7 @@ if(is_array($rParts) && isset($rParts[2])){
             <div id="page-create" class="page">
                 <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
                 <!-- ethp-links-728x15 -->
-                <ins class="adsbygoogle" data-ad-client="ca-pub-6084233468074023" data-ad-slot="5655598045"></ins>
+                <ins class="adsbygoogle" data-ad-client="ca-pub-9429151221150004" data-ad-slot="2734463808"></ins>
                 <script>
                 (adsbygoogle = window.adsbygoogle || []).push({});
                 </script>
