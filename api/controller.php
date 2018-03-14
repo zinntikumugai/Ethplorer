@@ -20,6 +20,7 @@ class ethplorerController {
     protected $command;
     protected $params = array();
     protected $apiCommands = array('getTxInfo', 'getTokenHistory', 'getAddressTransactions', 'getAddressInfo', 'getTokenInfo', 'getAddressHistory', 'getTopTokens', 'getTop', 'getTokenHistoryGrouped', 'getPriceHistoryGrouped', 'getTokenPriceHistoryGrouped', 'getAddressPriceHistoryGrouped', 'getBlockTransactions', 'getLastBlock', 'getPoolAddresses', 'getPoolLastTransactions', 'getPoolLastOperations');
+    protected $apiPostCommands = array('createPool', 'deletePool', 'addPoolAddresses', 'deletePoolAddresses', 'clearPoolAddresses');
     protected $defaults;
     protected $startTime;
     protected $cacheState = '';
@@ -78,6 +79,11 @@ class ethplorerController {
         return (FALSE !== $result) && (!is_null($result)) ? $result : $default;
     }
 
+    public function getPostRequest($name, $default = NULL){
+        $result = filter_input(INPUT_POST, $name);
+        return (FALSE !== $result) && (!is_null($result)) ? $result : $default;
+    }
+
     public function sendResult(array $result){
         echo json_encode($result, JSON_UNESCAPED_SLASHES);
         die();
@@ -101,12 +107,17 @@ class ethplorerController {
     public function run(){
         $result = FALSE;
         $command = $this->getCommand();
-        if($command && in_array($command, $this->apiCommands) && method_exists($this, $command)){
-            $key = $this->getRequest('apiKey', FALSE);
+        if($command && (in_array($command, $this->apiCommands) || in_array($command, $this->apiPostCommands)) && method_exists($this, $command)){
+            $key = in_array($command, $this->apiCommands) ? $this->getRequest('apiKey', FALSE) : $this->getPostRequest('apiKey', FALSE);
             if(!$key || !$this->db->checkAPIkey($key)){
                 $this->sendError(1, 'Invalid API key');
             }
             $this->defaults = $this->db->getAPIKeyDefaults($key, $command);
+
+            if(in_array($command, $this->apiPostCommands)){
+                $result = call_user_func(array($this, $command));
+                return $result;
+            }
 
             $timestamp = $this->getRequest('timestamp', FALSE);
 
@@ -489,6 +500,50 @@ class ethplorerController {
 
     public function getLastBlock(){
         $result = array('lastBlock' => $this->db->getLastBlock());
+        $this->sendResult($result);
+    }
+
+    public function createPool(){
+        $addresses = $this->getPostRequest('addresses');
+        $poolId = $this->db->createPool($addresses);
+        if(!$poolId){
+            $this->sendError(105, 'Error creating pool');
+        }
+        $result = array('poolId' => $poolId);
+        $this->sendResult($result);
+    }
+
+    public function deletePool(){
+        $poolId = $this->getPostRequest('poolId');
+        if(!$poolId){
+            $this->sendError(106, 'Missing pool ID');
+        }
+        $result = $this->db->deletePool($poolId);
+        $this->sendResult($result);
+    }
+
+    public function addPoolAddresses(){
+        $this->updatePool('addPoolAddresses');
+    }
+
+    public function deletePoolAddresses(){
+        $this->updatePool('deletePoolAddresses');
+    }
+
+    public function clearPoolAddresses(){
+        $this->updatePool('clearPoolAddresses');
+    }
+
+    public function updatePool($method = FALSE){
+        if(!$method){
+            $this->sendError(107, 'Missing method name');
+        }
+        $poolId = $this->getPostRequest('poolId');
+        if(!$poolId){
+            $this->sendError(106, 'Missing pool ID');
+        }
+        $addresses = $this->getPostRequest('addresses');
+        $result = $this->db->updatePool($method, $poolId, $addresses);
         $this->sendResult($result);
     }
 
