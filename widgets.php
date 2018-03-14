@@ -16,6 +16,9 @@
  */
 
 $aConfig = require dirname(__FILE__) . '/service/config.php';
+
+$codeVersion = isset($aConfig['codeVersion']) ? $aConfig['codeVersion'] : "209";
+
 ?><!DOCTYPE html>
 <html>
     <head>
@@ -23,7 +26,7 @@ $aConfig = require dirname(__FILE__) . '/service/config.php';
         <link rel="stylesheet" href="/css/jquery-ui.min.css">
         <link rel="stylesheet" href="/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/css/font-awesome.min.css">
-        <link rel="stylesheet" href="/css/ethplorer.css?v=102>">
+        <link rel="stylesheet" href="/css/ethplorer.css?v=<?=$codeVersion?>>">
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="referrer" content="never" />
@@ -36,9 +39,9 @@ $aConfig = require dirname(__FILE__) . '/service/config.php';
         <script src="/js/jquery-ui.min.js?v=102"></script>
         <script src="/js/bootstrap.min.js"></script>
         <script src="/js/bignumber.js"></script>
-        <script src="/js/ethplorer.js?v=102"></script>
-        <script src="/js/ethplorer-search.js?v=102"></script>
-        <script src="/js/ethplorer-note.js?v=102"></script>
+        <script src="/js/ethplorer.js?v=<?=$codeVersion?>"></script>
+        <script src="/js/ethplorer-search.js?v=<?=$codeVersion?>"></script>
+        <script src="/js/ethplorer-note.js?v=<?=$codeVersion?>"></script>
         <script src="/js/ace.js"></script>
         <script src="/js/config.js"></script>
         <style type="text/css">
