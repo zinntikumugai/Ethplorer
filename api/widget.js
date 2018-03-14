@@ -1642,7 +1642,11 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                     var currentDate = new Date();
                     var currentDatePriceKey = currentDate.getFullYear() + '-' + (currentDate.getMonth() < 9 ? '0' : '') + (currentDate.getMonth() + 1) + '-' + (currentDate.getDate() < 10 ? '0' : '') + currentDate.getDate();
 
-                    if(widgetPriceData[widgetPriceData.length - 1].date != currentDatePriceKey){
+                    var prevDate = new Date();
+                    prevDate.setDate(currentDate.getDate() - 1);
+                    var prevDatePriceKey = prevDate.getFullYear() + '-' + (prevDate.getMonth() < 9 ? '0' : '') + (prevDate.getMonth() + 1) + '-' + (prevDate.getDate() < 10 ? '0' : '') + prevDate.getDate();
+
+                    if(widgetPriceData[widgetPriceData.length - 1].date != currentDatePriceKey && widgetPriceData[widgetPriceData.length - 1].date == prevDatePriceKey){
                         if(currentPrice.rate && (currentPrice.rate > 0) && currentPrice.volume24h && currentPrice.ts){
                             var diff = ethplorerWidget.Utils.pdiff(currentPrice.rate, widgetPriceData[widgetPriceData.length - 1].close, true);
                             if('x' === diff){
