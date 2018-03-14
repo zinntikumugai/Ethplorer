@@ -263,8 +263,8 @@ $aConfig = require dirname(__FILE__) . '/service/config.php';
                             </form>
                         </ul>
                         <ul class="nav navbar-nav navbar-right" id="topmenu">
-                            <li onclick="document.location.href='/top';">TOP-50</li>
-                            <li onclick="document.location.href='/widgets';">Widgets</li>
+                            <li onclick="document.location.href='/index';">Index<div class="new-mark">NEW</div></li>
+                            <li onclick="document.location.href='/top';">TOP-50<div class="new-mark">NEW</div></li>
                             <li onclick="document.location.href='https://github.com/EverexIO/Ethplorer/wiki/Ethplorer-API';">API</li>
                             <li onclick="document.location.href='https://ethplorer.io/#subscribe';">Subscribe</li>
                         </ul>
@@ -629,7 +629,6 @@ eWgs.push(function () {
                             <a href="#"><img src="/images/ethplorerlogowhite400.png" style="max-width: 140px;" alt=""></a>
                             <div>
                                 <div style="color:#eeeeee;">© 2016-2018 <a href="https://everex.one/" target="_blank" class="small-link">Everex</a>
-                                    <br><a href="mailto:support@ethplorer.io" class="small-link">support@ethplorer.io</a>
                                     <br><a href="/privacy" class="small-link">Privacy &amp; Terms</a><br>
                                 </div>
                             </div>

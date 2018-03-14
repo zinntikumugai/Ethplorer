@@ -966,6 +966,17 @@ li.ui-menu-item.have-more {
     white-space: nowrap;
 }
 
+.new-mark {
+    color: #f71e1e;
+    font-size: 10px;
+    font-family: 'Open Sans';
+    line-height: 1.55;
+    font-weight: 700;
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
 @media screen and (max-width: 1199px) {
     .footer-donation {
         font-size:12.8px;

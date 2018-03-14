@@ -162,7 +162,8 @@ if(is_array($rParts) && isset($rParts[2])){
                     </form>
                 </ul>
                 <ul class="nav navbar-nav navbar-right" id="topmenu">
-                    <li onclick="document.location.href='/top';">TOP-50</li>
+                    <li onclick="document.location.href='/index';">Index<div class="new-mark">NEW</div></li>
+                    <li onclick="document.location.href='/top';">TOP-50<div class="new-mark">NEW</div></li>
                     <li onclick="document.location.href='/widgets';">Widgets</li>
                     <li onclick="document.location.href='https://github.com/EverexIO/Ethplorer/wiki/Ethplorer-API';">API</li>
                     <li onclick="document.location.href='https://ethplorer.io/#subscribe';">Subscribe</li>
