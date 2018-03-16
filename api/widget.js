@@ -92,7 +92,7 @@ ethplorerWidget = {
             for(var i=0; i<ethplorerWidget.chartControlWidgets.length; i++)
                     ethplorerWidget.chartControlWidgets[i].load();
     },
-    getGoogleControlOptions: function(dteRangeStart, dteRangeEnd, options, series){
+    getGoogleControlOptions: function(dteRangeStart, dteRangeEnd, options, series, size){
         var controlOptions = {
             controlType: 'ChartRangeFilter',
             containerId: 'control',
@@ -118,9 +118,9 @@ ethplorerWidget = {
                             slantedText: false,
                             maxAlternation: 1,
                             maxTextLines: 1,
-                            format: options.full ? 'yyyy' : 'MM/dd',
+                            format: (options.full || size > 365) ? 'yyyy' : ((size > 90) ? 'MMM' : "MMM d"),
                             gridlines: {
-                                color: options.full ? '#999999' : "none"
+                                color: (options.full || (size > 90)) ? '#999999' : "none"
                             },
                         },
                         series: series
@@ -136,6 +136,10 @@ ethplorerWidget = {
             controlOptions.options.ui.chartOptions.hAxis.baselineColor = '#DEDEDE';
         }
         return controlOptions;
+    },
+    getGoogleChartAxisFormat: function(size){
+        if(size > 90) return "MMM ''yy";
+        else return "MMM d";
     },
     preloadData: function(methods){
         for(var i=0; i<methods.length; i++){
@@ -1334,7 +1338,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                 slantedText: false,
                 maxAlternation: 1,
                 maxTextLines: 1,
-                format: this.options.full ? "MMM ''yy" : 'MMM d',
+                format: ethplorerWidget.getGoogleChartAxisFormat(aData.length),
                 gridlines: {
                     count: 10,
                     color: "none"
@@ -1419,7 +1423,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                 }
             };
 
-            var defControlOptions = ethplorerWidget.getGoogleControlOptions(dteRangeStart, dteRangeEnd, this.options, controlSeries);
+            var defControlOptions = ethplorerWidget.getGoogleControlOptions(dteRangeStart, dteRangeEnd, this.options, controlSeries, aData.length);
             var controlOptions = $.extend(true, defControlOptions, this.options['controlOptions']);
             var control = new google.visualization.ControlWrapper(controlOptions);
 
@@ -1824,7 +1828,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                 }
             };
         }
-        var defControlOptions = ethplorerWidget.getGoogleControlOptions(rangeStart, new Date(strFirstDate), this.options, controlSeries);
+        var defControlOptions = ethplorerWidget.getGoogleControlOptions(rangeStart, new Date(strFirstDate), this.options, controlSeries, aData.length);
         var controlOptions = $.extend(true, defControlOptions, this.options['controlOptions']);
         var control = new google.visualization.ControlWrapper(controlOptions);
 
@@ -1895,7 +1899,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                     slantedText: false,
                     maxAlternation: 1,
                     maxTextLines: 1,
-                    format: 'MM/dd',
+                    format: ethplorerWidget.getGoogleChartAxisFormat(aData.length),
                     gridlines: {
                         count: 10,
                         color: "none"
@@ -2276,7 +2280,7 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
                 lineWidth: 1
             }
         };
-        var defControlOptions = ethplorerWidget.getGoogleControlOptions(dteRangeStart, dteRangeEnd, this.options, controlSeries);
+        var defControlOptions = ethplorerWidget.getGoogleControlOptions(dteRangeStart, dteRangeEnd, this.options, controlSeries, aData.length);
         var controlOptions = $.extend(true, defControlOptions, this.options['controlOptions']);
         var control = new google.visualization.ControlWrapper(controlOptions);
 
@@ -2346,7 +2350,7 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
                     slantedText: false,
                     maxAlternation: 1,
                     maxTextLines: 1,
-                    format: 'MM/dd',
+                    format: ethplorerWidget.getGoogleChartAxisFormat(aData.length),
                     gridlines: {
                         count: 10,
                         color: "none"
