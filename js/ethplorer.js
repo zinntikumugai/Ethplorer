@@ -1044,6 +1044,7 @@ Ethplorer = {
                         theme: 'dark',
                         getCode: true,
                         address: address,
+                        period: 730,
                         //options: {title: widgetTitle}
                     }
                 );
