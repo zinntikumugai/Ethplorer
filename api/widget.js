@@ -106,7 +106,7 @@ ethplorerWidget = {
                 filterColumnIndex: 0,
                 ui: {
                     chartType: 'ComboChart',
-                    minRangeSize: (options.period <= 7) ? 86400000 * 2 : 86400000 * 7,
+                    minRangeSize: (options.period <= 7) ? 86400000 * 2 : 86400000 * 30,
                     chartOptions: {
                         colors: ['#65A5DF'],
                         lineWidth: 0,
