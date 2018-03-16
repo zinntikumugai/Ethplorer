@@ -2510,6 +2510,7 @@ class Ethplorer {
                         'hash' => $tx["hash"],
                         'value' => $tx["value"],
                         'input' => $tx["input"],
+                        'balances' => $tx["balances"],
                         'success' => $success,
                     );
                 }
