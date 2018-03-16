@@ -447,7 +447,7 @@ class ethplorerController {
      * @return array
      */
     public function getTokenPriceHistoryGrouped(){
-        $period = min(abs((int)$this->getRequest('period', 365)), 365);
+        $period = abs((int)$this->getRequest('period', 365));
         if($period <= 0) $period = 365;
         $address = $this->getParam(0, FALSE);
         if($address){
