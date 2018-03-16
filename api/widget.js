@@ -106,7 +106,7 @@ ethplorerWidget = {
                 filterColumnIndex: 0,
                 ui: {
                     chartType: 'ComboChart',
-                    minRangeSize: (options.period <= 7) ? 86400000 * 2 : 86400000 * 7,
+                    minRangeSize: (size <= 7) ? 86400000 * 2 : 86400000 * 7,
                     chartOptions: {
                         colors: ['#65A5DF'],
                         lineWidth: 0,
@@ -122,7 +122,7 @@ ethplorerWidget = {
                             format: (options.full || size > 90) ? "MMM ''yy" : "MMM d",
                             gridlines: {
                                 color: (options.full || (size > 90)) ? '#999999' : "none",
-                                count: (options.full || size > 90) ? 6 : -1
+                                count: (options.full || size > 90) ? 6 : 2
                             },
                         },
                         series: series
