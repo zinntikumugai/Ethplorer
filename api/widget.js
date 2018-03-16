@@ -149,7 +149,8 @@ ethplorerWidget = {
             }
             var params = {
                 apiKey: 'ethplorer.widget',
-                domain: document.location.href
+                domain: document.location.href,
+                period: 730
             };
 
             $.getJSON(api, params, function(_address){
