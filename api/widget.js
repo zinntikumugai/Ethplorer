@@ -122,7 +122,7 @@ ethplorerWidget = {
                             format: (options.full || size > 90) ? "MMM ''yy" : "MMM d",
                             gridlines: {
                                 color: (options.full || (size > 90)) ? '#999999' : "none",
-                                count: (options.full || size > 90) ? 6 : 2
+                                count: (options.full || size > 90) ? 6 : 6
                             },
                         },
                         series: series
