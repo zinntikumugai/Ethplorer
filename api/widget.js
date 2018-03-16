@@ -118,7 +118,7 @@ ethplorerWidget = {
                             slantedText: false,
                             maxAlternation: 1,
                             maxTextLines: 1,
-                            format: (options.full || size > 365) ? 'yyyy' : ((size > 90) ? 'MMM' : "MMM d"),
+                            format: (options.full || size > 365) ? 'yyyy' : ((size > 90) ? "MMM ''yy" : "MMM d"),
                             gridlines: {
                                 color: (options.full || (size > 90)) ? '#999999' : "none"
                             },
