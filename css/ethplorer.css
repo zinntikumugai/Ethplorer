@@ -1164,9 +1164,11 @@ a.token-update {
     .adsbygoogle {
         display: none !important;
     }
+    .new-mark {
+        right: -5px;
+        top: 0px;
+    }
 }
-
-
 
 @media screen and (max-width: 991px) {
     #topmenu li {
