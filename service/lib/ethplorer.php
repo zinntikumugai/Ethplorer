@@ -2522,7 +2522,7 @@ class Ethplorer {
         $cache = 'pool_operations-' . $poolId. '-' . $period;
         $aOps = $this->oCache->get($cache, false, true, 300);
         if($updateCache || (false === $aOps)){
-            $cursor = $this->oMongoPools->find('operations', array('pool' => $poolId, 'timestamp' => array('$gte' => time() - $period)), array("timestamp" => -1));
+            $cursor = $this->oMongoPools->find('operations', array('pool' => $poolId, 'contract' => array('$ne' => 'ETH'), 'timestamp' => array('$gte' => time() - $period)), array("timestamp" => -1));
             $aOps = array();
             foreach($cursor as $op){
                 $aAddresses = [$op["from"]];
