@@ -1003,6 +1003,9 @@ li.ui-menu-item.have-more {
         position:relative;
         width: 100%;
     }
+    .new-mark {
+        right: -10px;
+    }
 }
 @media screen and (min-width: 992px) {
     .multiop tr td:nth-child(3) {
