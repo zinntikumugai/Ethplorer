@@ -143,6 +143,10 @@ ethplorerWidget = {
         if(size > 90) return "MMM ''yy";
         else return "MMM d";
     },
+    getGoogleChartAxisCount: function(size){
+        if(size > 90) return 10;
+        else return 7;
+    },
     preloadData: function(methods){
         for(var i=0; i<methods.length; i++){
             var preloadMethod = methods[i];
@@ -1342,7 +1346,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                 maxTextLines: 1,
                 format: ethplorerWidget.getGoogleChartAxisFormat(aData.length),
                 gridlines: {
-                    count: 10,
+                    count: ethplorerWidget.getGoogleChartAxisCount(aData.length),
                     color: "none"
                 }
             },
@@ -1903,7 +1907,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                     maxTextLines: 1,
                     format: ethplorerWidget.getGoogleChartAxisFormat(aData.length),
                     gridlines: {
-                        count: 10,
+                        count: ethplorerWidget.getGoogleChartAxisCount(aData.length),
                         color: "none"
                     },
                 },
@@ -2354,7 +2358,7 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
                     maxTextLines: 1,
                     format: ethplorerWidget.getGoogleChartAxisFormat(aData.length),
                     gridlines: {
-                        count: 10,
+                        count: ethplorerWidget.getGoogleChartAxisCount(aData.length),
                         color: "none"
                     },
                 },
