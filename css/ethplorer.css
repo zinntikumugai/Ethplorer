@@ -1003,9 +1003,6 @@ li.ui-menu-item.have-more {
         position:relative;
         width: 100%;
     }
-    .new-mark {
-        right: -10px;
-    }
 }
 @media screen and (min-width: 992px) {
     .multiop tr td:nth-child(3) {
@@ -1030,6 +1027,9 @@ li.ui-menu-item.have-more {
     .footer-links,
     .footer-donation {
         font-size:12.3px;
+    }
+    .new-mark {
+        right: -10px;
     }
 }
 
