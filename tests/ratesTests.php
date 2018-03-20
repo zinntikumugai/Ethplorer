@@ -5,19 +5,19 @@ require "vendor/autoload.php";
 use DOMDocument;
 use EverexIO\PHPUnitIterator\TestCase;
 
-class everexTest extends TestCase
+class ratesTest extends TestCase
 {
     protected $url = 'http://rates.everex.io';
 
     /**
-     * @dataProvider everexProvider
+     * @dataProvider ratesProvider
      */
     public function testAPI($test)
     {
         $this->_iterateTest($test);
     }
 
-    public function everexProvider()
+    public function ratesProvider()
     {
         return [
             // ===================
