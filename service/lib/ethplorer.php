@@ -375,7 +375,7 @@ class Ethplorer {
             evxProfiler::checkpoint('getTokenLoop', 'FINISH');
             $result["balances"] = $aBalances;
             $showEth = FALSE;
-            if(isset($_GET['showEth']) && $_GET['showEth']) $showEth = TRUE;
+            if((isset($_GET['showEth']) && $_GET['showEth']) || $this->showEth) $showEth = TRUE;
             $result["transfers"] = $this->getAddressOperations($address, $limit, $this->getOffset('transfers'), array('transfer'), $showEth);
             $countOperations = $this->countOperations($address, TRUE, $showEth);
             $totalOperations = $this->filter ? $this->countOperations($address, FALSE, $showEth) : $countOperations;
