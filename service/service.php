@@ -63,6 +63,9 @@ if(strlen($search) || (false !== $data)){
                         case 'filter':
                             $es->setFilter($aPageParams[1]);
                             break;
+                        case 'showEth':
+                            $es->setShowEth($aPageParams[1]);
+                            break;
                     }
                 }
             }

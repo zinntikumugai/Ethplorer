@@ -98,6 +98,12 @@ class Ethplorer {
     protected $filter = FALSE;
 
     /**
+     *
+     * @var bool
+     */
+    protected $showEth = FALSE;
+
+    /**
      * Cache for getTokens
      *
      * @var array
@@ -209,6 +215,15 @@ class Ethplorer {
      */
     public function setFilter($filter){
         $this->filter = $filter;
+    }
+
+    /**
+     * Set show ETH flag
+     *
+     * @param bool $showEth
+     */
+    public function setShowEth($showEth){
+        $this->showEth = $showEth;
     }
 
     /**
