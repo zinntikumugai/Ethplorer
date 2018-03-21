@@ -980,6 +980,7 @@ class Ethplorer {
                 if(false !== $aCachedData){
                     evxProfiler::checkpoint('countTransfersFromCache', 'START', 'address=' . $address);
                     $result = $aCachedData['transfersCount'];
+                    if($showEth) $result += $aCachedData['ethTransfersCount'];
                     evxProfiler::checkpoint('countTransfersFromCache', 'FINISH', 'count=' . $result);
                 }else{
                     $aSearchFields = array('from', 'to', 'address');
