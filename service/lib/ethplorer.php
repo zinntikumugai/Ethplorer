@@ -1703,10 +1703,10 @@ class Ethplorer {
      * @param string $address  Address
      * @return array
      */
-    public function getTokenHistoryGrouped($period = 30, $address = FALSE, $type = 'daily', $cacheLifetime = 1800, $showEth = FALSE){
+    public function getTokenHistoryGrouped($period = 30, $address = FALSE, $type = 'daily', $cacheLifetime = 1800, $showEth = FALSE, $updateCache = FALSE){
         $cache = 'token_history_grouped-' . ($address ? ($address . '-') : '') . $period . (($type == 'hourly') ? '-hourly' : '') . ($showEth ? '-eth' : '');
-        $result = $this->oCache->get($cache, false, true, $cacheLifetime);
-        if(FALSE === $result){
+        $result = $address ? $this->oCache->get($cache, false, true, $cacheLifetime) : $this->oCache->get($cache, false, true);
+        if(FALSE === $result || $updateCache){
             // Chainy
             if($address && ($address == self::ADDRESS_CHAINY)){
                 return $this->getChainyTokenHistoryGrouped($period);

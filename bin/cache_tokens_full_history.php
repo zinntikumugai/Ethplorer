@@ -23,3 +23,4 @@ $es->createProcessLock('tokens.full.history.lock');
 
 $es->getTokenFullHistoryGrouped();
 $es->getTokenCapHistory(0, TRUE);
+$es->getTokenHistoryGrouped(90, FALSE, 'daily', 1800, FALSE, TRUE);
