@@ -19,7 +19,6 @@ require dirname(__FILE__) . '/../service/lib/ethplorer.php';
 $aConfig = require_once dirname(__FILE__) . '/../service/config.php';
 
 $es = Ethplorer::db($aConfig);
-$es->createProcessLock('tokens.full.history.lock');
+$es->createProcessLock('tokens.history.lock');
 
-$es->getTokenFullHistoryGrouped();
-$es->getTokenCapHistory(0, TRUE);
+$es->getTokenHistoryGrouped(90, FALSE, 'daily', 1800, FALSE, TRUE);
