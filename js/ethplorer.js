@@ -57,6 +57,10 @@ Ethplorer = {
                 }
             }
         }
+        /*
+        Ethplorer.showEth = Ethplorer.Storage.get('showEth', 1);
+        Ethplorer.Nav.set('showEth', Ethplorer.showEth);
+        */
         Ethplorer.route();
         $('#network').text(Ethplorer.Config.testnet ? 'Test' : 'Modern');
         $('.navbar-nav li[data-page]').click(function(){
@@ -111,6 +115,7 @@ Ethplorer = {
                     if(Ethplorer.checkFilter(filter)){
                         $('.filter-clear').show();
                         Ethplorer.Nav.set('filter', filter);
+                        Ethplorer.Nav.del('transfers');
                         $('#filter_list').addClass('filled');
                     }else{
                         if(!$('#filter-error').length){
@@ -1070,6 +1075,9 @@ Ethplorer = {
         var data = Ethplorer.data;
         var tableId = data.token ? 'address-token-transfers' : 'address-transfers';
         $('#' + tableId).find('.table').empty();
+        if(!data.token && !$('#showEth').length && (Ethplorer.Storage.get('showEth', 0) > 0)){
+            $('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfers(this);"  id="showEth" type="checkbox" ' + (Ethplorer.showEth > 0 ? 'checked="checked"' : '') + ' name="showEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
+        }
         if(!data.transfers || !data.transfers.length){
             $('#' + tableId).find('.total-records').empty();
             $('#' + tableId).find('.table').append('<tr class="notFoundRow"><td>No transfers found</td></tr>');
@@ -1077,9 +1085,13 @@ Ethplorer = {
             for(var i=0; i<data.transfers.length; i++){
                 var tx = data.transfers[i];
                 var qty = parseFloat(tx.value);// Ethplorer.Utils.toBig(tx.value);
-                if(parseInt(qty.toString())){
-                    var txToken = Ethplorer.prepareToken(data.token ? data.token : data.tokens[tx.contract]);
-                    qty = qty / Math.pow(10, txToken.decimals);
+                if(parseInt(qty.toString()) || (tx.isEth)){
+                    if(tx.isEth){
+                        var txToken = {address: '0x0000000000000000000000000000000000000000', name: 'Ethereum', decimals: 18, symbol: 'ETH', totalSupply: 0};
+                    }else{
+                        var txToken = Ethplorer.prepareToken(data.token ? data.token : data.tokens[tx.contract]);
+                    }
+                    if(!tx.isEth) qty = qty / Math.pow(10, txToken.decimals);
                     var row = $('<tr>');
                     var tdDate = $('<td>').addClass('hide-small');
                     var tdData = $('<td>');
@@ -1157,6 +1169,15 @@ Ethplorer = {
         $(".table").find("tr:visible:last").addClass("last");
 
         $('#' + tableId).show();
+    },
+
+    showEthTransfers: function(switcher){
+        Ethplorer.Nav.del('transfers');
+        Ethplorer.showEth = switcher.checked ? 1 : 0;
+        Ethplorer.Storage.set('showEth', Ethplorer.showEth);
+        Ethplorer.Nav.set('showEth', Ethplorer.showEth);
+        var tab = Ethplorer.getActiveTab();
+        Ethplorer.reloadTab(tab);
     },
 
     drawIssuances: function(address, issuancesData){

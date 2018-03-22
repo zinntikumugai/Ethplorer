@@ -40,6 +40,7 @@ if($debugId){
 if(strlen($search) || (false !== $data)){
 
     $es = Ethplorer::db($aConfig);
+    //$es->setShowEth(true);
 
     if(strlen($search)){
         $result = $es->searchToken($search);
@@ -64,7 +65,8 @@ if(strlen($search) || (false !== $data)){
                             $es->setFilter($aPageParams[1]);
                             break;
                         case 'showEth':
-                            $es->setShowEth($aPageParams[1]);
+                            $showEth = (intval($aPageParams[1]) > 0) ? TRUE : FALSE;
+                            $es->setShowEth($showEth);
                             break;
                     }
                 }
