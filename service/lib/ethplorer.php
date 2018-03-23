@@ -98,6 +98,12 @@ class Ethplorer {
     protected $filter = FALSE;
 
     /**
+     *
+     * @var bool
+     */
+    protected $showEth = FALSE;
+
+    /**
      * Cache for getTokens
      *
      * @var array
@@ -209,6 +215,15 @@ class Ethplorer {
      */
     public function setFilter($filter){
         $this->filter = $filter;
+    }
+
+    /**
+     * Set show ETH flag
+     *
+     * @param bool $showEth
+     */
+    public function setShowEth($showEth){
+        $this->showEth = $showEth;
     }
 
     /**
@@ -359,9 +374,11 @@ class Ethplorer {
             }
             evxProfiler::checkpoint('getTokenLoop', 'FINISH');
             $result["balances"] = $aBalances;
-            $result["transfers"] = $this->getAddressOperations($address, $limit, $this->getOffset('transfers'), array('transfer'));
-            $countOperations = $this->countOperations($address);
-            $totalOperations = $this->filter ? $this->countOperations($address, FALSE) : $countOperations;
+            $showEth = FALSE;
+            if((isset($_GET['showEth']) && $_GET['showEth']) || $this->showEth) $showEth = TRUE;
+            $result["transfers"] = $this->getAddressOperations($address, $limit, $this->getOffset('transfers'), array('transfer'), $showEth);
+            $countOperations = $this->countOperations($address, TRUE, $showEth);
+            $totalOperations = $this->filter ? $this->countOperations($address, FALSE, $showEth) : $countOperations;
             $result['pager']['transfers'] = array(
                 'page' => $this->getPager('transfers'),
                 'records' => $countOperations,
@@ -963,6 +980,7 @@ class Ethplorer {
                 if(false !== $aCachedData){
                     evxProfiler::checkpoint('countTransfersFromCache', 'START', 'address=' . $address);
                     $result = $aCachedData['transfersCount'];
+                    if($showEth) $result += $aCachedData['ethTransfersCount'];
                     evxProfiler::checkpoint('countTransfersFromCache', 'FINISH', 'count=' . $result);
                 }else{
                     $aSearchFields = array('from', 'to', 'address');
@@ -1685,10 +1703,10 @@ class Ethplorer {
      * @param string $address  Address
      * @return array
      */
-    public function getTokenHistoryGrouped($period = 30, $address = FALSE, $type = 'daily', $cacheLifetime = 1800, $showEth = FALSE){
+    public function getTokenHistoryGrouped($period = 30, $address = FALSE, $type = 'daily', $cacheLifetime = 1800, $showEth = FALSE, $updateCache = FALSE){
         $cache = 'token_history_grouped-' . ($address ? ($address . '-') : '') . $period . (($type == 'hourly') ? '-hourly' : '') . ($showEth ? '-eth' : '');
-        $result = $this->oCache->get($cache, false, true, $cacheLifetime);
-        if(FALSE === $result){
+        $result = $address ? $this->oCache->get($cache, false, true, $cacheLifetime) : $this->oCache->get($cache, false, true);
+        if(FALSE === $result || $updateCache){
             // Chainy
             if($address && ($address == self::ADDRESS_CHAINY)){
                 return $this->getChainyTokenHistoryGrouped($period);
