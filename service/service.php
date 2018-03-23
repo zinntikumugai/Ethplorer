@@ -14,6 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+if(file_exists("_service.php")){
+    require "_service.php";
+}
 
 require dirname(__FILE__) . '/lib/ethplorer.php';
 

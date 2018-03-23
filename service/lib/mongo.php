@@ -172,7 +172,7 @@ class evxMongo {
         $finish = microtime(true);
         $qTime = $finish - $start;
         if($qTime > 1){
-            $this->log('(' . ($qTime) . 's) Find ' . $this->dbName . '.' . $this->aDBs[$collection] . ' > ' . json_encode($aSearch));
+            $this->log('(' . ($qTime) . 's) Find ' . $this->dbName . '.' . $this->aDBs[$collection] . ' > ' . json_encode($aSearch) . ' [' . json_encode($aOptions) . ']');
         }
         return $aResult;
     }
