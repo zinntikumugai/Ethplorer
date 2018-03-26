@@ -1947,8 +1947,9 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                 }
             }
         };
+        var color = '#989795'
         if(this.options['theme'] == 'dark'){
-            def.options.colors = noPrice ? ['#FCEC0F']: ['#999999', '#FCEC0F', '#DEDEDE'];
+            def.options.colors = noPrice ? ['#FCEC0F']: [color, '#FCEC0F', '#DEDEDE'];
             def.options.titleTextStyle = {color: '#DEDEDE'};
             def.options.backgroundColor = {fill: 'transparent'};
 
@@ -1963,22 +1964,38 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
         def.options = $.extend(true, def.options, this.options['options']);
         var chart = new google.visualization.ChartWrapper(def);
 
-        /*if(!noPrice){
-            google.visualization.events.addListener(chart, 'ready', function(){
-                var svgElements = document.getElementsByTagNameNS("http://www.w3.org/2000/svg", "svg");
-                for(var i=0; i<1; i++){
-                    var svgElement = svgElements.item(i);
-                    var allRects = svgElement.getElementsByTagName("rect");
-                    for(var i=0; i<allRects.length; i++){
-                        var rect = allRects[i];
-                        if(rect.getAttribute("fill") === "#989795"){
-                            rect.setAttribute("width", "1");
+        if(!noPrice){
+            var $chartEl = $("#chart")
+            $("#chart").bind("DOMNodeInserted",function(){
+                // console.log('DOMNodeInserted')
+                $chartEl.find('[width="2"][fill="' + color + '"]')
+                    .each(function (index, item) {
+                        var sibling = $(item).siblings()[0];
+                        if (sibling) {
+                            var width = $(sibling).attr('width');
+                            var w = width > 27 ? 2 : (width > 2 ? 1 : + width / 2);
+                            var x = +$(sibling).attr('x') + (width - w)  / 2;
+                            $(item)
+                                .attr('width', w)
+                                .attr('x', x)
                         }
-                    }
-                }
+                    })
             });
-        }*/
-
+            google.visualization.events.addListener(chart, 'ready', function(){
+                // console.log('ready')
+                $chartEl.find('[width="2"][fill="'+color+'"]').each(function (index, item) {
+                    var sibling = $(item).siblings()[0];
+                    if (sibling) {
+                        var width = $(sibling).attr('width');
+                        var w = width > 27 ? 2 : (width > 2 ? 1 : + width / 2);
+                        var x = +$(sibling).attr('x') + (width - w)  / 2;
+                        $(item)
+                            .attr('width', w)
+                            .attr('x', x)
+                    }
+                })
+            });
+        }
         // draw chart
         dashboard.bind(control, chart);
         dashboard.draw(data);
