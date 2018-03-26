@@ -1968,15 +1968,34 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
             var $chartEl = $("#chart")
             $("#chart").bind("DOMNodeInserted",function(){
                 // console.log('DOMNodeInserted')
-                $chartEl.find('rect[width="2"][fill="'+color+'"]')
-                    .attr("width", 1)
+                $chartEl.find('[width="2"][fill="' + color + '"]')
+                    .each(function (index, item) {
+                        var sibling = $(item).siblings()[0];
+                        if (sibling) {
+                            var width = $(sibling).attr('width');
+                            var w = width > 27 ? 2 : (width > 2 ? 1 : + width / 2);
+                            var x = +$(sibling).attr('x') + (width - w)  / 2;
+                            $(item)
+                                .attr('width', w)
+                                .attr('x', x)
+                        }
+                    })
             });
             google.visualization.events.addListener(chart, 'ready', function(){
                 // console.log('ready')
-                $chartEl.find('rect[width="2"][fill="'+color+'"]').attr("width", 1)
+                $chartEl.find('[width="2"][fill="'+color+'"]').each(function (index, item) {
+                    var sibling = $(item).siblings()[0];
+                    if (sibling) {
+                        var width = $(sibling).attr('width');
+                        var w = width > 27 ? 2 : (width > 2 ? 1 : + width / 2);
+                        var x = +$(sibling).attr('x') + (width - w)  / 2;
+                        $(item)
+                            .attr('width', w)
+                            .attr('x', x)
+                    }
+                })
             });
         }
-
         // draw chart
         dashboard.bind(control, chart);
         dashboard.draw(data);
