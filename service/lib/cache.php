@@ -149,7 +149,7 @@ class evxCache {
                     $lifetime = time() + $lifetime;
                 }
                 //$saveRes = $this->oDriver->set($entryName, $data, $lifetime);
-                $aMemcachedData = array('lifetime' => $lifetime, 'data' => $data);
+                $aMemcachedData = array('lifetime' => $lifetime, 'data' => $data, 'lock' => true);
                 $saveRes = $this->oDriver->set($entryName, $aMemcachedData);
                 if(!in_array($entryName, array('tokens', 'rates')) && (0 !== strpos($entryName, 'rates-history-'))){
                     break;
