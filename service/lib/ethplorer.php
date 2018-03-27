@@ -1515,10 +1515,17 @@ class Ethplorer {
                                     }
 
                                     // get total cap for previous day
-                                    if((1 == $period) && !$isEth && !$previousTokenCapAdded && isset($aToken['cap'])){
+                                    /*if((1 == $period) && !$isEth && !$previousTokenCapAdded && isset($aToken['cap'])){
                                         $aTotals['capPrevious'] += $aToken['cap'];
                                         $previousTokenCapAdded = true;
-                                    }
+                                    }*/
+                                }
+
+                                // get total cap for previous day
+                                $prevCapPeriod = ($aRecord['date'] == $aPeriod['currentPeriodStart']) && ($aRecord['hour'] = $curHour);
+                                if(!$isEth && $prevCapPeriod && (1 == $period) && !$previousTokenCapAdded && isset($aToken['cap'])){
+                                    $aTotals['capPrevious'] += $aToken['cap'];
+                                    $previousTokenCapAdded = true;
                                 }
                             }
                         }
