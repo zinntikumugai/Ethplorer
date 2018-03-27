@@ -1522,9 +1522,9 @@ class Ethplorer {
                                 }
 
                                 // get total cap for previous day
-                                $prevCapPeriod = ($aRecord['date'] == $aPeriod['currentPeriodStart']) && ($aRecord['hour'] = $curHour);
+                                $prevCapPeriod = ($aRecord['date'] == $aPeriod['currentPeriodStart']) && ($aRecord['hour'] == $curHour);
                                 if(!$isEth && $prevCapPeriod && (1 == $period) && !$previousTokenCapAdded && isset($aToken['cap'])){
-                                    $aTotals['capPrevious'] += $aToken['cap'];
+                                    $aTotals['capPrevious'] += $aRecord['cap'];
                                     $previousTokenCapAdded = true;
                                 }
                             }
