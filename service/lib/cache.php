@@ -79,13 +79,15 @@ class evxCache {
      */
     protected $aLifetime = array();
 
+    protected $useLocks = FALSE;
+
     /**
      * Constructor.
      *
      * @param string  $path  Cache files path
      * @todo params to config
      */
-    public function __construct($path = __DIR__, $driver = FALSE){
+    public function __construct($path = __DIR__, $driver = FALSE, $useLocks = FALSE){
         $path = realpath($path);
         if(file_exists($path) && is_dir($path)){
             $this->path = $path;
@@ -93,6 +95,7 @@ class evxCache {
         if(FALSE !== $driver){
             $this->driver = $driver;
         }
+        $this->useLocks = $useLocks;
 
         if('memcached' === $this->driver){
             if(class_exists('Memcached')){
@@ -158,7 +161,7 @@ class evxCache {
                 $saveRes = !!file_put_contents($filename, $json);
                 break;
         }
-        $this->deleteLock($entryName);
+        if($this->useLocks) $this->deleteLock($entryName);
         return $saveRes;
     }
 
@@ -295,6 +298,8 @@ class evxCache {
         if($result && !$isExpired){
             return $result;
         }else{
+            if(!$this->useLocks) return FALSE;
+
             // try to create cache lock
             if($this->addLock($entryName)){
                 return FALSE;

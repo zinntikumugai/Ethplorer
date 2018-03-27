@@ -118,7 +118,8 @@ class Ethplorer {
             "locksDir" => dirname(__FILE__) . "/../lock/",
         );
         $cacheDriver = isset($this->aSettings['cacheDriver']) ? $this->aSettings['cacheDriver'] : 'file';
-        $this->oCache = new evxCache($this->aSettings['cacheDir'], $cacheDriver);
+        $useLocks = isset($this->aSettings['useLocks']) ? $this->aSettings['useLocks'] : FALSE;
+        $this->oCache = new evxCache($this->aSettings['cacheDir'], $cacheDriver, $useLocks);
         if(isset($this->aSettings['mongo']) && is_array($this->aSettings['mongo'])){
             evxMongoScanner::init($this->aSettings['mongo']);
             $this->oMongo = evxMongoScanner::getInstance();
