@@ -2466,6 +2466,18 @@ class Ethplorer {
         return $result;
     }
 
+    public function createPool($addresses = NULL){
+        return $this->_jsonrpcall($this->aSettings['pools'], 'createPool', array($addresses));
+    }
+
+    public function deletePool($poolId = NULL){
+        return $this->_jsonrpcall($this->aSettings['pools'], 'deletePool', array($poolId));
+    }
+
+    public function updatePool($method = NULL, $poolId = NULL, $addresses = NULL){
+        return $this->_jsonrpcall($this->aSettings['pools'], 'updatePool', array($method, $poolId, $addresses));
+    }
+
     /**
      * Returns pool addresses.
      *
@@ -2524,6 +2536,7 @@ class Ethplorer {
                         'hash' => $tx["hash"],
                         'value' => $tx["value"],
                         'input' => $tx["input"],
+                        'balances' => $tx["balances"],
                         'success' => $success,
                     );
                 }
