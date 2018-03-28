@@ -170,7 +170,7 @@ class evxCache {
         }elseif($loadIfNeeded){
             if('memcached' === $this->driver){
                 $result = $this->oDriver->get($entryName);
-                if(isset($result['lock'])){
+                if(is_array($result) && isset($result['lock'])){
                     $result = FALSE;
                 }
                 // @todo: move hardcode to controller
