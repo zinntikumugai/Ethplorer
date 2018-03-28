@@ -156,7 +156,7 @@ class evxCache {
                 }
             case 'file':
                 $filename = $this->path . '/' . $entryName . ".tmp";
-                @unlink($filename);
+                //@unlink($filename);
                 $json = json_encode($data, JSON_PRETTY_PRINT);
                 $saveRes = !!file_put_contents($filename, $json);
                 break;
