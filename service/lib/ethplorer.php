@@ -1464,7 +1464,7 @@ class Ethplorer {
                     $aPrice = $this->getTokenPrice($address);
                 }
                 //if($aPrice && ($isEth || $aToken['totalSupply'])){
-                if($isEth || ($aPrice && isset($aPrice['rate']) && isset($aPrice['marketCapUsd']) && $aPrice['marketCapUsd'])){
+                if($isEth || ($aPrice && isset($aPrice['rate']))){
                     if(!$isEth) $aTotals['tokensWithPrice'] += 1;
                     if(!$isEth && isset($aPrice['marketCapUsd'])){
                         $aTotals['cap'] += $aPrice['marketCapUsd'];
