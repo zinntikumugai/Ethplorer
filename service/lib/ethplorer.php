@@ -1524,7 +1524,7 @@ class Ethplorer {
 
                                 // get total cap for previous day
                                 $prevCapPeriod = ($aRecord['date'] == $aPeriod['currentPeriodStart']) && ($aRecord['hour'] == $curHour);
-                                if(!$isEth && $prevCapPeriod && (1 == $period) && !$previousTokenCapAdded && isset($aToken['cap'])){
+                                if(!$isEth && $prevCapPeriod && (1 == $period) && !$previousTokenCapAdded && isset($aRecord['cap'])){
                                     $aTotals['capPrevious'] += $aRecord['cap'];
                                     $previousTokenCapAdded = true;
                                 }
