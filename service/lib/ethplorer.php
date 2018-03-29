@@ -2105,7 +2105,7 @@ class Ethplorer {
                     $method = 'getCurrencyCurrent';
                     $params = array($address, 'USD');
                     $result = $this->_jsonrpcall($this->aSettings['currency'], $method, $params);
-                    if($result){
+                    if($result && isset($result['rate'])){
                         unset($result['code_from']);
                         unset($result['code_to']);
                         unset($result['bid']);
