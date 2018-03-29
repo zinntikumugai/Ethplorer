@@ -20,7 +20,27 @@ $aConfig = require_once dirname(__FILE__) . '/../service/config.php';
 
 $es = Ethplorer::db($aConfig);
 $es->createProcessLock('topTokens.lock');
-$aCriteries = array('trade', 'cap', 'count');
+$aCriteries = array('cap', 'trade', 'count');
+$aTotals = null;
 foreach($aCriteries as $criteria){
-    $es->getTokensTop(100, $criteria, TRUE);
+    $res = $es->getTokensTop(100, $criteria, TRUE);
+    if(!$aTotals && isset($res['totals'])){
+        $aTotals = $res['totals'];
+    }
 }
+
+// save cap history into file
+if($aTotals){
+    $aTotals['date'] = date("Y-m-d H:i", time());
+
+    $data = array();
+    $historyFile = './cap_history.json';
+    if(file_exists($historyFile)){
+        $history = @file_get_contents($historyFile);
+        $data = json_decode($history, TRUE);
+    }
+    $data[] = $aTotals;
+    $json = json_encode($data, JSON_PRETTY_PRINT);
+    @file_put_contents($historyFile, $json);
+}
+
