@@ -1576,6 +1576,7 @@ class Ethplorer {
                 }
             }
             //$result = $res;
+            $aTotals['ts'] = time();
             $result = array('tokens' => $res, 'totals' => $aTotals);
             $this->oCache->save($cache, $result);
             $this->oCache->save('top_tokens_totals', $result['totals']);
