@@ -34,7 +34,7 @@ if($aTotals){
     $aTotals['date'] = gmdate("Y-m-d H:i", time());
 
     $data = array();
-    $historyFile = './cap_history.json';
+    $historyFile = dirname(__FILE__) . '/cap_history.json';
     if(file_exists($historyFile)){
         $history = @file_get_contents($historyFile);
         $data = json_decode($history, TRUE);
