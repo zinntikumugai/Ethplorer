@@ -31,7 +31,7 @@ foreach($aCriteries as $criteria){
 
 // save cap history into file
 if($aTotals){
-    $aTotals['date'] = date("Y-m-d H:i", time());
+    $aTotals['date'] = gmdate("Y-m-d H:i", time());
 
     $data = array();
     $historyFile = './cap_history.json';
@@ -40,7 +40,7 @@ if($aTotals){
         $data = json_decode($history, TRUE);
     }
     $data[] = $aTotals;
-    $json = json_encode($data, JSON_PRETTY_PRINT);
+    $json = json_encode($data);
     @file_put_contents($historyFile, $json);
 }
 
