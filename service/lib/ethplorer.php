@@ -1576,10 +1576,16 @@ class Ethplorer {
                 }
             }
             //$result = $res;
-            $aTotals['ts'] = time();
-            $result = array('tokens' => $res, 'totals' => $aTotals);
+            $result = array('tokens' => $res);
+            if($criteria == 'cap'){
+                $aTotals['ts'] = time();
+                $result['totals'] = $aTotals;
+                $this->oCache->save('top_tokens_totals', $aTotals);
+            }else{
+                $result['totals'] = $this->getTokensTopTotals();
+            }
+            //$result = array('tokens' => $res, 'totals' => $aTotals);
             $this->oCache->save($cache, $result);
-            $this->oCache->save('top_tokens_totals', $result['totals']);
         }
 
         $res = [];
