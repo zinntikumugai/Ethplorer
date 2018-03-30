@@ -1494,7 +1494,9 @@ class Ethplorer {
                     }
                     $aHistory = $this->getTokenPriceHistory($address, 60, 'hourly');
                     if(is_array($aHistory)){
-                        $previousTokenCapAdded = false;
+                        //$previousTokenCapAdded = false;
+                        $prevDayCap = null;
+                        $prevPrevDayCap = null;
                         foreach($aHistory as $aRecord){
                             foreach($aPeriods as $aPeriod){
                                 $period = $aPeriod['period'];
@@ -1515,22 +1517,27 @@ class Ethplorer {
                                             $aToken['cap-' . $period . 'd-previous'] = $aRecord['volumeConverted'] / $aRecord['volume'];
                                         }
                                     }
-
-                                    // get total cap for previous day
-                                    /*if((1 == $period) && !$isEth && !$previousTokenCapAdded && isset($aToken['cap'])){
-                                        $aTotals['capPrevious'] += $aToken['cap'];
-                                        $previousTokenCapAdded = true;
-                                    }*/
                                 }
 
                                 // get total cap for previous day
-                                $prevCapPeriod = ($aRecord['date'] == $aPeriod['currentPeriodStart']) && ($aRecord['hour'] == $curHour);
+                                /*$prevCapPeriod = ($aRecord['date'] == $aPeriod['currentPeriodStart']);
                                 if(!$isEth && $prevCapPeriod && (1 == $period) && !$previousTokenCapAdded && isset($aRecord['cap'])){
                                     $aTotals['capPrevious'] += $aRecord['cap'];
                                     $previousTokenCapAdded = true;
+                                }*/
+                                if(!$isEth && (1 == $period)){
+                                    if(($aRecord['date'] == $aPeriod['currentPeriodStart']) && isset($aRecord['cap'])) $prevDayCap = $aRecord['cap'];
+                                    if(($aRecord['date'] == $aPeriod['previousPeriodStart']) && isset($aRecord['cap'])) $prevPrevDayCap = $aRecord['cap'];
                                 }
                             }
                         }
+
+                        // get total cap for previous day
+                        if(!$isEth){
+                            if($prevDayCap) $aTotals['capPrevious'] += $prevDayCap;
+                            else if($prevPrevDayCap) $aTotals['capPrevious'] += $prevPrevDayCap;
+                        }
+
                         // get total volume for previous day
                         if(!$isEth){
                             $aTotals['volumePrevious'] += $aToken['volume-1d-previous'];
@@ -1576,17 +1583,10 @@ class Ethplorer {
                     $res[] = $item;
                 }
             }
-            //$result = $res;
-            $result = array('tokens' => $res);
-            if($criteria == 'cap'){
-                $aTotals['ts'] = time();
-                $result['totals'] = $aTotals;
-                $this->oCache->save('top_tokens_totals', $aTotals);
-            }else{
-                $result['totals'] = $this->getTokensTopTotals();
-            }
-            //$result = array('tokens' => $res, 'totals' => $aTotals);
+            $aTotals['ts'] = time();
+            $result = array('tokens' => $res, 'totals' => $aTotals);
             $this->oCache->save($cache, $result);
+            $this->oCache->save('top_tokens_totals', $aTotals);
         }
 
         $res = [];
