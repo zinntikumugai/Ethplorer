@@ -1586,6 +1586,13 @@ class Ethplorer {
             $aTotals['ts'] = time();
             $result = array('tokens' => $res, 'totals' => $aTotals);
             $this->oCache->save($cache, $result);
+
+            $aPrevTotals = $this->oCache->get('top_tokens_totals', FALSE, TRUE);
+            $prevTokensNum = 0;
+            if(FALSE !== $aPrevTotals){
+                $prevTokensNum = $aPrevTotals['tokensWithPrice'];
+            }
+            if($aTotals['tokensWithPrice'] < $prevTokensNum) $aTotals['tokensWithPrice'] = $prevTokensNum;
             $this->oCache->save('top_tokens_totals', $aTotals);
         }
 
