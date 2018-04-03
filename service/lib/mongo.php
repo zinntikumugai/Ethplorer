@@ -117,7 +117,7 @@ class evxMongo {
      * @param int $skip
      * @return array
      */
-    public function find($collection, array $aSearch = array(), $sort = false, $limit = false, $skip = false, $fields = false){
+    public function find($collection, array $aSearch = array(), $sort = false, $limit = false, $skip = false, $fields = false, $hint = false){
         $aResult = false;
         $start = microtime(true);
         switch($this->driver){
@@ -135,6 +135,9 @@ class evxMongo {
                 }
                 if(false !== $limit){
                     $cursor = $cursor->limit($limit);
+                }
+                if(false !== $hint){
+                    $cursor = $cursor->hint($hint);
                 }
                 $aResult = $cursor;
                 break;
@@ -155,6 +158,9 @@ class evxMongo {
                     foreach($fields as $field){
                         $aOptions['projection'][$field] = 1;
                     }
+                }
+                if(false !== $hint){
+                    $aOptions['hint'] = $hint;
                 }
                 $query = new MongoDB\Driver\Query($aSearch, $aOptions);
                 $cursor = $this->oMongo->executeQuery($this->dbName . '.' . $this->aDBs[$collection], $query);
