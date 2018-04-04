@@ -111,16 +111,19 @@ class ethplorerController {
             $key = in_array($command, $this->apiCommands) ? $this->getRequest('apiKey', FALSE) : $this->getPostRequest('apiKey', FALSE);
             if(!$key || !$this->db->checkAPIkey($key)){
                 $this->sendError(1, 'Invalid API key');
-            }
+            }            
             $this->defaults = $this->db->getAPIKeyDefaults($key, $command);
 
             if(in_array($command, $this->apiPostCommands)){
+                // @todo: Temporary solution, special key property will be used later
+                if($key == "freekey"){
+                    $this->sendError(1, 'Invalid API key');
+                }
                 $result = call_user_func(array($this, $command));
                 return $result;
             }
 
             $timestamp = $this->getRequest('timestamp', FALSE);
-
             if(FALSE !== $timestamp){
                 $cacheId = 'API-' . $command  . '-' . md5($_SERVER["REQUEST_URI"]);
                 $oCache = $this->db->getCache();
