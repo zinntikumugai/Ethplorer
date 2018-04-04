@@ -1903,7 +1903,7 @@ class Ethplorer {
      * @return array
      */
     protected function getContractOperationCount($type, $address, $useFilter = TRUE){
-        evxProfiler::checkpoint('getContractOperationCount', 'START', 'address=' . $address . ', type=' . (is_array($type) ? var_export($type, TRUE) : $type) . ', useFilter=' . (int)$useFilter);
+        evxProfiler::checkpoint('getContractOperationCount', 'START', 'address=' . $address . ', type=' . (is_array($type) ? json_encode($type) : $type) . ', useFilter=' . (int)$useFilter);
         $search = array("contract" => $address, 'type' => $type);
         $result = 0;
         if($useFilter && $this->filter){
@@ -1930,7 +1930,7 @@ class Ethplorer {
      * @return array
      */
     protected function getContractOperation($type, $address, $limit, $offset = FALSE){
-        evxProfiler::checkpoint('getContractOperation', 'START', 'type=' . (is_array($type) ? var_export($type, TRUE) : $type) . ', address=' . $address . ', limit=' . $limit . ', offset=' . (int)$offset);
+        evxProfiler::checkpoint('getContractOperation', 'START', 'type=' . (is_array($type) ? json_encode($type) : $type) . ', address=' . $address . ', limit=' . $limit . ', offset=' . (int)$offset);
         $search = array("contract" => $address, 'type' => $type);
         if($this->filter){
             $search['$or'] = array(
