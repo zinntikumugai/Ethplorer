@@ -1198,7 +1198,17 @@ class Ethplorer {
 
         $result = array();
         $search = array('addresses' => $address);
-        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
+        if($aTypes && is_array($aTypes) && count($aTypes)){
+            if(1 == count($aTypes)){
+                $search['type'] = $aTypes[0];
+            }else{
+                $search['type'] = array('$in' => $aTypes);
+            }
+        }
+        //if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
+        if(!$showEth){
+            $search['isEth'] = false;
+        }
 
         // @todo: remove $or, use special field with from-to-address-txHash concatination maybe
         if($this->filter){
@@ -1215,11 +1225,13 @@ class Ethplorer {
             );
         }
 
-        if($aTypes && is_array($aTypes) && count($aTypes)){
+        /*if($aTypes && is_array($aTypes) && count($aTypes)){
             $search['type'] = array('$in' => $aTypes);
-        }
+        }*/
 
-        $cursor = $this->oMongo->find('operations', $search, array("timestamp" => -1), $limit, $offset);
+        $hint = 'addresses_1_type_1_timestamp_1_isEth_1';
+
+        $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => -1), $limit, $offset, false, $hint);
         foreach($cursor as $transfer){
             if(is_null($aTypes) || in_array($transfer['type'], $aTypes)){
                 unset($transfer["_id"]);

@@ -55,6 +55,7 @@ class evxMongoScanner extends evxMongo {
                     'contracts'    => $oDB->contracts,
                     'tokens'       => $oDB->tokens,
                     'operations'   => $oDB->tokenOperations,
+                    'operations2'  => $oDB->tokenOperations2,
                     'balances'     => $oDB->tokenBalances,
                     'addressCache' => $oDB->cacheAddressData
                 );
@@ -68,6 +69,7 @@ class evxMongoScanner extends evxMongo {
                     'contracts'    => "contracts",
                     'tokens'       => "tokens",
                     'operations'   => "tokenOperations",
+                    'operations2'  => "tokenOperations2",
                     'balances'     => "tokenBalances",
                     'addressCache' => "cacheAddressData"
                 );
