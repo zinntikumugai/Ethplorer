@@ -261,6 +261,7 @@ class evxMongo {
     public function aggregate($collection, array $aSearch = array()){
         $aResult = false;
         $start = microtime(true);
+        $aOptions = array();
         switch($this->driver){
             case 'fake':
                 $aResult = array();
