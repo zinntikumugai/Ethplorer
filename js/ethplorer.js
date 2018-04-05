@@ -299,6 +299,9 @@ Ethplorer = {
         }
         $.getJSON(Ethplorer.service, requestData, function(_txHash){
             return function(data){
+                if(data.debug){
+                    Ethplorer.requestDebug = data.debug;
+                }
                 if(data.ethPrice){
                     Ethplorer.ethPrice = data.ethPrice;
                 }
@@ -700,6 +703,9 @@ Ethplorer = {
         }
         $.getJSON(Ethplorer.service, data, function(_address){
             return function(data){
+                if(data.debug){
+                    Ethplorer.requestDebug = data.debug;
+                }                
                 if(data.ethPrice){
                     Ethplorer.ethPrice = data.ethPrice;
                 }
@@ -1580,6 +1586,9 @@ Ethplorer = {
                     data.debugId = Ethplorer.debugId;
                 }
                 $.getJSON(Ethplorer.service, data, function(data){
+                    if(data.debug){
+                        Ethplorer.requestDebug = data.debug;
+                    }                    
                     var empty = !(data && data.results && data.total);
                     if(!empty){
                         document.location.href = '/address/' + data.results[0][2];
