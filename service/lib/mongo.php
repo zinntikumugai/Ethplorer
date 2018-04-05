@@ -127,6 +127,7 @@ class evxMongo {
     public function find($collection, array $aSearch = array(), $sort = false, $limit = false, $skip = false, $fields = false, $hint = false){
         $aResult = false;
         $start = microtime(true);
+        $aOptions = array();
         switch($this->driver){
             case 'fake':
                 $aResult = array();
@@ -150,7 +151,6 @@ class evxMongo {
                 break;
 
             case 'mongodb':
-                $aOptions = array();
                 if(is_array($sort)){
                     $aOptions['sort'] = $sort;
                 }
@@ -183,7 +183,7 @@ class evxMongo {
                 break;
         }
         $aQuery = [
-            'collection' => $this->dbName . '.' . $this->aDBs[$collection],
+            'collection' => $this->aDBs[$collection],
             'find' => $aSearch,
             'opts' => $aOptions,
             'time' => round(microtime(true) - $start, 4)
@@ -236,7 +236,7 @@ class evxMongo {
                 break;
         }
         $aQuery = [
-            'collection' => $this->dbName . '.' . $this->aDBs[$collection],
+            'collection' => $this->aDBs[$collection],
             'count' => $aSearch,
             'opts' => $aOptions,
             'time' => round(microtime(true) - $start, 4)
@@ -288,7 +288,7 @@ class evxMongo {
                 break;
         }
         $aQuery = [
-            'collection' => $this->dbName . '.' . $this->aDBs[$collection],
+            'collection' => $this->aDBs[$collection],
             'aggregate' => $aSearch,
             'opts' => $aOptions,
             'time' => round(microtime(true) - $start, 4)
