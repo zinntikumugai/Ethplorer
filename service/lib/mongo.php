@@ -63,6 +63,13 @@ class evxMongo {
     protected $logFile;
 
     /**
+     * Mongo profiler
+     *
+     * @var array
+     */
+    protected $aProfile = array();
+    
+    /**
      * Constructor.
      *
      * @param array $aSettings
@@ -175,11 +182,16 @@ class evxMongo {
                  */
                 break;
         }
-        $finish = microtime(true);
-        $qTime = $finish - $start;
-        if($qTime > 1){
-            $this->log('(' . ($qTime) . 's) Find ' . $this->dbName . '.' . $this->aDBs[$collection] . ' > ' . json_encode($aSearch) . ' [' . json_encode($aOptions) . ']');
+        $aQuery = [
+            'collection' => $this->dbName . '.' . $this->aDBs[$collection],
+            'find' => $aSearch,
+            'opts' => $aOptions,
+            'time' => round(microtime(true) - $start, 4)
+        ];
+        if($aQuery['time'] > 1){
+            $this->log('(' . ($aQuery['time']) . 's) ' . $aQuery['collection'] . '.find(' . json_encode($aQuery['find']) . ', ' . json_encode($aQuery['opts']) . ')');
         }
+        $this->aProfile[] = $aQuery;
         return $aResult;
     }
 
@@ -223,11 +235,16 @@ class evxMongo {
                 */
                 break;
         }
-        $finish = microtime(true);
-        $qTime = $finish - $start;
-        if($qTime > 1){
-            $this->log('(' . ($qTime) . 's) Count ' . $this->dbName . '.' . $this->aDBs[$collection] . ' > ' . json_encode($aSearch));
+        $aQuery = [
+            'collection' => $this->dbName . '.' . $this->aDBs[$collection],
+            'count' => $aSearch,
+            'opts' => $aOptions,
+            'time' => round(microtime(true) - $start, 4)
+        ];
+        if($aQuery['time'] > 1){
+            $this->log('(' . ($aQuery['time']) . 's) ' . $aQuery['collection'] . '.count(' . json_encode($aQuery['count']) . ', ' . json_encode($aQuery['opts']) . ')');
         }
+        $this->aProfile[] = $aQuery;
         return $result;
     }
 
@@ -270,14 +287,28 @@ class evxMongo {
                 }
                 break;
         }
-        $finish = microtime(true);
-        $qTime = $finish - $start;
-        if($qTime > 1){
-            $this->log('(' . ($qTime) . 's) Aggregate ' . $this->dbName . '.' . $this->aDBs[$collection] . ' > ' . json_encode($aSearch));
+        $aQuery = [
+            'collection' => $this->dbName . '.' . $this->aDBs[$collection],
+            'aggregate' => $aSearch,
+            'opts' => $aOptions,
+            'time' => round(microtime(true) - $start, 4)
+        ];
+        if($aQuery['time'] > 1){
+            $this->log('(' . ($aQuery['time']) . 's) ' . $aQuery['collection'] . '.aggregate(' . json_encode($aQuery['aggregate']) . ')');
         }
+        $this->aProfile[] = $aQuery;
         return $aResult;
     }
 
+    /**
+     * Returns query profiler.
+     *
+     * @return array
+     */
+    public function getQueryProfileData(){
+        return $this->aProfile;
+    }
+    
     /**
      * Singleton implementation.
      *

@@ -100,4 +100,8 @@ if($adv){
     $result = Ethplorer::db($aConfig)->getActiveNotes();
 }
 
+if($debugId){
+    $result['debug'] = $es->getDebugData();
+}
+
 echo json_encode($result);

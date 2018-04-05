@@ -169,6 +169,18 @@ class Ethplorer {
     }
 
     /**
+     * Returns some debug data
+     *
+     * @return array
+     */
+    public function getDebugData(){
+        return array(
+            'phpTime' => evxProfiler::getTotalTime(),
+            'queries' => $this->oMongo->getQueryProfileData()
+        );
+    }
+    
+    /**
      * Singleton getter.
      *
      * @return Ethereum
