@@ -738,6 +738,7 @@ class Ethplorer {
         $aResult = $this->oCache->get('tokens', false, true);
         if($updateCache || (false === $aResult)){
             evxProfiler::checkpoint('getTokens', 'START');
+            $aPrevTokens = array();
             if($updateCache){
                 $aPrevTokens = $aResult;
                 if(!is_array($aPrevTokens)){
