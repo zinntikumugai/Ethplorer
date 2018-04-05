@@ -1218,7 +1218,8 @@ class Ethplorer {
             }
         }
         if(!$showEth){
-            $search['isEth'] = false;
+            $search['contract'] = array('$ne' => 'ETH');
+            // $search['isEth'] = false;
         }
 
         // @todo: remove $or, use special field with from-to-address-txHash concatination maybe
