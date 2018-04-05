@@ -183,7 +183,7 @@ class evxMongo {
                 break;
         }
         $aQuery = [
-            'collection' => $this->aDBs[$collection],
+            'collection' => (string)$this->aDBs[$collection],
             'find' => $aSearch,
             'opts' => $aOptions,
             'time' => round(microtime(true) - $start, 4)
@@ -236,7 +236,7 @@ class evxMongo {
                 break;
         }
         $aQuery = [
-            'collection' => $this->aDBs[$collection],
+            'collection' => (string)$this->aDBs[$collection],
             'count' => $aSearch,
             'opts' => $aOptions,
             'time' => round(microtime(true) - $start, 4)
@@ -288,7 +288,7 @@ class evxMongo {
                 break;
         }
         $aQuery = [
-            'collection' => $this->aDBs[$collection],
+            'collection' => (string)$this->aDBs[$collection],
             'aggregate' => $aSearch,
             'opts' => $aOptions,
             'time' => round(microtime(true) - $start, 4)
