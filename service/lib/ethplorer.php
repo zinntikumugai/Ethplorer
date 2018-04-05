@@ -1205,7 +1205,6 @@ class Ethplorer {
                 $search['type'] = array('$in' => $aTypes);
             }
         }
-        //if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
         if(!$showEth){
             $search['isEth'] = false;
         }
@@ -1225,13 +1224,11 @@ class Ethplorer {
             );
         }
 
-        /*if($aTypes && is_array($aTypes) && count($aTypes)){
-            $search['type'] = array('$in' => $aTypes);
-        }*/
+        $cursor = $this->oMongo->find('operations', $search, array("timestamp" => -1), $limit, $offset);
 
-        $hint = 'addresses_1_type_1_timestamp_1_isEth_1';
+        // $hint = 'addresses_1_type_1_timestamp_1_isEth_1';
+        // $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => -1), $limit, $offset, false, $hint);
 
-        $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => -1), $limit, $offset, false, $hint);
         foreach($cursor as $transfer){
             if(is_null($aTypes) || in_array($transfer['type'], $aTypes)){
                 unset($transfer["_id"]);
