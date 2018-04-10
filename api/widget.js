@@ -1000,7 +1000,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
                 }
                 var totalsHtml = '';
                 if(data.totals){
-                    var cap = data.totals.cap ? (ethplorerWidget.Utils.formatNum(data.totals.cap / 1000000000, true, 0, true)) : '?';
+                    var cap = data.totals.cap ? (ethplorerWidget.Utils.formatNum(data.totals.cap / 1000000000, true, 1, true)) : '?';
                     var volume24h = data.totals.volume24h ? (ethplorerWidget.Utils.formatNum(data.totals.volume24h, true, 0, true, true, 99999999)) : '?';
 
                     var ivdiff = ethplorerWidget.Utils.pdiff(data.totals.cap, data.totals.capPrevious, true);
@@ -1215,12 +1215,13 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
             pattern: "#,### K"
         });
         var currencyFormatter = new google.visualization.NumberFormat({ 
-            pattern: '$ #,### B'
+            //pattern: '$ #,### B'
+            pattern: '$ #,##0.0 B'
         });
         var tooltip = '<div style="display: block !important; text-align: left; opacity: 1 !important; color: #000000 !important; padding: 5px;">';
         tooltip += '<span class="tooltipRow">' + tooltipDateFormatter.formatValue(date) + '</span><br/>' +
             '<span class="tooltipRow"><b class="tooltipRowOps">Token operations:</b> ' + ((cnt < 1) ? '<1 K' : numFormatter.formatValue(cnt)) + '</span><br/>' +
-            '<span class="tooltipRow"><b class="tooltipRowCap">Tokens Cap:</b> ' + ((cap < 1) ? '<1 B' : currencyFormatter.formatValue(cap)) + '</span>' +
+            '<span class="tooltipRow"><b class="tooltipRowCap">Tokens Cap:</b> ' + ((cap < 0.1) ? '<0.1 B' : currencyFormatter.formatValue(cap)) + '</span>' +
             '</div>';
         return tooltip;
     }
@@ -1229,7 +1230,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
 
         var totalsHtml = '';
         if(this.options.total && aTotals && aTotals.cap){
-            var cap = aTotals.cap ? (ethplorerWidget.Utils.formatNum(aTotals.cap / 1000000000, true, 0, true)) : '?';
+            var cap = aTotals.cap ? (ethplorerWidget.Utils.formatNum(aTotals.cap / 1000000000, true, 1, true)) : '?';
             var volume24h = aTotals.volume24h ? (ethplorerWidget.Utils.formatNum(aTotals.volume24h, true, 0, true, true, 99999999)) : '?';
             var ivdiff = ethplorerWidget.Utils.pdiff(aTotals.cap, aTotals.capPrevious, true);
             var numDec = Math.abs(ivdiff) > 99 ? 0 : 1;
@@ -1306,7 +1307,8 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                 var capKey = stDate.getFullYear() + '-' + capKeyMonth + '-' + capKeyDay;
                 var cap = ('undefined' !== typeof(aCap[capKey])) ? aCap[capKey] : 0;
                 if(cap <= 1000000000 && firstDate) skipDate = true;
-                cap = Math.round(cap / 1000000000);
+                //cap = Math.round(cap / 1000000000);
+                cap = parseFloat(ethplorerWidget.Utils.formatNum(cap / 1000000000, true, 1, true));
                 var tooltip = this.getTooltip(new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt, cap);
                 if(!skipDate) aData.push([new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt, tooltip, cap, tooltip]);
             }else{
@@ -1368,7 +1370,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
             pointSize: 5,
         };
         if(this.options['theme'] == 'dark'){
-            defOptions.colors = this.options.cap ? ['#FCEC0F', '#47C2FF'] : ['#47C2FF', '#FCEC0F'];
+            defOptions.colors = this.options.cap ? ['#B5A81B', '#47C2FF'] : ['#47C2FF', '#FCEC0F'];
             defOptions.titleTextStyle = {color: '#DEDEDE'};
             defOptions.backgroundColor = {fill: 'transparent'};
 
@@ -1387,6 +1389,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                     type: 'steppedArea',
                     targetAxisIndex: 0,
                     lineWidth: 1,
+                    //areaOpacity: 0
                 },
                 1: {
                     type: 'line',
@@ -1399,7 +1402,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                     title: 'Token operations',
                     format: '#,### K',
                     viewWindow: {
-                        max: 700
+                        max: 1000
                     },
                 },
                 1: {
