@@ -1221,7 +1221,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
         var tooltip = '<div style="display: block !important; text-align: left; opacity: 1 !important; color: #000000 !important; padding: 5px;">';
         tooltip += '<span class="tooltipRow">' + tooltipDateFormatter.formatValue(date) + '</span><br/>' +
             '<span class="tooltipRow"><b class="tooltipRowOps">Token operations:</b> ' + ((cnt < 1) ? '<1 K' : numFormatter.formatValue(cnt)) + '</span><br/>' +
-            '<span class="tooltipRow"><b class="tooltipRowCap">Tokens Cap:</b> ' + ((cap < 1) ? '<1 B' : currencyFormatter.formatValue(cap)) + '</span>' +
+            '<span class="tooltipRow"><b class="tooltipRowCap">Tokens Cap:</b> ' + ((cap < 0.1) ? '<0.1 B' : currencyFormatter.formatValue(cap)) + '</span>' +
             '</div>';
         return tooltip;
     }
@@ -1370,7 +1370,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
             pointSize: 5,
         };
         if(this.options['theme'] == 'dark'){
-            defOptions.colors = this.options.cap ? ['#FCEC0F', '#47C2FF'] : ['#47C2FF', '#FCEC0F'];
+            defOptions.colors = this.options.cap ? ['#B5A81B', '#47C2FF'] : ['#47C2FF', '#FCEC0F'];
             defOptions.titleTextStyle = {color: '#DEDEDE'};
             defOptions.backgroundColor = {fill: 'transparent'};
 
@@ -1389,6 +1389,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                     type: 'steppedArea',
                     targetAxisIndex: 0,
                     lineWidth: 1,
+                    //areaOpacity: 0
                 },
                 1: {
                     type: 'line',
