@@ -87,7 +87,8 @@ class evxCache {
      * @param string  $path  Cache files path
      * @todo params to config
      */
-    public function __construct($path = __DIR__, $driver = FALSE, $useLocks = FALSE){
+    public function __construct(array $aConfig, $driver = FALSE, $useLocks = FALSE){
+        $path = $aConfig['cacheDir'];
         $path = realpath($path);
         if(file_exists($path) && is_dir($path)){
             $this->path = $path;
@@ -113,7 +114,7 @@ class evxCache {
         }else if('redis' === $this->driver){
             if(class_exists('Redis')){
                 $rc = new Redis();
-                $rc->connect('localhost', 6379);
+                $rc->connect($aConfig['redis']['server'], $aConfig['redis']['port']);
                 $this->oDriver = $rc;
             }else{
                 die('Redis class not found');

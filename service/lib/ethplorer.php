@@ -125,7 +125,7 @@ class Ethplorer {
         );
         $cacheDriver = isset($this->aSettings['cacheDriver']) ? $this->aSettings['cacheDriver'] : 'file';
         $useLocks = isset($this->aSettings['useLocks']) ? $this->aSettings['useLocks'] : FALSE;
-        $this->oCache = new evxCache($this->aSettings['cacheDir'], $cacheDriver, $useLocks);
+        $this->oCache = new evxCache($this->aSettings, $cacheDriver, $useLocks);
         if(isset($this->aSettings['mongo']) && is_array($this->aSettings['mongo'])){
             evxMongoScanner::init($this->aSettings['mongo']);
             $this->oMongo = evxMongoScanner::getInstance();
