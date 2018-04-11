@@ -85,6 +85,9 @@ class ethplorerController {
     }
 
     public function sendResult(array $result){
+        if($this->getRequest('debugId')){
+            $result['debug'] = $es->getDebugData();
+        }
         echo json_encode($result, JSON_UNESCAPED_SLASHES);
         die();
     }
