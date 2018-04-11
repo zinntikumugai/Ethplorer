@@ -480,50 +480,54 @@ class Ethplorer {
      * @return array
      */
     public function getTransactions($address, $limit = 10, $showZero = FALSE){
-        $result = array();
-        $fields = ['from', 'to'];
-        foreach($fields as $field){
-            $search = array();
-            $search[$field] = $address;
-            if(!$showZero){
-                $search['value'] = array('$gt' => 0);
-            }
-            $cursor = $this->oMongo->find('transactions', $search, array("timestamp" => -1), $limit);
-            foreach($cursor as $tx){
-                $receipt = isset($tx['receipt']) ? $tx['receipt'] : false;
-                $tx['gasLimit'] = $tx['gas'];
-                $tx['gasUsed'] = isset($tx['gasUsed']) ? $tx['gasUsed'] : ($receipt ? $receipt['gasUsed'] : 0);
-                // @todo: research
-                // $toContract = !!$tx['input'];
-                // $toContract = !!$this->getContract($tx['to']); // <-- too slow
+        $cache = 'transactions-' . $address . '-' . $limit . '-' . ($showZero ? '1' : '0');
+        $result = $this->oCache->get($cache, FALSE, TRUE, 15);        
+        if(!$result){
+            $result = array();
+            $fields = ['from', 'to'];
+            foreach($fields as $field){
+                $search = array();
+                $search[$field] = $address;
+                if(!$showZero){
+                    $search['value'] = array('$gt' => 0);
+                }
+                $cursor = $this->oMongo->find('transactions', $search, array("timestamp" => -1), $limit);
+                foreach($cursor as $tx){
+                    $receipt = isset($tx['receipt']) ? $tx['receipt'] : false;
+                    $tx['gasLimit'] = $tx['gas'];
+                    $tx['gasUsed'] = isset($tx['gasUsed']) ? $tx['gasUsed'] : ($receipt ? $receipt['gasUsed'] : 0);
+                    // @todo: research
+                    // $toContract = !!$tx['input'];
+                    // $toContract = !!$this->getContract($tx['to']); // <-- too slow
 
-                $success = ((21000 == $tx['gasUsed']) || /*!$toContract ||*/ ($tx['gasUsed'] < $tx['gasLimit']) || ($receipt && !empty($receipt['logs'])));
-                $success = isset($tx['status']) ? $this->txSuccessStatus($tx) : $success;
+                    $success = ((21000 == $tx['gasUsed']) || /*!$toContract ||*/ ($tx['gasUsed'] < $tx['gasLimit']) || ($receipt && !empty($receipt['logs'])));
+                    $success = isset($tx['status']) ? $this->txSuccessStatus($tx) : $success;
 
-                $result[] = array(
-                    'timestamp' => $tx['timestamp'],
-                    'from' => $tx['from'],
-                    'to' => $tx['to'],
-                    'hash' => $tx['hash'],
-                    'value' => $tx['value'],
-                    'input' => $tx['input'],
-                    'success' => $success
-                );
+                    $result[] = array(
+                        'timestamp' => $tx['timestamp'],
+                        'from' => $tx['from'],
+                        'to' => $tx['to'],
+                        'hash' => $tx['hash'],
+                        'value' => $tx['value'],
+                        'input' => $tx['input'],
+                        'success' => $success
+                    );
+                }
             }
+            usort($result, function($a, $b){ 
+                return ($a['timestamp'] > $b['timestamp']) ? -1 : (($a['timestamp'] < $b['timestamp']) ? 1 : 0);
+            });
+
+            if(count($result) > $limit){
+                $limitedResult = [];
+                foreach($result as $index => $record){
+                    if($index == $limit) break;
+                    $limitedResult[] = $record;
+                }
+                $result = $limitedResult;
+            }
+            $this->oCache->save($cache, $result);
         }
-        usort($result, function($a, $b){ 
-            return ($a['timestamp'] > $b['timestamp']) ? -1 : (($a['timestamp'] < $b['timestamp']) ? 1 : 0);
-        });
-
-        if(count($result) > $limit){
-            $limitedResult = [];
-            foreach($result as $index => $record){
-                if($index == $limit) break;
-                $limitedResult[] = $record;
-            }
-            $result = $limitedResult;
-        }
-        
         return $result;
     }
 
