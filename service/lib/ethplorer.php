@@ -511,8 +511,8 @@ class Ethplorer {
                 );
             }
         }
-        usort($result, function($a, $b){
-            return ($a['timestamp'] > $b['timestamp']) ? 1 : (($a['timestamp'] < $b['timestamp']) ? -1 : 0);
+        usort($result, function($a, $b){ 
+            return ($a['timestamp'] > $b['timestamp']) ? -1 : (($a['timestamp'] < $b['timestamp']) ? 1 : 0);
         });
 
         if(count($result) > $limit){
