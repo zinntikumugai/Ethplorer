@@ -40,3 +40,4 @@ Make sure your web server supports .htaccess and mod_rewrite.
 # Configure
 
 Copy `service/config.sample.php` to `service/config.php` and specify service addresses.
+
