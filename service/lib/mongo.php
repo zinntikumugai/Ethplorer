@@ -68,7 +68,11 @@ class evxMongo {
      * @var array
      */
     protected $aProfile = array();
+
+    protected $aSettings = array();
     
+    protected $isConnected = false;
+
     /**
      * Constructor.
      *
@@ -85,6 +89,8 @@ class evxMongo {
             'dbName' => 'ethplorer',
             'prefix' => 'everex.'
         );
+
+        $this->aSettings = $aSettings;
         $this->dbName = $aSettings['dbName'];
         $this->driver = $aSettings['driver'];
     }
@@ -125,6 +131,7 @@ class evxMongo {
      * @return array
      */
     public function find($collection, array $aSearch = array(), $sort = false, $limit = false, $skip = false, $fields = false, $hint = false){
+        $this->connectDb();
         $aResult = false;
         $start = microtime(true);
         $aOptions = array();
@@ -203,6 +210,7 @@ class evxMongo {
      * @return int
      */
     public function count($collection, array $aSearch = array(), $limit = FALSE){
+        $this->connectDb();
         $result = false;
         $start = microtime(true);
         $aOptions = array();
@@ -259,6 +267,7 @@ class evxMongo {
      * @return array
      */
     public function aggregate($collection, array $aSearch = array()){
+        $this->connectDb();
         $aResult = false;
         $start = microtime(true);
         $aOptions = array();
@@ -327,5 +336,9 @@ class evxMongo {
     protected function log($message){
         $logString = '[' . date('Y-m-d H:i:s') . '] - ' . $message . "\n";
         file_put_contents($this->logFile, $logString, FILE_APPEND);
+    }
+
+    protected function connectDb(){
+        
     }
 }
