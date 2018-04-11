@@ -318,6 +318,10 @@ class evxMongo {
     public function getQueryProfileData(){
         return $this->aProfile;
     }
+
+    public function dbConnected(){
+        return $this->isConnected;
+    }
     
     /**
      * Singleton implementation.
@@ -339,6 +343,6 @@ class evxMongo {
     }
 
     protected function connectDb(){
-        
+        // @todo: throw an exception
     }
 }

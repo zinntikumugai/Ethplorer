@@ -175,7 +175,8 @@ class Ethplorer {
      */
     public function getDebugData(){
         return array(
-            'phpTime' => evxProfiler::getTotalTime(),
+            'totalTime' => evxProfiler::getTotalTime(),
+            'dbConnected' => $this->oMongo->dbConnected(),
             'queries' => $this->oMongo->getQueryProfileData()
         );
     }
