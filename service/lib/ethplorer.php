@@ -1220,8 +1220,8 @@ class Ethplorer {
             }
         }
         if(!$showEth){
-            $search['contract'] = array('$ne' => 'ETH');
-            // $search['isEth'] = false;
+            //$search['contract'] = array('$ne' => 'ETH');
+            $search['isEth'] = false;
         }
 
         // @todo: remove $or, use special field with from-to-address-txHash concatination maybe
@@ -1239,10 +1239,12 @@ class Ethplorer {
             );
         }
 
-        $cursor = $this->oMongo->find('operations', $search, array("timestamp" => -1), $limit, $offset);
-
-        // $hint = 'addresses_1_type_1_timestamp_1_isEth_1';
-        // $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => -1), $limit, $offset, false, $hint);
+        if(!$showEth){
+            $hint = 'addresses_1_isEth_1_timestamp_1';
+            $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => -1), $limit, $offset, false, $hint);
+        }else{
+            $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => -1), $limit, $offset);
+        }
 
         foreach($cursor as $transfer){
             if(is_null($aTypes) || in_array($transfer['type'], $aTypes)){
