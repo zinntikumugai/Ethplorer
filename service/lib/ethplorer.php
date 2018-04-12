@@ -1899,6 +1899,10 @@ class Ethplorer {
         return isset($this->aSettings['apiKeys']) && isset($this->aSettings['apiKeys'][$key]);
     }
 
+    public function isSuspendedAPIKey($key){
+        return (isset($this->aSettings['apiKeys'][$key]['suspended']) && $this->aSettings['apiKeys'][$key]['suspended']);
+    }
+    
     public function getAPIKeyDefaults($key, $option = FALSE){
         $res = FALSE;
         if($this->checkAPIKey($key)){

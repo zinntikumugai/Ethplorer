@@ -117,7 +117,7 @@ class ethplorerController {
             }
             $this->defaults = $this->db->getAPIKeyDefaults($key, $command);
 
-            if(isset($this->aSettings['apiKeys'][$key]['suspended']) && $this->aSettings['apiKeys'][$key]['suspended']){
+            if($this->db->isSuspendedAPIKey($key)){
                 $this->sendError(133, 'API key temporary suspended. Contact support.');
             }
             
