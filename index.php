@@ -519,7 +519,7 @@ if(is_array($rParts) && isset($rParts[2])){
                                     <div id="address-balances-total"></div>
                                 </h3>
                             </div>
-                            <table class="table"></table>
+                            <div class="scrollable"><table class="table"></table></div>
                         </div>
                         <div class="block" id="address-chainy-info">
                             <div class="block-header">

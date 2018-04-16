@@ -327,7 +327,7 @@ Ethplorer = {
         if(oToken.price && oToken.price.rate){
             var pf = parseFloat(totalSupply.replace(/\,/g,'').split(' ')[0]);
             if(pf){
-                pf = Ethplorer.Utils.round(pf * oToken.price.rate, 2);
+                pf = Ethplorer.Utils.round(pf * oToken.price.rate, 2); // не надо так
                 totalSupply = totalSupply + '<br><span class="total-supply-usd">$ ' + Ethplorer.Utils.formatNum(pf, true, 2, true) + '</span>';
                 $('#transaction-token-totalSupply').html(totalSupply);
             }
@@ -514,6 +514,7 @@ Ethplorer = {
                 $('#transaction-token-decimals').append(' <small>(estimated)</small>');
             }
 
+            //WAT?
             if($('#transaction-tx-message').html()){
                 $('#transfer-tx-message').html($('#transaction-tx-message').html());
                 $('#transaction-tx-message').html('')
@@ -647,8 +648,7 @@ Ethplorer = {
         }
 
         var usdPrice = '';
-        if(oTx.usdPrice && Ethplorer.showHistoricalPrice){
-
+        if(oTx.usdPrice && Ethplorer.showHistoricalPrice && valFloat){
             var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(oTx.usdPrice, oToken.price.rate), 2);
             var hint = 'estimated at tx date';
 
@@ -656,7 +656,7 @@ Ethplorer = {
             if(diff > 0){
                 diff = '+' + Ethplorer.Utils.round(diff, 2);
             }
-            var historyPrice = Ethplorer.Utils.formatNum(Ethplorer.Utils.round(oTx.usdPrice, 2), true, 2, true);
+            var historyPrice = Ethplorer.Utils.formatNum(oTx.usdPrice * valFloat, true, 2, true, true);
 
             usdPrice = '~<span title="' + hint + '">$' + historyPrice +
                 '&nbsp<span class="' + cls + '">(' + diff + '%)</span></span>'
