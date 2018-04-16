@@ -1307,6 +1307,10 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
                 var capKey = stDate.getFullYear() + '-' + capKeyMonth + '-' + capKeyDay;
                 var cap = ('undefined' !== typeof(aCap[capKey])) ? aCap[capKey] : 0;
                 if(cap <= 1000000000 && firstDate) skipDate = true;
+                if(aTotals && aTotals.cap && firstDate){
+                    var capdiff = ethplorerWidget.Utils.pdiff(cap, aTotals.cap);
+                    if(Math.abs(capdiff) >= 30) skipDate = true;
+                }
                 //cap = Math.round(cap / 1000000000);
                 cap = parseFloat(ethplorerWidget.Utils.formatNum(cap / 1000000000, true, 1, true));
                 var tooltip = this.getTooltip(new Date(stDate.getFullYear(), stDate.getMonth(), stDate.getDate()), cnt, cap);
