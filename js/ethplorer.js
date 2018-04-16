@@ -32,6 +32,7 @@ Ethplorer = {
             Ethplorer.Config = ethplorerConfig;
         }
         Ethplorer.isProd = ('ethplorer.io' === document.location.host);
+        Ethplorer.showHistoricalPrice = sessionStorage.getItem("enableHistoricalPrice") === 'true';
         BigNumber.config({ ERRORS: false });
         Ethplorer.Nav.init();
         Ethplorer.Storage.init();
@@ -53,7 +54,7 @@ Ethplorer = {
                     $('#filter_list').val(Ethplorer.filter);
                     $('#filter_list').addClass('filled');
                 }else{
-                    Ethplorer.Nav.del('filter');                    
+                    Ethplorer.Nav.del('filter');
                 }
             }
         }
@@ -141,7 +142,7 @@ Ethplorer = {
                 Ethplorer.filter = filter;
                 Ethplorer.showTableLoader();
                 $('#filter_list').attr('disabled', true)
-                
+
                 // Reload active tab, set other tabs as need to reload
                 Ethplorer.reloadTab(false, true);
             }
@@ -309,10 +310,8 @@ Ethplorer = {
             }
         }(txHash));
     },
-
     knownContracts: [],
     dataFields: {},
-    
     showOpDetails: function(oTx, op){
         var titleAdd = '';
         var oToken = Ethplorer.prepareToken(op.token);
@@ -321,7 +320,7 @@ Ethplorer = {
         $('.token-name:eq(0)').html(Ethplorer.Utils.getEthplorerLink(oToken.address, tokenName, false));
         $('.token-name:eq(1)').html(Ethplorer.Utils.getEthplorerLink(oToken.address, oToken.name , false));
         var txData = {tx: oTx, operation: op, token: oToken};
-        
+
         $('.token-related td.list-field').empty();
         Ethplorer.fillValues('transaction', txData, ['token', 'token.timestamp', 'token.contract', 'token.symbol', 'token.price', 'token.decimals', 'token.owner']);
         var totalSupply = oToken.totalSupply;
@@ -373,15 +372,13 @@ Ethplorer = {
         Ethplorer.fillValues('transfer', txData, ['operation', 'operation.from', 'operation.to']);
         if(oTx.blockNumber){
             $('#txTokenStatus')[oOperation.success ? 'removeClass' : 'addClass']('text-danger');
-            $('#txTokenStatus')[oOperation.success ? 'addClass' : 'removeClass']('text-success');                           
+            $('#txTokenStatus')[oOperation.success ? 'addClass' : 'removeClass']('text-success');
             $('#txTokenStatus').html(oOperation.success ? 'Success' : 'Failed' + (oOperation.failedReason ? (': ' + Ethplorer.getTxErrorReason(oOperation.failedReason)) : ''));
             $('#operation-status').addClass(oOperation.success ? 'green' : 'red');
         }
         document.title = 'Ethplorer: ' + (titleAdd ? (titleAdd + ' -') : '');
         Ethplorer.Utils.hideEmptyFields();
     },
-    
-    
     showTxDetails: function(txHash, txData){
         // $('#ethplorer-path').html('<h1>Transaction hash: ' + txHash + '</h1>');
         $('#ethplorer-path').show();
@@ -480,7 +477,7 @@ Ethplorer = {
             }
         }
         if(txData.tx.gasPrice){
-            txData.tx.gasPrice = parseFloat(Ethplorer.Utils.toBig(txData.tx.gasPrice).toString());            
+            txData.tx.gasPrice = parseFloat(Ethplorer.Utils.toBig(txData.tx.gasPrice).toString());
             txData.tx.cost =  txData.tx.gasUsed ? txData.tx.gasPrice * txData.tx.gasUsed : 0;
         }
         Ethplorer.fillValues('transaction', txData, ['tx', 'tx.from', 'tx.to', 'tx.creates', 'tx.value', 'tx.timestamp', 'tx.gasLimit', 'tx.gasUsed', 'tx.gasPrice', 'tx.fee', 'tx.nonce', 'tx.blockNumber', 'tx.confirmations', 'tx.input', 'tx.cost', 'tx.method']);
@@ -491,15 +488,15 @@ Ethplorer = {
             titleAdd += (tokenName + ' ');
             $('.token-name:eq(0)').html(Ethplorer.Utils.getEthplorerLink(oToken.address, tokenName, false));
             $('.token-name:eq(1)').html(Ethplorer.Utils.getEthplorerLink(oToken.address, oToken.name , false));
-            
+
             if(oToken.image){
                 var img = Ethplorer.Utils.getEthplorerLink(oToken.address, '##IMG##', false);
                 $('.token-related:eq(1) .block-header').find('img').remove();
                 $('.token-related:eq(1) .block-header').prepend(
                     img.replace('##IMG##', '<img src="' + oToken.image + '" style="max-width:32px;max-height:32px;margin:8px;margin-left:20px;" align="left">')
                 );
-            }            
-            
+            }
+
             txData.token = oToken;
 
             Ethplorer.fillValues('transaction', txData, ['token', 'token.timestamp', 'token.contract', 'token.symbol', 'token.price', 'token.decimals', 'token.owner', 'token.totalSupply']);
@@ -556,11 +553,11 @@ Ethplorer = {
                     }
                     if(multiop){
                         var row = $(
-                            '<tr data-op-idx="' + pos + '">' + 
+                            '<tr data-op-idx="' + pos + '">' +
                             '<td><a class="dashed">Details</a></td>' +
                             '<td><span class="dash_on_hover">' + op.type.toString().toUpperCase() +
                             '<span class="show_small"> ' + op.value + ' ' + op.symbol + '</span>' +
-                            '<br class="show_small"> ' + opParties + '</span></td>' + 
+                            '<br class="show_small"> ' + opParties + '</span></td>' +
                             '<td class="text-right"><span class="dash_on_hover">' + op.value + '</span></td>' +
                             '<td><span class="dash_on_hover">' + op.symbol + '</span></td>' +
                             '<td></td>' +
@@ -614,7 +611,7 @@ Ethplorer = {
 
                 if(oTx.blockNumber){
                     $('#txTokenStatus')[oOperation.success ? 'removeClass' : 'addClass']('text-danger');
-                    $('#txTokenStatus')[oOperation.success ? 'addClass' : 'removeClass']('text-success');                           
+                    $('#txTokenStatus')[oOperation.success ? 'addClass' : 'removeClass']('text-success');
                     $('#txTokenStatus').html(oOperation.success ? 'Success' : 'Failed' + (oOperation.failedReason ? (': ' + Ethplorer.getTxErrorReason(oOperation.failedReason)) : ''));
                     $('#operation-status').addClass(oOperation.success ? 'green' : 'red');
                 }
@@ -634,7 +631,7 @@ Ethplorer = {
                 }
                 if(oTx.blockNumber){
                     $('#txTokenStatus')[oTx.success ? 'removeClass' : 'addClass']('text-danger');
-                    $('#txTokenStatus')[oTx.success ? 'addClass' : 'removeClass']('text-success');           
+                    $('#txTokenStatus')[oTx.success ? 'addClass' : 'removeClass']('text-success');
                     $('#txTokenStatus').html(oTx.success ? 'Success' : 'Failed' + (oTx.failedReason ? (': ' + Ethplorer.getTxErrorReason(oTx.failedReason)) : ''));
                     $('#operation-status').addClass(oTx.success ? 'green' : 'red');
                 }
@@ -642,12 +639,29 @@ Ethplorer = {
             if(!oTx.blockNumber){
                 $('#txTokenStatus').removeClass('text-danger text-success');
                 $('#txTokenStatus').html('Pending');
-            }        
+            }
             Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
         }else{
             $('#tx-details-block').show();
             $('.tx-details-close').hide();
         }
+
+        var usdPrice = '';
+        if(oTx.usdPrice && Ethplorer.showHistoricalPrice){
+
+            var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(oTx.usdPrice, oToken.price.rate), 2);
+            var hint = 'estimated at tx date';
+
+            var cls = (diff > 0 ? 'diff-up' : 'diff-down')
+            if(diff > 0){
+                diff = '+' + Ethplorer.Utils.round(diff, 2);
+            }
+            var historyPrice = Ethplorer.Utils.formatNum(Ethplorer.Utils.round(oTx.usdPrice, 2), true, 2, true);
+
+            usdPrice = '~<span title="' + hint + '">$' + historyPrice +
+                '&nbsp<span class="' + cls + '">(' + diff + '%)</span></span>'
+        }
+        $('#historical-price').html(usdPrice);
 
         document.title = 'Ethplorer';
         document.title += (': ' + (titleAdd ? (titleAdd + ' -') : ''));
@@ -677,7 +691,6 @@ Ethplorer = {
         $("table").find("tr:visible:even").addClass("even");
         $("table").find("tr:visible:last").addClass("last");
     },
-
     getAddressDetails: function(address){
         // Check Address format first
         address = address.toLowerCase();
@@ -687,7 +700,6 @@ Ethplorer = {
         }
         Ethplorer.loadAddressData(address, Ethplorer.showAddressDetails);
     },
-
     loadAddressData: function(address, data, callback){
         if('function' === typeof(data)){
             callback = data;
@@ -705,7 +717,7 @@ Ethplorer = {
             return function(data){
                 if(data.debug){
                     Ethplorer.requestDebug = data.debug;
-                }                
+                }
                 if(data.ethPrice){
                     Ethplorer.ethPrice = data.ethPrice;
                 }
@@ -713,7 +725,6 @@ Ethplorer = {
             }
         }(address));
     },
-
     showAddressDetails: function(address, data){
         var srcAddress = address;
         address = Ethplorer.Utils.toChecksumAddress(address);
@@ -805,7 +816,7 @@ Ethplorer = {
             }
 
             if(oToken.image){
-                $('#address-token-details .block-header').find('img').remove();                
+                $('#address-token-details .block-header').find('img').remove();
                 $('#address-token-details .block-header').prepend('<img src="' + oToken.image + '" class="token-logo" align="left">');
             }
             $('.address-token-name').html(oToken.name);
@@ -837,10 +848,10 @@ Ethplorer = {
                 'token', 'token.name', 'token.price', 'token.description', 'token.owner', 'token.totalSupply', 'token.totalIn', 'token.totalOut', 'token.decimals', 'token.symbol',
                 'token.txsCount', 'token.transfersCount', 'token.issuancesCount', 'token.holdersCount', 'token.createdAt', 'token.createdTx'
             ];
-            
+
             $('#tab-issuances').show();
             $('#tab-holders').show();
-            
+
             Ethplorer.fillValues('address', data, fields);
 
             var totalSupply = oToken.totalSupply;
@@ -892,7 +903,7 @@ Ethplorer = {
                     return -1;
                 return 0;
             });
-            
+
             // Show
             $('#address-token-balances table').empty();
             for(var k=0; k<balances.length; k++){
@@ -1001,7 +1012,6 @@ Ethplorer = {
 
         Ethplorer.showAddressWidget(data);
     },
-
     showAddressWidget: function(data){
         //console.log('testWidget = ' + testWidget);
         var oToken = Ethplorer.prepareToken(data.token);
@@ -1071,8 +1081,6 @@ Ethplorer = {
             }(data), 3000);*/
         }
     },
-
-
     drawTransfers: function(address, transfersData){
         $('#filter_list').attr('disabled', false);
         for(var key in transfersData){
@@ -1127,18 +1135,33 @@ Ethplorer = {
                     if(!from && tx.address){
                         value = (tx.type && ('burn' === tx.type)) ? '-' + value + '<br>&#128293;&nbsp;Burn' : value + '<br>&#9874;&nbsp;Issuance';
                     }
-                    if(txToken.price && txToken.price.rate){
-                        var pf = parseFloat(value.replace(/\,/g,'').split(' ')[0]);
-                        if(pf){
-                            pf = Ethplorer.Utils.round(pf * txToken.price.rate, 2);
-                            var usdval = Ethplorer.Utils.formatNum(Math.abs(pf), true, 2, true);
-                            value = value + '<br><span class="transfer-usd">$ ' + usdval + '</span>';
+                    var pf = parseFloat(value.replace(/\,/g,'').split(' ')[0]);
+                    var usdPrice = '';
+                    if(pf){
+                        if(txToken.price && txToken.price.rate){
+                            var usdval = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf * txToken.price.rate, 2)), true, 2, true);
+                            value = value + '<br><span class="transfer-usd" title="now">$ ' + usdval + '</span>';
+                        }
+                        if (tx.usdPrice && Ethplorer.showHistoricalPrice){
+
+                            var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(tx.usdPrice, txToken.price.rate), 2);
+                            var hint = 'estimated at tx date';
+
+                            var cls = (diff > 0 ? 'diff-up' : 'diff-down')
+                            if(diff > 0){
+                                diff = '+' + Ethplorer.Utils.round(diff, 2);
+                            }
+                            var historyPrice = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf*tx.usdPrice, 2)), true, 2, true);
+
+                            usdPrice = '<br><span class="historical-price"  title="' + hint + '">$' + historyPrice +
+                                '&nbsp<span class="' + cls + '">(' + diff + '%)</span></span>'
                         }
                     }
+                    value +=  usdPrice;
                     divData.html(
                         '<span class="show_small">Date:&nbsp;' + date + '<br></span>' +
                         (!data.token ? ('<span class="address-token-inline">Token:&nbsp;' + token + '<br></span>') : '') +
-                        '<span class="show_small ' + rowClass + '">Value:&nbsp;' + value + '<br></span>' +                        
+                        '<span class="show_small ' + rowClass + '">Value:&nbsp;' + value + '<br></span>' +
                         'Tx:&nbsp;' + Ethplorer.Utils.getEthplorerLink(tx.transactionHash) + '<br>' +
                         (from ? ('From:&nbsp;' + from + '<br>To:&nbsp;' + to) : ('Address:&nbsp;' + _address))
                     );
@@ -1176,7 +1199,6 @@ Ethplorer = {
 
         $('#' + tableId).show();
     },
-
     showEthTransfers: function(switcher){
         Ethplorer.Nav.del('transfers');
         Ethplorer.showEth = switcher.checked ? 1 : 0;
@@ -1185,7 +1207,6 @@ Ethplorer = {
         var tab = Ethplorer.getActiveTab();
         Ethplorer.reloadTab(tab);
     },
-
     drawIssuances: function(address, issuancesData){
         $('#filter_list').attr('disabled', false);
         $('#address-issuances .table').empty();
@@ -1227,7 +1248,7 @@ Ethplorer = {
                             var usdval = Ethplorer.Utils.formatNum(Math.abs(pf), true, 2, true);
                             value = value + '<br><span class="transfer-usd">$ ' + usdval + '</span>';
                         }
-                    }                    
+                    }
                     tdQty.html(value);
                     row.append(tdDate, tdHash, tdOpType, tdQty);
                     $('#address-issuances .table').append(row);
@@ -1243,7 +1264,6 @@ Ethplorer = {
         Ethplorer.hideTableLoader();
         $('#address-issuances').show();
     },
-
     drawHolders: function(address, holdersData){
         $('#filter_list').attr('disabled', false);
         $('#address-token-holders .table').empty();
@@ -1316,7 +1336,6 @@ Ethplorer = {
         Ethplorer.hideTableLoader();
         $('#address-token-holders').show();
     },
-
     drawChainy: function(address, chainyData){
         $('#filter_list').attr('disabled', false);
         $('#address-chainy-tx .table').empty();
@@ -1358,7 +1377,7 @@ Ethplorer = {
                 var row = $('<tr>');
                 var tdDate = $('<td>');
                 var tdHash = $('<td>').addClass('list-field table-hash-field');
-                var tdOpType = $('<td>').addClass('text-center table-type-field');                   
+                var tdOpType = $('<td>').addClass('text-center table-type-field');
                 var tdLink = $('<td>');
                 tdDate.html(Ethplorer.Utils.getEthplorerLink(tx.hash, Ethplorer.Utils.ts2date(tx.timestamp, false), false));
                 tdDate.find('a').attr('title', Ethplorer.Utils.ts2date(tx.timestamp, true));
@@ -1390,7 +1409,7 @@ Ethplorer = {
         Ethplorer.hideTableLoader();
         $('#address-chainy-tx').show();
     },
-    drawPager: function(container, pageData){    
+    drawPager: function(container, pageData){
         var currentPage     = pageData.page,
             recordsCount    = pageData.records,
             totalCount      = pageData.total;
@@ -1445,7 +1464,7 @@ Ethplorer = {
                 }
             }
         }(container, recordsCount, totalCount), 100);
-        
+
         container.empty();
 
         if(recordsCount){
@@ -1454,7 +1473,7 @@ Ethplorer = {
             for(var i=1; i<=pages; i++){
                 if((i <= 1) || ((i <= 5) &&(currentPage <= 4)) || ((i >= (pages - 4)) &&(currentPage >= (pages - 3))) || (i >= (pages)) || ((i >= (currentPage - 1)) && (i <= (currentPage + 1)))){
                     var page = $('<LI>');
-                    page.addClass('page-item');                   
+                    page.addClass('page-item');
                     var link = $('<a>');
                     link.html(i);
                     if(i === currentPage){
@@ -1490,7 +1509,6 @@ Ethplorer = {
             container.append(pager);
         }
     },
-
     prepareToken: function(oToken){
         if(!oToken){
             oToken = {address: '', name: '', decimals: 0, symbol: '', totalSupply: 0};
@@ -1555,7 +1573,6 @@ Ethplorer = {
         oToken.prepared  = true;
         return oToken;
     },
-
     convert: function(id, switcher){
         switcher = $(switcher);
         var pre = $('#' + id);
@@ -1570,7 +1587,6 @@ Ethplorer = {
             switcher.text('HEX');
         }
     },
-
     search: function(value, fromInput){
         value = value.replace(/^\s+/, '').replace(/\s+$/, '');
         if(value.length){
@@ -1588,7 +1604,7 @@ Ethplorer = {
                 $.getJSON(Ethplorer.service, data, function(data){
                     if(data.debug){
                         Ethplorer.requestDebug = data.debug;
-                    }                    
+                    }
                     var empty = !(data && data.results && data.total);
                     if(!empty){
                         document.location.href = '/address/' + data.results[0][2];
@@ -1603,7 +1619,6 @@ Ethplorer = {
             Ethplorer.error('Nothing found');
         }
     },
-
     fillValues: function(prefix, data, keys){
         for(var key in data){
             if(keys.indexOf(key) >= 0){
@@ -1619,7 +1634,6 @@ Ethplorer = {
             }
         }
     },
-
     fillValue: function(id, value){
         var type = $('#' + id).attr('data-type') || 'none';
         var options = $('#' + id).attr('data-options') ? $('#' + id).attr('data-options').split('|') : [];
@@ -1654,7 +1668,7 @@ Ethplorer = {
             case 'ether-full':
                 if(value < 0){
                     value = "N/A";
-                }else{                
+                }else{
                     var res = Ethplorer.Utils.formatNum(value, true, 18, true) + ' ETHER';
                     if(value){
                         var price = Ethplorer.Utils.formatNum(Ethplorer.ethPrice.rate * value, true, 4, true);
@@ -1677,7 +1691,7 @@ Ethplorer = {
                 }else{
                     value = "";
                 }
-                break;                
+                break;
             case 'etherscan':
                 value = Ethplorer.Utils.getEtherscanLink(value, value, (options.indexOf('no-contract') < 0) ? Ethplorer.knownContracts.indexOf(value) >= 0 : false);
                 break;
@@ -1707,7 +1721,7 @@ Ethplorer = {
         Ethplorer.loaderTimeout = setTimeout(function(){
             $('#loader').show();
         }, 1000);
-    },    
+    },
     hideLoader: function(){
         $('#loader').hide();
         if(Ethplorer.loaderTimeout){
@@ -1877,7 +1891,7 @@ Ethplorer = {
             cutZeroes = !!cutZeroes;
             withDecimals = !!withDecimals;
             decimals = ('undefined' !== typeof(decimals)) ? decimals : 2;
-            
+
             if((num.toString().indexOf("e+") > 0)){
                 if(noE){
                     var parts = num.toString().split('e+');
@@ -1942,7 +1956,7 @@ Ethplorer = {
             return res;
         },
         /**
-         * 
+         *
          * @returns {String}
          */
         getEtherscanAddress: function(){
@@ -1963,7 +1977,7 @@ Ethplorer = {
             var res = text;
             if(isContract){
                 res = 'Contract ' + res;
-            }        
+            }
             return res;
         },
 
@@ -1982,7 +1996,7 @@ Ethplorer = {
             res += ('/' + data + '"  class="local-link">' + text + '</a>');
             if(isContract){
                 res = 'Contract ' + res;
-            }        
+            }
             return res;
         },
 
@@ -1992,7 +2006,7 @@ Ethplorer = {
             ts *= 1000;
             function padZero(s){
                 return (s < 10) ? '0' + s : s.toString();
-            }        
+            }
             var res = '';
             var dt = new Date(ts);
             res += (dt.getFullYear() + '-' + padZero((dt.getMonth() + 1)) + '-' + padZero(dt.getDate()));
@@ -2024,8 +2038,8 @@ Ethplorer = {
         ascii2hex: function(text){
             var res = [];
             for (var i=0; i<text.length; i++){
-		var hex = Number(text.charCodeAt(i)).toString(16);
-		res.push(hex);
+                var hex = Number(text.charCodeAt(i)).toString(16);
+                res.push(hex);
             }
             return res.join('');
         },
@@ -2079,7 +2093,7 @@ Ethplorer = {
             }
             return res;
         },
-        
+
         isSafari: function(){
             var isIphone = /(iPhone)/i.test(navigator.userAgent);
             var isSafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
@@ -2136,5 +2150,10 @@ Ethplorer = {
 
             return ret;
         }
+    },
+    enableHistoricalPrice: function(bool){
+        bool = bool === undefined;
+        sessionStorage.setItem("enableHistoricalPrice", bool);
+        location.reload();
     }
 };

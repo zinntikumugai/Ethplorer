@@ -175,6 +175,28 @@ tr.paginationFooter td ul.pagination {
     padding: 8px 8px 8px 28px;
 }
 
+table.table.limit-width td:first-child,
+table.table.limit-width td:nth-child(2) {
+    word-wrap: break-word;
+    max-width: 100px;
+}
+
+
+@media screen and (min-width: 500px) {
+    table.table.limit-width td:first-child{
+        max-width: 200px;
+    }
+    table.table.limit-width td:nth-child(2) {
+        max-width: 200px;
+    }
+}
+@media screen and (min-width: 922px) {
+    table.table.limit-width td:first-child,
+    table.table.limit-width td:nth-child(2) {
+        max-width: 270px; /*tr width max 540px*/
+    }
+}
+
 #address-chainy-tx .table tr:nth-child(even),
 #token-transfers-tab .table tr:nth-child(even),
 #token-issuances-tab .table tr:nth-child(even),
@@ -1227,7 +1249,8 @@ a.token-update {
     }
 
     .multiop tr td:nth-child(3),
-    .multiop tr td:nth-child(4)
+    .multiop tr td:nth-child(4),
+    .multiop tr td:nth-child(5)
     {
         display: none;
     }
@@ -1344,4 +1367,16 @@ a.token-update {
 @keyframes hrhand{
     0%{transform:rotate(0deg)}
     100%{transform:rotate(360deg)}
+}
+
+.scrollable{
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.historical-price {
+    /*font-size: 0.7em;*/
+    font-size: 0.8em;
+    /*opacity: 0.5;*/
+    color: rgba(255, 255, 255, 0.6);
 }

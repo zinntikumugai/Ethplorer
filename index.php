@@ -263,8 +263,10 @@ if(is_array($rParts) && isset($rParts[2])){
                                 <div class="block-header">
                                     <h3>Internal operations</h3>
                                 </div>
-                                <table class="table">
-                                </table>
+                                <div class="scrollable">
+                                    <table class="table">
+                                    </table>
+                                </div>
                             </div>
                         </div>
 
@@ -313,6 +315,10 @@ if(is_array($rParts) && isset($rParts[2])){
                                 <tr>
                                     <td>Date</td>
                                     <td id="transfer-tx-timestamp" data-type="localdate" class="list-field"></td>
+                                </tr>
+                                <tr>
+                                    <td>Value @ tx date</td>
+                                    <td id="historical-price" data-type="historical-price" class="list-field"></td>
                                 </tr>
                                 <tr>
                                     <td>From</td>
