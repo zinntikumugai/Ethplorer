@@ -328,6 +328,7 @@ a.local-link, a.local-link:visited, a.local-link:hover {
     position: absolute;
     width: 100%;
     bottom: 0px;
+    overflow-x: auto;
 }
 
 .footer .small-link {

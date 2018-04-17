@@ -661,8 +661,6 @@ Ethplorer = {
             usdPrice = '~<span title="' + hint + '">$' + historyPrice +
                 '&nbsp<span class="' + cls + '">(' + diff + '%)</span></span>'
         }
-        $('#historical-price').html(usdPrice);
-
         document.title = 'Ethplorer';
         document.title += (': ' + (titleAdd ? (titleAdd + ' -') : ''));
         document.title += (' hash ' + txHash);
@@ -681,6 +679,7 @@ Ethplorer = {
         }else if(multiop){
             Ethplorer.showOpDetails(oTx, txData.operations[0]);
         }
+        $('#historical-price').html(usdPrice);
 
         Ethplorer.Events.fire('ethp_showTxDetails_finish', txData);
         Ethplorer.Utils.hideEmptyFields();
