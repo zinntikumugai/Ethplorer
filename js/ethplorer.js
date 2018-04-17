@@ -220,6 +220,7 @@ Ethplorer = {
                 window.open("data:" + mimetype + "," + encodeURIComponent(data), '_blank', '');
             };
         }*/
+        this.Utils.initScrollable();
     },
     getActiveTab: function(){
         var tab = ($('.nav-tabs:visible li.active').length) ? $('.nav-tabs:visible li.active').attr('id').replace('tab-', '') : false;
@@ -658,7 +659,7 @@ Ethplorer = {
             }
             var historyPrice = Ethplorer.Utils.formatNum(oTx.usdPrice * valFloat, true, 2, true, true);
 
-            usdPrice = '~<span title="' + hint + '">$' + historyPrice +
+            usdPrice = '<span title="' + hint + '">~$ ' + historyPrice +
                 '&nbsp<span class="' + cls + '">(' + diff + '%)</span></span>'
         }
         document.title = 'Ethplorer';
@@ -945,8 +946,8 @@ Ethplorer = {
                     value += ('<div class="total-in-out-small">Total In: ' + Ethplorer.Utils.formatNum(totalIn, true, oToken.decimals, true) + '<br />');
                     value += ('Total Out: ' + Ethplorer.Utils.formatNum(totalOut, true, oToken.decimals, true) + '</div>');
                 }
-                row.append('<TD>' + Ethplorer.Utils.getEthplorerLink(balance.contract, oToken.name, false) + '</TD>');
-                row.append('<TD>' + value + '</TD>');
+                row.append('<td class="cut-long-text">' + Ethplorer.Utils.getEthplorerLink(balance.contract, oToken.name, false) + '</td>');
+                row.append('<td>' + value + '</td>');
                 row.find('td:eq(1)').addClass('text-right');
                 $('#address-token-balances table').append(row);
             }
@@ -1152,7 +1153,7 @@ Ethplorer = {
                             }
                             var historyPrice = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf*tx.usdPrice, 2)), true, 2, true);
 
-                            usdPrice = '<br><span class="historical-price"  title="' + hint + '">$' + historyPrice +
+                            usdPrice = '<br><span class="historical-price"  title="' + hint + '">~$ ' + historyPrice +
                                 '&nbsp<span class="' + cls + '">(' + diff + '%)</span></span>'
                         }
                     }
@@ -1935,7 +1936,6 @@ Ethplorer = {
             }
             return res;
         },
-
         /**
          * Parses URL path
          * @returns {string}
@@ -1979,7 +1979,6 @@ Ethplorer = {
             }
             return res;
         },
-
         getEthplorerLink: function(data, text, isContract){
             text = text || data;
             if(!/^0x/.test(data)){
@@ -1992,13 +1991,12 @@ Ethplorer = {
             }
             var res = '<a href="/';
             res += (isTx ? 'tx' : 'address');
-            res += ('/' + data + '"  class="local-link">' + text + '</a>');
+            res += ('/' + data + '"  class="local-link" title="' + text + '">' + text + '</a>');
             if(isContract){
                 res = 'Contract ' + res;
             }
             return res;
         },
-
         // Date with fixed GMT to local date
         ts2date: function(ts, withGMT){
             withGMT = 'undefined' !== typeof(withGMT) ? withGMT : true;
@@ -2016,12 +2014,10 @@ Ethplorer = {
             }
             return res;
         },
-
         getTZOffset: function(){
             var offset = -Math.round(new Date().getTimezoneOffset() / 60);
             return 'GMT' + (offset > 0 ? '+' : '-') + offset;
         },
-
         hideEmptyFields: function(){
             $('.list-field').parents('TR').show();
             $('.list-field:empty').parents('TR').hide();
@@ -2033,7 +2029,6 @@ Ethplorer = {
             }
             */
         },
-
         ascii2hex: function(text){
             var res = [];
             for (var i=0; i<text.length; i++){
@@ -2042,7 +2037,6 @@ Ethplorer = {
             }
             return res.join('');
         },
-
         hex2ascii: function(data){
             var res = '';
             try {
@@ -2052,7 +2046,6 @@ Ethplorer = {
             } catch(e) {}
             return res;
         },
-
         hex2utf: function(data){
             var res = '';
             try {
@@ -2061,7 +2054,6 @@ Ethplorer = {
             } catch(e) {}
             return res;
         },
-
         parseJData: function(hex){
             var str = Ethplorer.Utils.hex2ascii(hex.slice(8)).replace('{{', '{').replace(/^[^{]+/, '');
             var res = false;
@@ -2080,7 +2072,6 @@ Ethplorer = {
             }
             return res;
         },
-
         toBig: function(obj){
             var res = new BigNumber(0);
             if(obj && 'undefined' !== typeof(obj.c)){
@@ -2092,7 +2083,6 @@ Ethplorer = {
             }
             return res;
         },
-
         isSafari: function(){
             var isIphone = /(iPhone)/i.test(navigator.userAgent);
             var isSafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
@@ -2104,8 +2094,7 @@ Ethplorer = {
 
             return Math.round(val * k) / k;
         },
-        floor: function(val, decimals)
-        {
+        floor: function(val, decimals){
             decimals = decimals ? parseInt(decimals) : 0;
             var k = decimals ? Math.pow(10, decimals) : 1;
 
@@ -2124,7 +2113,6 @@ Ethplorer = {
             }
             return res;
         },
-
         isHexPrefixed: function(str){
             return str.slice(0, 2) === '0x';
         },
@@ -2148,6 +2136,41 @@ Ethplorer = {
             }
 
             return ret;
+        },
+        /**
+         * NOTE: should run once
+         * work with .scrollwrapper class
+         * .srollable > .scrollwrapper > <scrollable content>
+         *
+         */
+        initScrollable: function () {
+            function checkPosition(el){
+                var $el = $(el);
+                var $child = $el.children()
+
+                $el
+                    .removeClass('hide-bottom-gr')
+                    .removeClass('hide-top-gr');
+
+                if ($child.outerHeight(true) - $el.outerHeight(true) + $child.position().top === 0){
+                    //bottom
+                    $el.addClass('hide-bottom-gr')
+                }
+                if ($child.position().top === 0){
+                    //top
+                    $el.addClass('hide-top-gr')
+                }
+
+            }
+            var timer = null;
+            $('.scrollwrapper').on( 'scroll', function(e){
+
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(function(){
+                    checkPosition(e.target)
+                }, 100);
+            });
+
         }
     },
     enableHistoricalPrice: function(bool){

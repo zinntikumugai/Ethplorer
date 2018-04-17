@@ -263,10 +263,7 @@ if(is_array($rParts) && isset($rParts[2])){
                                 <div class="block-header">
                                     <h3>Internal operations</h3>
                                 </div>
-                                <div class="scrollable">
-                                    <table class="table">
-                                    </table>
-                                </div>
+                                <div class="scrollable"><div class="scrollwrapper"><table class="table"></table></div></div>
                             </div>
                         </div>
 
@@ -519,7 +516,7 @@ if(is_array($rParts) && isset($rParts[2])){
                                     <div id="address-balances-total"></div>
                                 </h3>
                             </div>
-                            <div class="scrollable"><table class="table"></table></div>
+                            <div class="scrollable"><div class="scrollwrapper"><table class="table"></table></div></div>
                         </div>
                         <div class="block" id="address-chainy-info">
                             <div class="block-header">
