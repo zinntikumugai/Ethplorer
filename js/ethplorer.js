@@ -755,6 +755,7 @@ Ethplorer = {
             $('#address-token-details').show();
             var oToken = Ethplorer.prepareToken(data.token);
             // oToken.address = oToken.address;
+            // QUESTION: WHAT? WHY?
             var ttype = (address.toLowerCase() !== "0x55d34b686aa8c04921397c5807db9ecedba00a4c") ? 'Token ' : 'Contract ';
             $('#ethplorer-path').html(qrIcon + ttype + oToken.name + '<br><small>' + Ethplorer.Utils.toChecksumAddress(oToken.address) + '</small>');
             titleAdd = ttype + oToken.name + (oToken.symbol ? (' [' + oToken.symbol + ']') : '' ) + ' Information';
@@ -1647,11 +1648,19 @@ Ethplorer = {
                     value = '$ ' + Ethplorer.Utils.formatNum(rate.rate, true, 2, true);
                     if(rate.diff){
                         var cls = rate.diff > 0 ? 'diff-up' : 'diff-down';
-                        var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
+                        var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true) + ' in 24 hour period';
                         if(rate.diff > 0){
                             rate.diff = '+' + rate.diff;
                         }
-                        value = value + ' <span class="' + cls + '" title="' + hint + '">(' + Ethplorer.Utils.round(rate.diff, 2) + '%)</span>'
+                        value = value + ' <span class="' + cls + '" title="' + hint + '">(24h ' + Ethplorer.Utils.round(rate.diff, 2) + '%)</span>'
+                    }
+                    if(rate.diff7d){
+                        var cls = rate.diff7d > 0 ? 'diff-up' : 'diff-down';
+                        var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true) + ' in 7 days period';
+                        if(rate.diff7d > 0){
+                            rate.diff7d = '+' + rate.diff7d;
+                        }
+                        value = value + ' <span class="' + cls + '" title="' + hint + '">(7d ' + Ethplorer.Utils.round(rate.diff7d, 2) + '%)</span>'
                     }
                 }else{
                     value = '';
@@ -1935,7 +1944,6 @@ Ethplorer = {
             }
             return res;
         },
-
         /**
          * Parses URL path
          * @returns {string}
@@ -1979,7 +1987,6 @@ Ethplorer = {
             }
             return res;
         },
-
         getEthplorerLink: function(data, text, isContract){
             text = text || data;
             if(!/^0x/.test(data)){
@@ -1998,7 +2005,6 @@ Ethplorer = {
             }
             return res;
         },
-
         // Date with fixed GMT to local date
         ts2date: function(ts, withGMT){
             withGMT = 'undefined' !== typeof(withGMT) ? withGMT : true;
@@ -2016,12 +2022,10 @@ Ethplorer = {
             }
             return res;
         },
-
         getTZOffset: function(){
             var offset = -Math.round(new Date().getTimezoneOffset() / 60);
             return 'GMT' + (offset > 0 ? '+' : '-') + offset;
         },
-
         hideEmptyFields: function(){
             $('.list-field').parents('TR').show();
             $('.list-field:empty').parents('TR').hide();
@@ -2033,7 +2037,6 @@ Ethplorer = {
             }
             */
         },
-
         ascii2hex: function(text){
             var res = [];
             for (var i=0; i<text.length; i++){
@@ -2042,7 +2045,6 @@ Ethplorer = {
             }
             return res.join('');
         },
-
         hex2ascii: function(data){
             var res = '';
             try {
@@ -2052,7 +2054,6 @@ Ethplorer = {
             } catch(e) {}
             return res;
         },
-
         hex2utf: function(data){
             var res = '';
             try {
@@ -2061,7 +2062,6 @@ Ethplorer = {
             } catch(e) {}
             return res;
         },
-
         parseJData: function(hex){
             var str = Ethplorer.Utils.hex2ascii(hex.slice(8)).replace('{{', '{').replace(/^[^{]+/, '');
             var res = false;
@@ -2080,7 +2080,6 @@ Ethplorer = {
             }
             return res;
         },
-
         toBig: function(obj){
             var res = new BigNumber(0);
             if(obj && 'undefined' !== typeof(obj.c)){
@@ -2092,7 +2091,6 @@ Ethplorer = {
             }
             return res;
         },
-
         isSafari: function(){
             var isIphone = /(iPhone)/i.test(navigator.userAgent);
             var isSafari = !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
@@ -2104,8 +2102,7 @@ Ethplorer = {
 
             return Math.round(val * k) / k;
         },
-        floor: function(val, decimals)
-        {
+        floor: function(val, decimals){
             decimals = decimals ? parseInt(decimals) : 0;
             var k = decimals ? Math.pow(10, decimals) : 1;
 
@@ -2124,7 +2121,6 @@ Ethplorer = {
             }
             return res;
         },
-
         isHexPrefixed: function(str){
             return str.slice(0, 2) === '0x';
         },
