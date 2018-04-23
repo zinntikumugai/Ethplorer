@@ -418,6 +418,7 @@ Ethplorer = {
             };
             var obj = Ethplorer.Utils.parseJData(oTx.input);
             var isChainy = false;
+            // QUESTION: need explanation
             if(oTx.to && ('0xf3763c30dd6986b53402d41a8552b8f7f6a6089b' === oTx.to)){
                 var input = Ethplorer.Utils.hex2ascii(oTx.input.substring(136).replace(/0+$/, ''));
                 try {
@@ -755,7 +756,7 @@ Ethplorer = {
             $('#address-token-details').show();
             var oToken = Ethplorer.prepareToken(data.token);
             // oToken.address = oToken.address;
-            // QUESTION: WHAT? WHY?
+            // QUESTION: need explanation
             var ttype = (address.toLowerCase() !== "0x55d34b686aa8c04921397c5807db9ecedba00a4c") ? 'Token ' : 'Contract ';
             $('#ethplorer-path').html(qrIcon + ttype + oToken.name + '<br><small>' + Ethplorer.Utils.toChecksumAddress(oToken.address) + '</small>');
             titleAdd = ttype + oToken.name + (oToken.symbol ? (' [' + oToken.symbol + ']') : '' ) + ' Information';
