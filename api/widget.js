@@ -1694,11 +1694,9 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
                 var strLastPriceDate = widgetPriceData[widgetPriceData.length - 1].date + 'T00:00:00Z';
                 var strFirstDate = strLastPriceDate;
             }else{
-                var firstMonth = aTxData[0]._id.month,
-                    firstDay = aTxData[0]._id.day;
-                if(firstMonth < 10) firstMonth = '0' + firstMonth;
-                if(firstDay < 10) firstDay = '0' + firstDay;
-                var strFirstDate = aTxData[0]._id.year + '-' + firstMonth + '-' + firstDay + 'T00:00:00Z';
+                var currentDate = new Date();
+                var currentDateKey = currentDate.getFullYear() + '-' + (currentDate.getMonth() < 9 ? '0' : '') + (currentDate.getMonth() + 1) + '-' + (currentDate.getDate() < 10 ? '0' : '') + currentDate.getDate();
+                var strFirstDate = currentDateKey + 'T00:00:00Z';
             }
 
             /*if(widgetPriceData && widgetPriceData.length){
