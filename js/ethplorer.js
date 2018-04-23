@@ -1663,6 +1663,15 @@ Ethplorer = {
                         }
                         value = value + ' <span class="' + cls + '" title="' + hint + '">(7d ' + Ethplorer.Utils.round(rate.diff7d, 2) + '%)</span>'
                     }
+                    if(rate.diff && rate.diff7d){
+                        var cls = rate.diff7d > 0 ? 'diff-up' : 'diff-down';
+                        var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true) + ' in 30 days period';
+                        var diff30d = 123456.789;
+                        if(rate.diff7d > 0){
+                            diff30d = '+' + diff30d;
+                        }
+                        value = value + ' <span class="' + cls + '" title="' + hint + '">(30d ' + Ethplorer.Utils.round(diff30d, 2) + '%)</span>'
+                    }
                 }else{
                     value = '';
                 }
@@ -2161,25 +2170,21 @@ Ethplorer = {
                     .removeClass('hide-bottom-gr')
                     .removeClass('hide-top-gr');
 
-                if ($child.outerHeight(true) - $el.outerHeight(true) + $child.position().top === 0){
+                console.log($child.outerHeight(true) , $el.outerHeight(true) )
+                if ($child.outerHeight(true) < $el.outerHeight(true) || $child.outerHeight(true) - $el.outerHeight(true) + $child.position().top === 0){
                     //bottom
                     $el.addClass('hide-bottom-gr')
                 }
-                if ($child.position().top === 0){
+                /*if ($child.position().top === 0){
                     //top
                     $el.addClass('hide-top-gr')
-                }
+                }*/
 
             }
-            var timer = null;
-            $('.scrollwrapper').on('scroll', function(e){
-
-                if (timer) clearTimeout(timer);
-                timer = setTimeout(function(){
-                    checkPosition(e.target)
-                }, 100);
-            }).one("DOMSubtreeModified", function(event){
-                checkPosition(event.target.parentElement)
+            $('.scrollwrapper').one("DOMSubtreeModified", function(event){
+                setTimeout(() => {
+                    checkPosition(event.target.parentElement)
+                },100)
             });
 
         }
