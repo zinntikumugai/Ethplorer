@@ -2163,12 +2163,14 @@ Ethplorer = {
 
             }
             var timer = null;
-            $('.scrollwrapper').on( 'scroll', function(e){
+            $('.scrollwrapper').on('scroll', function(e){
 
                 if (timer) clearTimeout(timer);
                 timer = setTimeout(function(){
                     checkPosition(e.target)
                 }, 100);
+            }).one("DOMSubtreeModified", function(event){
+                checkPosition(event.target.parentElement)
             });
 
         }
