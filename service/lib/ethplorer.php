@@ -880,7 +880,7 @@ class Ethplorer {
      * @param string  $address  Token contract address
      * @return array
      */
-    public function getToken($address){
+    public function getToken($address, $fast = FALSE){
         // evxProfiler::checkpoint('getToken', 'START', 'address=' . $address);
         $cache = 'token-' . $address;
         $result = $this->oCache->get($cache, false, true, 30);
@@ -898,17 +898,19 @@ class Ethplorer {
                     }
                 }
 
-                // Ask DB for fresh counts
-                $cursor = $this->oMongo->find('tokens', array('address' => $address), array(), false, false, array('txsCount', 'transfersCount'));
-                $token = false;
-                if($cursor){
-                    foreach($cursor as $token){
-                        break;
+                if(!$fast){
+                    // Ask DB for fresh counts
+                    $cursor = $this->oMongo->find('tokens', array('address' => $address), array(), false, false, array('txsCount', 'transfersCount'));
+                    $token = false;
+                    if($cursor){
+                        foreach($cursor as $token){
+                            break;
+                        }
                     }
-                }
-                if($token){
-                    $result['txsCount'] = $token['txsCount'];
-                    $result['transfersCount'] = $token['transfersCount'];
+                    if($token){
+                        $result['txsCount'] = $token['txsCount'];
+                        $result['transfersCount'] = $token['transfersCount'];
+                    }
                 }
                 
                 $result['txsCount'] = (int)$result['txsCount'] + 1; // Contract creation tx
@@ -1167,13 +1169,6 @@ class Ethplorer {
      */
     public function getLastTransfers(array $options = array(), $showEth = FALSE){
         $search = array();
-        if(!isset($options['type'])){
-            $search['type'] = 'transfer';
-        }else{
-            if(FALSE !== $options['type']){
-                $search['type'] = $options['type'];
-            }
-        }
         if(isset($options['address']) && !isset($options['history'])){
             $search['contract'] = $options['address'];
         }
@@ -1186,7 +1181,13 @@ class Ethplorer {
         if(!$showEth){
             $search['isEth'] = false;
         }
-
+        if(!isset($options['type'])){
+            $search['type'] = 'transfer';
+        }else{
+            if(FALSE !== $options['type']){
+                $search['type'] = $options['type'];
+            }
+        }
         $sort = array("timestamp" => -1);
 
         if(isset($options['timestamp']) && ($options['timestamp'] > 0)){
@@ -1198,7 +1199,7 @@ class Ethplorer {
 
         $result = array();
         foreach($cursor as $transfer){
-            $transfer['token'] = $this->getToken($transfer['contract']);
+            $transfer['token'] = $this->getToken($transfer['contract'], true);
             unset($transfer["_id"]);
             $result[] = $transfer;
         }
