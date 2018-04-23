@@ -883,6 +883,14 @@ class Ethplorer {
     public function getToken($address, $fast = FALSE){
         // evxProfiler::checkpoint('getToken', 'START', 'address=' . $address);
         $cache = 'token-' . $address;
+        if($fast){
+            $aTokens = $this->getTokens();
+            $result = isset($aTokens[$address]) ? $aTokens[$address] : false;
+            if($result){
+                unset($result["_id"]);
+            }
+            return $result;
+        }
         $result = $this->oCache->get($cache, false, true, 30);
         if(FALSE === $result){
             $aTokens = $this->getTokens();
@@ -898,19 +906,17 @@ class Ethplorer {
                     }
                 }
 
-                if(!$fast){
-                    // Ask DB for fresh counts
-                    $cursor = $this->oMongo->find('tokens', array('address' => $address), array(), false, false, array('txsCount', 'transfersCount'));
-                    $token = false;
-                    if($cursor){
-                        foreach($cursor as $token){
-                            break;
-                        }
+                // Ask DB for fresh counts
+                $cursor = $this->oMongo->find('tokens', array('address' => $address), array(), false, false, array('txsCount', 'transfersCount'));
+                $token = false;
+                if($cursor){
+                    foreach($cursor as $token){
+                        break;
                     }
-                    if($token){
-                        $result['txsCount'] = $token['txsCount'];
-                        $result['transfersCount'] = $token['transfersCount'];
-                    }
+                }
+                if($token){
+                    $result['txsCount'] = $token['txsCount'];
+                    $result['transfersCount'] = $token['transfersCount'];
                 }
                 
                 $result['txsCount'] = (int)$result['txsCount'] + 1; // Contract creation tx
