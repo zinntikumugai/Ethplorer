@@ -755,7 +755,7 @@ Ethplorer = {
             $('#address-token-details').show();
             var oToken = Ethplorer.prepareToken(data.token);
             // oToken.address = oToken.address;
-            // QUESTION: WHAT? WHY?
+            // QUESTION: need explanation
             var ttype = (address.toLowerCase() !== "0x55d34b686aa8c04921397c5807db9ecedba00a4c") ? 'Token ' : 'Contract ';
             $('#ethplorer-path').html(qrIcon + ttype + oToken.name + '<br><small>' + Ethplorer.Utils.toChecksumAddress(oToken.address) + '</small>');
             titleAdd = ttype + oToken.name + (oToken.symbol ? (' [' + oToken.symbol + ']') : '' ) + ' Information';
