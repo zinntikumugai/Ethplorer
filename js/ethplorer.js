@@ -328,7 +328,7 @@ Ethplorer = {
         if(oToken.price && oToken.price.rate){
             var pf = parseFloat(totalSupply.replace(/\,/g,'').split(' ')[0]);
             if(pf){
-                pf = Ethplorer.Utils.round(pf * oToken.price.rate, 2); // не надо так
+                pf = Ethplorer.Utils.round(pf * oToken.price.rate, 2);
                 totalSupply = totalSupply + '<br><span class="total-supply-usd">$ ' + Ethplorer.Utils.formatNum(pf, true, 2, true) + '</span>';
                 $('#transaction-token-totalSupply').html(totalSupply);
             }
@@ -515,7 +515,6 @@ Ethplorer = {
                 $('#transaction-token-decimals').append(' <small>(estimated)</small>');
             }
 
-            //WAT?
             if($('#transaction-tx-message').html()){
                 $('#transfer-tx-message').html($('#transaction-tx-message').html());
                 $('#transaction-tx-message').html('')
