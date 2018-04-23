@@ -1180,11 +1180,11 @@ class Ethplorer {
         if(isset($options['address']) && isset($options['history'])){
             $search['addresses'] = $options['address'];
         }
-
         if(isset($options['token']) && isset($options['history'])){
             $search['contract'] = $options['token'];
-        }elseif(!$showEth){
-            $search['contract'] = array('$ne' => 'ETH');   
+        }
+        if(!$showEth){
+            $search['isEth'] = false;
         }
 
         $sort = array("timestamp" => -1);
@@ -1192,8 +1192,9 @@ class Ethplorer {
         if(isset($options['timestamp']) && ($options['timestamp'] > 0)){
             $search['timestamp'] = array('$gt' => $options['timestamp']);
         }
+
         $limit = isset($options['limit']) ? (int)$options['limit'] : false;
-        $cursor = $this->oMongo->find('operations', $search, $sort, $limit);
+        $cursor = $this->oMongo->find('operations2', $search, $sort, $limit);
 
         $result = array();
         foreach($cursor as $transfer){
