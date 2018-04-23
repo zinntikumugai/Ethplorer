@@ -755,6 +755,7 @@ Ethplorer = {
             $('#address-token-details').show();
             var oToken = Ethplorer.prepareToken(data.token);
             // oToken.address = oToken.address;
+            // QUESTION: WHAT? WHY?
             var ttype = (address.toLowerCase() !== "0x55d34b686aa8c04921397c5807db9ecedba00a4c") ? 'Token ' : 'Contract ';
             $('#ethplorer-path').html(qrIcon + ttype + oToken.name + '<br><small>' + Ethplorer.Utils.toChecksumAddress(oToken.address) + '</small>');
             titleAdd = ttype + oToken.name + (oToken.symbol ? (' [' + oToken.symbol + ']') : '' ) + ' Information';
@@ -1647,11 +1648,19 @@ Ethplorer = {
                     value = '$ ' + Ethplorer.Utils.formatNum(rate.rate, true, 2, true);
                     if(rate.diff){
                         var cls = rate.diff > 0 ? 'diff-up' : 'diff-down';
-                        var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
+                        var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true) + ' in 24 hour period';
                         if(rate.diff > 0){
                             rate.diff = '+' + rate.diff;
                         }
-                        value = value + ' <span class="' + cls + '" title="' + hint + '">(' + Ethplorer.Utils.round(rate.diff, 2) + '%)</span>'
+                        value = value + ' <span class="' + cls + '" title="' + hint + '">(24h ' + Ethplorer.Utils.round(rate.diff, 2) + '%)</span>'
+                    }
+                    if(rate.diff7d){
+                        var cls = rate.diff7d > 0 ? 'diff-up' : 'diff-down';
+                        var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true) + ' in 7 days period';
+                        if(rate.diff7d > 0){
+                            rate.diff7d = '+' + rate.diff7d;
+                        }
+                        value = value + ' <span class="' + cls + '" title="' + hint + '">(7d ' + Ethplorer.Utils.round(rate.diff7d, 2) + '%)</span>'
                     }
                 }else{
                     value = '';
