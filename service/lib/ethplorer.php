@@ -2693,7 +2693,7 @@ class Ethplorer {
     }
 
     protected function _getPDiff($a, $b){
-        var $res = 100;
+        $res = 100;
         if(!$b){
             return ($a > 0) ? FALSE : 0;
         }
