@@ -2171,7 +2171,7 @@ class Ethplorer {
                         }
                         $price30d = $this->getTokenPrice30d($address);
                         if($price30d && $result['rate']){
-                            $pdiff = _getPDiff($result['rate'], $price30d);
+                            $pdiff = $this->_getPDiff($result['rate'], $price30d);
                             if($pdiff){
                                 $result['diff30d'] = $pdiff;
                             }
