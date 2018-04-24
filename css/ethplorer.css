@@ -1376,10 +1376,8 @@ a.token-update {
     100%{transform:rotate(360deg)}
 }
 .historical-price {
-    /*font-size: 0.7em;*/
-    font-size: 0.8em;
-    /*opacity: 0.5;*/
-    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.7em;
+    color: rgba(255, 255, 255, 0.5);
 }
 /* Scrollable */
 .scrollable{
@@ -1422,3 +1420,13 @@ a.token-update {
     margin-bottom: 0;
 }
 
+.diff-span {
+    padding-right: 10px;
+    color: rgba(255, 255, 255, 0.6);
+}
+.diff-span span {
+    padding-left: 4px;
+}
+.diff-zero{
+    color: rgba(255, 255, 255, 0.6);
+}
