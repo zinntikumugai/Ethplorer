@@ -1416,7 +1416,7 @@ class Ethplorer {
             'volumePrevious' => 0
         );
         $result = $this->oCache->get($cache, false, true);
-        if($updateCache || (FALSE === $result)){
+        if($updateCache){
             $aTokens = $this->getTokens();
             $result = array();
             $total = 0;
@@ -1584,11 +1584,21 @@ class Ethplorer {
             if($criteria == 'count') $sortMethod = '_sortByTxCount';
             usort($result, array($this, $sortMethod));
 
+            $aPrevTotals = $this->oCache->get('top_tokens_totals', FALSE, TRUE);
+            $prevTokensNum = 0;
+            if(FALSE !== $aPrevTotals){
+                $prevTokensNum = $aPrevTotals['tokensWithPrice'];
+            }
+            if($aTotals['tokensWithPrice'] < $prevTokensNum) $aTotals['tokensWithPrice'] = $prevTokensNum;
+            if(($criteria != 'count') && ($aTotals['tokensWithPrice'] > $topLimit)){
+                $tokensLimit = $aTotals['tokensWithPrice'];
+            }else{
+                $tokensLimit = $topLimit;
+            }
+
             $res = [];
             foreach($result as $i => $item){
-                if($i < $topLimit){
-                    // $item['percentage'] = round(($item['volume'] / $total) * 100);
-
+                if($i < $tokensLimit){
                     // get tx's other trends
                     if(($item['address'] != self::ADDRESS_ETH) && $criteria == 'count'){
                         unset($aPeriods[0]);
@@ -1613,20 +1623,18 @@ class Ethplorer {
                     $res[] = $item;
                 }
             }
+
             $aTotals['ts'] = time();
-            $aPrevTotals = $this->oCache->get('top_tokens_totals', FALSE, TRUE);
-            $prevTokensNum = 0;
-            if(FALSE !== $aPrevTotals){
-                $prevTokensNum = $aPrevTotals['tokensWithPrice'];
-            }
-            if($aTotals['tokensWithPrice'] < $prevTokensNum) $aTotals['tokensWithPrice'] = $prevTokensNum;
             $result = array('tokens' => $res, 'totals' => $aTotals);
             $this->oCache->save($cache, $result);
             $this->oCache->save('top_tokens_totals', $aTotals);
         }
+        if(FALSE === $result){
+            $result = array('tokens' => array());
+        }
 
         $res = [];
-        if($limit < $topLimit){
+        if($limit > 0 && $limit < $topLimit){
             foreach($result['tokens'] as $i => $item){
                 if($i < $limit){
                     $res[] = $item;
@@ -2127,7 +2135,7 @@ class Ethplorer {
 
     public function getTokenPrice30d($address){
         $result = FALSE;
-        $aTokensTop = $this->getTokensTop(100, 'cap');
+        $aTokensTop = $this->getTokensTop(-1, 'cap');
         if(is_array($aTokensTop) && isset($aTokensTop['tokens'])){
             foreach($aTokensTop['tokens'] as $aToken){
                 if(($aToken['address'] == $address) && isset($aToken['cap-30d-previous']) && $aToken['cap-30d-previous'] > 0){
