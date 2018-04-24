@@ -2133,6 +2133,20 @@ class Ethplorer {
         return $transactions;
     }
 
+    public function getTokenPrice30d($address){
+        $result = FALSE;
+        $aTokensTop = $this->getTokensTop(100, 'cap');
+        if(is_array($aTokensTop) && isset($aTokensTop['tokens'])){
+            foreach($aTokensTop['tokens'] as $aToken){
+                if(($aToken['address'] == $address) && isset($aToken['cap-30d-previous']) && $aToken['cap-30d-previous'] > 0){
+                    $result = $aToken['cap-30d-previous'];
+                    break;
+                }
+            }
+        }
+        return $result;
+    }
+
     public function getTokenPrice($address, $updateCache = FALSE){
         // evxProfiler::checkpoint('getTokenPrice', 'START', 'address=' . $address . ', updateCache=' . ($updateCache ? 'TRUE' : 'FALSE'));
         $result = FALSE;
@@ -2161,6 +2175,13 @@ class Ethplorer {
                         if('0xff71cb760666ab06aa73f34995b42dd4b85ea07b' === $address){
                             if($result['rate'] > 1){
                                 $result = 1 / (float)$result['rate'];
+                            }
+                        }
+                        $price30d = $this->getTokenPrice30d($address);
+                        if($price30d && $result['rate']){
+                            $pdiff = $this->_getPDiff($result['rate'], $price30d);
+                            if($pdiff){
+                                $result['diff30d'] = $pdiff;
                             }
                         }
                         $rates[$address] = $result;
@@ -2677,6 +2698,26 @@ class Ethplorer {
             }
         }
         return $result;
+    }
+
+    protected function _getPDiff($a, $b){
+        $res = 100;
+        if(!$b){
+            return ($a > 0) ? FALSE : 0;
+        }
+        if($a !== $b){
+            if($a && $b){
+                $res = ($a / $b) * 100 - 100;
+            }else{
+                $res *= (($a - $b) < 0) ? -1 : 1;
+            }
+        }else{
+            $res = 0;
+        }
+        if((abs($res) > 10000) && ($b < 10)){
+            $res = FALSE;
+        }
+        return $res;
     }
 
     /**
