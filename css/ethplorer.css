@@ -598,13 +598,13 @@ a.dashed {
 }
 
 #transfer-operation-value .diff-up{
-    color: #2de72d !important;
+    color: #28d028 !important;
     padding-left: 6px;
     font-size: 0.9em;
 }
 
 #transfer-operation-value .diff-down{
-    color: #e43434 !important;
+    color: #a92626 !important;
     padding-left: 6px;
     font-size: 0.9em;
 }
@@ -1399,8 +1399,11 @@ a.token-update {
     position: relative;
 }
 .scrollwrapper{
-    max-height: 400px;
+    max-height: 280px;
     overflow-y: auto;
+}
+#address-token-balances .scrollwrapper{
+    max-height: 350px;
 }
 .scrollwrapper:after{
     content: "";
