@@ -351,7 +351,6 @@ Ethplorer = {
         }
 
         var valFloat = parseFloat(Ethplorer.Utils.toBig(oOperation.value).toString());
-        valFloat =  valFloat / Math.pow(10, oToken.decimals)
         if('undefined' !== typeof(oOperation.formatted)){
             if(Ethplorer.Utils.isSafari()){
                 oOperation.value = valFloat;
@@ -367,6 +366,9 @@ Ethplorer = {
             value = value + '<br><span class="tx-value-price">($ ' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + ')</span>';
         }
         $('#transfer-operation-value').html(value);
+
+        $('#historical-price').html(getHistUsdPriceString(op.usdPrice, oToken.price.rate, valFloat));
+
 
         titleAdd += oOperation.type;
         $('.token-operation-type').text(oOperation['type']);
@@ -609,6 +611,7 @@ Ethplorer = {
                         value = value + '<br><span class="tx-value-price">($ ' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + ')</span>';
                     }
                     $('#transfer-operation-value').html(value);
+                    $('#historical-price').html(getHistUsdPriceString(oOperation.usdPrice, oToken.price.rate, valFloat));
                 }
 
                 if(oTx.blockNumber){
@@ -648,20 +651,6 @@ Ethplorer = {
             $('.tx-details-close').hide();
         }
 
-        var usdPrice = '';
-        if(oTx.usdPrice && Ethplorer.showHistoricalPrice && valFloat){
-            var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(oTx.usdPrice, oToken.price.rate), 2);
-            var hint = 'estimated at tx date';
-
-            var cls = (diff > 0 ? 'diff-up' : 'diff-down')
-            if(diff > 0){
-                diff = '+' + Ethplorer.Utils.round(diff, 2);
-            }
-            var historyPrice = Ethplorer.Utils.formatNum(oTx.usdPrice * valFloat, true, 2, true, true);
-
-            usdPrice = '<span title="' + hint + '">~$ ' + historyPrice +
-                '&nbsp<span class="' + cls + '">(' + diff + '%)</span></span>'
-        }
         document.title = 'Ethplorer';
         document.title += (': ' + (titleAdd ? (titleAdd + ' -') : ''));
         document.title += (' hash ' + txHash);
@@ -675,12 +664,11 @@ Ethplorer = {
                 $('.multiop .blue').removeClass('blue');
                 el.addClass('blue');
                 el.removeClass('selectable');
-                Ethplorer.showOpDetails(txData.tx, el[0].operation);
+                Ethplorer.showOpDetails(oTx, el[0].operation);
             }
         }else if(multiop){
             Ethplorer.showOpDetails(oTx, txData.operations[0]);
         }
-        $('#historical-price').html(usdPrice);
 
         Ethplorer.Events.fire('ethp_showTxDetails_finish', txData);
         Ethplorer.Utils.hideEmptyFields();
@@ -922,7 +910,7 @@ Ethplorer = {
                     var price = balances[k].balanceUSD;
                     value += ('<br><div class="balances-price" title="$' + price + '">$ ' + Ethplorer.Utils.formatNum(price, true, 2, true) + ' ');
                     if(rate.diff){
-                        var cls = rate.diff > 0 ? 'diff-up' : 'diff-down';
+                        var cls = getDiffClass(rate.diff);
                         var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
                         if(rate.diff > 0){
                             rate.diff = '+' + rate.diff;
@@ -955,7 +943,7 @@ Ethplorer = {
             if(totalPrice){
                 var value = '~ $ ' + Ethplorer.Utils.formatNum(totalPrice, true, 2, true, true);
                 if(totalDiff){
-                    var cls = totalDiff > 0 ? 'diff-up' : 'diff-down';
+                    var cls = getDiffClass(totalDiff);
                     if(totalDiff > 0){
                         totalDiff = '+' + totalDiff;
                     }
@@ -1143,12 +1131,16 @@ Ethplorer = {
                             var usdval = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf * txToken.price.rate, 2)), true, 2, true);
                             value = value + '<br><span class="transfer-usd" title="now">$ ' + usdval + '</span>';
                         }
+                        // Fill the tx.usdPrice if tx age less 10 minutes, because of delay price update scripts
+                        if (!tx.usdPrice && txToken.price.rate && ((new Date().getTime()/1000 - tx.timestamp ) / 60 < 10)){
+                            tx.usdPrice = txToken.price.rate;
+                        }
                         if (tx.usdPrice && Ethplorer.showHistoricalPrice){
 
                             var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(tx.usdPrice, txToken.price.rate), 2);
                             var hint = 'estimated at tx date';
 
-                            var cls = (diff > 0 ? 'diff-up' : 'diff-down')
+                            var cls = getDiffClass(diff);
                             if(diff > 0){
                                 diff = '+' + Ethplorer.Utils.round(diff, 2);
                             }
@@ -1646,32 +1638,16 @@ Ethplorer = {
             case 'price':
                 if(value && value.rate){
                     var rate = value;
-                    value = '$ ' + Ethplorer.Utils.formatNum(rate.rate, true, 2, true);
-                    if(rate.diff){
-                        var cls = rate.diff > 0 ? 'diff-up' : 'diff-down';
-                        var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true) + ' in 24 hour period';
-                        if(rate.diff > 0){
-                            rate.diff = '+' + rate.diff;
-                        }
-                        value = value + ' <span class="' + cls + '" title="' + hint + '">(24h ' + Ethplorer.Utils.round(rate.diff, 2) + '%)</span>'
-                    }
-                    if(rate.diff7d){
-                        var cls = rate.diff7d > 0 ? 'diff-up' : 'diff-down';
-                        var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true) + ' in 7 days period';
-                        if(rate.diff7d > 0){
-                            rate.diff7d = '+' + rate.diff7d;
-                        }
-                        value = value + ' <span class="' + cls + '" title="' + hint + '">(7d ' + Ethplorer.Utils.round(rate.diff7d, 2) + '%)</span>'
-                    }
-                    if(rate.diff && rate.diff7d){
-                        var cls = rate.diff7d > 0 ? 'diff-up' : 'diff-down';
-                        var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true) + ' in 30 days period';
-                        var diff30d = 123456.789;
-                        if(rate.diff7d > 0){
-                            diff30d = '+' + diff30d;
-                        }
-                        value = value + ' <span class="' + cls + '" title="' + hint + '">(30d ' + Ethplorer.Utils.round(diff30d, 2) + '%)</span>'
-                    }
+                    var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
+
+                    value = '<span title="' + hint + '">$ ' + Ethplorer.Utils.formatNum(rate.rate, true, 2, true) + '</span><br>';
+
+                    value = value + '<span class="diff-span">24h<span class="' + getDiffClass(rate.diff) + '">'
+                        + getDiffString(rate.diff) +'</span></span>'
+                    value = value + '<span class="diff-span">7d<span class="' + getDiffClass(rate.diff7d) + '">'
+                        + getDiffString(rate.diff7d) +'</span></span>'
+                    value = value + '<span class="diff-span">30d<span class="' + getDiffClass(rate.diff30d) + '">'
+                        + getDiffString(rate.diff30d) +'</span></span>'
                 }else{
                     value = '';
                 }
@@ -1954,6 +1930,77 @@ Ethplorer = {
             }
             return res;
         },
+
+        /**
+         * Number formatter (separates thousands with comma, adds zeroes to decimal part).
+         *
+         * @param {int} num
+         * @param {bool} withDecimals
+         * @param {int} decimals
+         * @param {bool} cutZeroes
+         * @returns {string}
+         */
+        formatNumWidget: function(num, withDecimals /* = false */, decimals /* = 2 */, cutZeroes /* = false */, withPostfix /* = false */, numLimitPostfix /* = 999999 */){
+            var postfix = '';
+            if(withPostfix){
+                if(!numLimitPostfix) numLimitPostfix = 999999;
+                if(Math.abs(num) > 999 && Math.abs(num) <= numLimitPostfix){
+                    num = num / 1000;
+                    postfix = ' K';
+                } else if(Math.abs(num) > numLimitPostfix){
+                    num = num / 1000000;
+                    postfix = ' M';
+                }
+            }
+            function math(command, val, decimals){
+                var k = Math.pow(10, decimals ? parseInt(decimals) : 0);
+                return Math[command](val * k) / k;
+            }
+            function padZero(s, len){
+                while(s.length < len) s += '0';
+                return s;
+            }
+            if(('object' === typeof(num)) && ('undefined' !== typeof(num.c))){
+                num = parseFloat(Ethplorer.Utils.toBig(num).toString());
+            }
+            cutZeroes = !!cutZeroes;
+            withDecimals = !!withDecimals;
+//            decimals = decimals || (cutZeroes ? 0 : 2);
+
+            if((num.toString().indexOf("e+") > 0)){
+                return num.toString();
+            }
+
+            if((num.toString().indexOf("e-") > 0) && withDecimals){
+                var parts = num.toString().split("e-");
+                var res = parts[0].replace('.', '');
+                for(var i=1; i<parseInt(parts[1]); i++){
+                    res = '0' + res;
+                }
+                return '0.' + res;
+            }
+
+            if(withDecimals){
+                num = math('round', num, decimals);
+            }
+            var parts = num.toString().split('.');
+            var res = parts[0].toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            var zeroCount = cutZeroes ? 0 : decimals;
+            if(withDecimals && decimals){
+                if(parts.length > 1){
+                    res += '.';
+                    var tail = parts[1].substring(0, decimals);
+                    if(tail.length < zeroCount){
+                        tail = padZero(tail, zeroCount);
+                    }
+                    res += tail;
+                }else{
+                    res += padZero('.', parseInt(zeroCount) + 1);
+                }
+            }
+            res = res.replace(/\.$/, '');
+            return res + postfix;
+        },
         /**
          * Parses URL path
          * @returns {string}
@@ -2092,6 +2139,9 @@ Ethplorer = {
         },
         toBig: function(obj){
             var res = new BigNumber(0);
+            if (obj && 'string' === typeof(obj)) {
+                obj = obj.replace(/,/g, '');
+            }
             if(obj && 'undefined' !== typeof(obj.c)){
                 res.c = obj.c;
                 res.e = obj.e;
@@ -2164,21 +2214,14 @@ Ethplorer = {
         initScrollable: function () {
             function checkPosition(el){
                 var $el = $(el);
-                var $child = $el.children()
+                var $child = $el.children();
 
-                $el
-                    .removeClass('hide-bottom-gr')
-                    .removeClass('hide-top-gr');
+                $el.removeClass('hide-bottom-gr');
 
-                console.log($child.outerHeight(true) , $el.outerHeight(true) )
                 if ($child.outerHeight(true) < $el.outerHeight(true) || $child.outerHeight(true) - $el.outerHeight(true) + $child.position().top === 0){
                     //bottom
                     $el.addClass('hide-bottom-gr')
                 }
-                /*if ($child.position().top === 0){
-                    //top
-                    $el.addClass('hide-top-gr')
-                }*/
 
             }
             $('.scrollwrapper').one("DOMSubtreeModified", function(event){
@@ -2195,3 +2238,36 @@ Ethplorer = {
         location.reload();
     }
 };
+
+function getDiffClass(value) {
+    if (value === 0 || 'undefined' === typeof value) {
+        return 'diff-zero'
+    }
+    return value > 0 ? 'diff-up' : 'diff-down';
+}
+
+function getDiffString(diff){
+    if ('undefined' === typeof diff) {
+        return '--';
+    }
+    var str = ''; //(diff > 0 ? '+' : '');
+    str +=  Ethplorer.Utils.formatNumWidget(diff, true, 2, true, true) + ' %';
+    return str;
+}
+function getHistUsdPriceString(histPrice, currPrice, valFloat){
+    var usdPrice = '';
+    if(histPrice && Ethplorer.showHistoricalPrice && valFloat){
+        var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(histPrice, currPrice), 2);
+        var hint = 'estimated at tx date';
+
+        var cls = getDiffClass(diff);
+        if(diff > 0){
+            diff = '+' + Ethplorer.Utils.formatNum(diff, true, 2, true, true);;
+        }
+        var historyPrice = Ethplorer.Utils.formatNum(histPrice * valFloat, true, 2, true, true);
+
+        usdPrice = '<span title="' + hint + '">~$ ' + historyPrice +
+            '&nbsp<span class="' + cls + '">' + diff + '%</span></span>'
+    }
+    return usdPrice;
+}
