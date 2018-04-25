@@ -668,7 +668,7 @@ Ethplorer = {
                 el.removeClass('selectable');
                 Ethplorer.showOpDetails(oTx, el[0].operation);
                 setTimeout(function(){
-                    el[0].scrollIntoView()
+                    el[0].scrollIntoView({behavior: "instant", inline: "center"})
                 }, 0)
             }
         }else if(multiop){
@@ -1132,14 +1132,16 @@ Ethplorer = {
                     var pf = parseFloat(value.replace(/\,/g,'').split(' ')[0]);
                     var usdPrice = '';
                     if(pf){
+
+                        // Fill the tx.usdPrice if tx age less 10 minutes, because of delay price update scripts
+                        if (!tx.usdPrice && txToken.price.rate && ((new Date().getTime()/1000 - tx.timestamp ) / 60 < 10)){
+                            tx.usdPrice = txToken.price.rate;
+                        }
+
                         if(txToken.price && txToken.price.rate){
                             var usdval = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf * txToken.price.rate, 2)), true, 2, true);
                             value = value + '<br><span class="transfer-usd" title="now">$ ' + usdval +
                                 getHistDiffPriceString(tx.usdPrice, txToken.price.rate) + '</span>';
-                        }
-                        // Fill the tx.usdPrice if tx age less 10 minutes, because of delay price update scripts
-                        if (!tx.usdPrice && txToken.price.rate && ((new Date().getTime()/1000 - tx.timestamp ) / 60 < 10)){
-                            tx.usdPrice = txToken.price.rate;
                         }
                         if (tx.usdPrice && Ethplorer.showHistoricalPrice){
                             var hint = 'estimated at tx date';
@@ -2248,7 +2250,7 @@ function getDiffString(diff){
         return '--';
     }
     var str = ''; //(diff > 0 ? '+' : '');
-    str +=  Ethplorer.Utils.formatNumWidget(diff, true, 2, true, true) + ' %';
+    str +=  Ethplorer.Utils.formatNumWidget(diff, true, 2, true, true) + '%';
     return str;
 }
 function getHistDiffPriceString(histPrice, currPrice){
