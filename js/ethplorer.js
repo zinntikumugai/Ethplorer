@@ -363,11 +363,12 @@ Ethplorer = {
         }
         var value = oOperation.value;
         if(valFloat && oToken.price && oToken.price.rate){
-            value = value + '<br><span class="tx-value-price">($ ' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + ')</span>';
+            value = value + '<br><span class="tx-value-price">$ ' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + '</span>';
+            value += getHistDiffPriceString(op.usdPrice, oToken.price.rate);
         }
         $('#transfer-operation-value').html(value);
 
-        $('#historical-price').html(getHistUsdPriceString(op.usdPrice, oToken.price.rate, valFloat));
+        $('#historical-price').html(getHistUsdPriceString(op.usdPrice, valFloat));
 
 
         titleAdd += oOperation.type;
@@ -608,10 +609,11 @@ Ethplorer = {
                 if(oOperation.value){
                     var value = oOperation.value;
                     if(valFloat && oToken.price && oToken.price.rate){
-                        value = value + '<br><span class="tx-value-price">($ ' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + ')</span>';
+                        value = value + '<br><span class="tx-value-price">$ ' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + '</span>';
+                        value += getHistDiffPriceString(oOperation.usdPrice, oToken.price.rate);
                     }
                     $('#transfer-operation-value').html(value);
-                    $('#historical-price').html(getHistUsdPriceString(oOperation.usdPrice, oToken.price.rate, valFloat));
+                    $('#historical-price').html(getHistUsdPriceString(oOperation.usdPrice, valFloat));
                 }
 
                 if(oTx.blockNumber){
@@ -665,6 +667,9 @@ Ethplorer = {
                 el.addClass('blue');
                 el.removeClass('selectable');
                 Ethplorer.showOpDetails(oTx, el[0].operation);
+                setTimeout(function(){
+                    el[0].scrollIntoView()
+                }, 0)
             }
         }else if(multiop){
             Ethplorer.showOpDetails(oTx, txData.operations[0]);
@@ -1129,25 +1134,17 @@ Ethplorer = {
                     if(pf){
                         if(txToken.price && txToken.price.rate){
                             var usdval = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf * txToken.price.rate, 2)), true, 2, true);
-                            value = value + '<br><span class="transfer-usd" title="now">$ ' + usdval + '</span>';
+                            value = value + '<br><span class="transfer-usd" title="now">$ ' + usdval +
+                                getHistDiffPriceString(tx.usdPrice, txToken.price.rate) + '</span>';
                         }
                         // Fill the tx.usdPrice if tx age less 10 minutes, because of delay price update scripts
                         if (!tx.usdPrice && txToken.price.rate && ((new Date().getTime()/1000 - tx.timestamp ) / 60 < 10)){
                             tx.usdPrice = txToken.price.rate;
                         }
                         if (tx.usdPrice && Ethplorer.showHistoricalPrice){
-
-                            var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(tx.usdPrice, txToken.price.rate), 2);
                             var hint = 'estimated at tx date';
-
-                            var cls = getDiffClass(diff);
-                            if(diff > 0){
-                                diff = '+' + Ethplorer.Utils.round(diff, 2);
-                            }
                             var historyPrice = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf*tx.usdPrice, 2)), true, 2, true);
-
-                            usdPrice = '<br><span class="historical-price"  title="' + hint + '">~$ ' + historyPrice +
-                                '&nbsp<span class="' + cls + '">(' + diff + '%)</span></span>'
+                            usdPrice = '<br><span class="historical-price"  title="' + hint + '">~$ ' + historyPrice +'</span>'
                         }
                     }
                     value +=  usdPrice;
@@ -1638,7 +1635,7 @@ Ethplorer = {
             case 'price':
                 if(value && value.rate){
                     var rate = value;
-                    var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
+                    var hint = '$' +rate.rate + ' : Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
 
                     value = '<span title="' + hint + '">$ ' + Ethplorer.Utils.formatNum(rate.rate, true, 2, true) + '</span><br>';
 
@@ -2254,20 +2251,23 @@ function getDiffString(diff){
     str +=  Ethplorer.Utils.formatNumWidget(diff, true, 2, true, true) + ' %';
     return str;
 }
-function getHistUsdPriceString(histPrice, currPrice, valFloat){
+function getHistDiffPriceString(histPrice, currPrice){
+    var diffTag = '';
+    if(histPrice && Ethplorer.showHistoricalPrice){
+        var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(currPrice, histPrice), 2);
+        var cls = getDiffClass(diff);
+        diff = Ethplorer.Utils.formatNum(diff, true, 2, true, true);
+        diffTag = '<span class="' + cls + '">(' + diff + '%)</span>'
+    }
+    return diffTag;
+}
+
+function getHistUsdPriceString(histPrice, valFloat){
     var usdPrice = '';
     if(histPrice && Ethplorer.showHistoricalPrice && valFloat){
-        var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(histPrice, currPrice), 2);
         var hint = 'estimated at tx date';
-
-        var cls = getDiffClass(diff);
-        if(diff > 0){
-            diff = '+' + Ethplorer.Utils.formatNum(diff, true, 2, true, true);;
-        }
         var historyPrice = Ethplorer.Utils.formatNum(histPrice * valFloat, true, 2, true, true);
-
-        usdPrice = '<span title="' + hint + '">~$ ' + historyPrice +
-            '&nbsp<span class="' + cls + '">' + diff + '%</span></span>'
+        usdPrice = '<span title="' + hint + '">~$ ' + historyPrice +'</span>'
     }
     return usdPrice;
 }
