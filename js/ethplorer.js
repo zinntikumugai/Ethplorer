@@ -351,7 +351,6 @@ Ethplorer = {
         }
 
         var valFloat = parseFloat(Ethplorer.Utils.toBig(oOperation.value).toString());
-        valFloat =  valFloat / Math.pow(10, oToken.decimals)
         if('undefined' !== typeof(oOperation.formatted)){
             if(Ethplorer.Utils.isSafari()){
                 oOperation.value = valFloat;
@@ -693,7 +692,7 @@ Ethplorer = {
                 $('.multiop .blue').removeClass('blue');
                 el.addClass('blue');
                 el.removeClass('selectable');
-                Ethplorer.showOpDetails(txData.tx, el[0].operation);
+                Ethplorer.showOpDetails(oTx, el[0].operation);
             }
         }else if(multiop){
             Ethplorer.showOpDetails(oTx, txData.operations[0]);
@@ -1670,19 +1669,13 @@ Ethplorer = {
                     var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
 
                     value = '<span title="' + hint + '">$ ' + Ethplorer.Utils.formatNum(rate.rate, true, 2, true) + '</span><br>';
-                    if('undefined' !== typeof rate.diff){
-                        value = value + '<span class="diff-span">24h<span class="' + getDiffClass(rate.diff) + '">'
-                            + getDiffString(rate.diff) +'</span></span>'
-                    }
-                    if('undefined' !== typeof rate.diff7d){
-                        value = value + '<span class="diff-span">7d<span class="' + getDiffClass(rate.diff7d) + '">'
-                            + getDiffString(rate.diff7d) +'</span></span>'
-                    }
-                    if('undefined' !== typeof rate.diff && 'undefined' !== typeof rate.diff7d || 'undefined' !== typeof rate.diff30d){
-                        var diff30d = rate.diff30d || 123456.789;
-                        value = value + '<span class="diff-span">30d<span class="' + getDiffClass(diff30d) + '">'
-                            + getDiffString(diff30d) +'</span></span>'
-                    }
+
+                    value = value + '<span class="diff-span">24h<span class="' + getDiffClass(rate.diff) + '">'
+                        + getDiffString(rate.diff) +'</span></span>'
+                    value = value + '<span class="diff-span">7d<span class="' + getDiffClass(rate.diff7d) + '">'
+                        + getDiffString(rate.diff7d) +'</span></span>'
+                    value = value + '<span class="diff-span">30d<span class="' + getDiffClass(rate.diff30d) + '">'
+                        + getDiffString(rate.diff30d) +'</span></span>'
                 }else{
                     value = '';
                 }
@@ -1979,10 +1972,10 @@ Ethplorer = {
             var postfix = '';
             if(withPostfix){
                 if(!numLimitPostfix) numLimitPostfix = 999999;
-                if(num > 999 && num <= numLimitPostfix){
+                if(Math.abs(num) > 999 && Math.abs(num) <= numLimitPostfix){
                     num = num / 1000;
                     postfix = ' K';
-                }else if(num > numLimitPostfix){
+                } else if(Math.abs(num) > numLimitPostfix){
                     num = num / 1000000;
                     postfix = ' M';
                 }
@@ -2249,21 +2242,14 @@ Ethplorer = {
         initScrollable: function () {
             function checkPosition(el){
                 var $el = $(el);
-                var $child = $el.children()
+                var $child = $el.children();
 
-                $el
-                    .removeClass('hide-bottom-gr')
-                    .removeClass('hide-top-gr');
+                $el.removeClass('hide-bottom-gr');
 
-                console.log($child.outerHeight(true) , $el.outerHeight(true) )
                 if ($child.outerHeight(true) < $el.outerHeight(true) || $child.outerHeight(true) - $el.outerHeight(true) + $child.position().top === 0){
                     //bottom
                     $el.addClass('hide-bottom-gr')
                 }
-                /*if ($child.position().top === 0){
-                    //top
-                    $el.addClass('hide-top-gr')
-                }*/
 
             }
             $('.scrollwrapper').one("DOMSubtreeModified", function(event){
@@ -2282,17 +2268,17 @@ Ethplorer = {
 };
 
 function getDiffClass(value) {
-    if (value === 0) {
+    if (value === 0 || 'undefined' === typeof value) {
         return 'diff-zero'
     }
     return value > 0 ? 'diff-up' : 'diff-down';
 }
 
 function getDiffString(diff){
-    if (diff === 0) {
+    if ('undefined' === typeof diff) {
         return '--';
     }
-    var str = (diff > 0 ? '+' : '');
-    str +=  Ethplorer.Utils.formatNumWidget(diff, true, 2, true, true) + '%';
+    var str = ''; //(diff > 0 ? '+' : '');
+    str +=  Ethplorer.Utils.formatNumWidget(diff, true, 2, true, true) + ' %';
     return str;
 }
