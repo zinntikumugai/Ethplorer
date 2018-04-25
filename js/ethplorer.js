@@ -367,21 +367,7 @@ Ethplorer = {
         }
         $('#transfer-operation-value').html(value);
 
-        var usdPrice = '';
-        if(op.usdPrice && Ethplorer.showHistoricalPrice && valFloat){
-            var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(op.usdPrice, oToken.price.rate), 2);
-            var hint = 'estimated at tx date';
-
-            var cls = getDiffClass(diff);
-            if(diff > 0){
-                diff = '+' + Ethplorer.Utils.formatNum(diff, true, 2, true, true);;
-            }
-            var historyPrice = Ethplorer.Utils.formatNum(op.usdPrice * valFloat, true, 2, true, true);
-
-            usdPrice = '<span title="' + hint + '">~$ ' + historyPrice +
-                '&nbsp<span class="' + cls + '">' + diff + '%</span></span>'
-        }
-        $('#historical-price').html(usdPrice);
+        $('#historical-price').html(getHistUsdPriceString(op.usdPrice, oToken.price.rate, valFloat));
 
 
         titleAdd += oOperation.type;
@@ -625,21 +611,7 @@ Ethplorer = {
                         value = value + '<br><span class="tx-value-price">($ ' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + ')</span>';
                     }
                     $('#transfer-operation-value').html(value);
-                    var usdPrice = '';
-                    if(oOperation.usdPrice && Ethplorer.showHistoricalPrice && valFloat){
-                        var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(oOperation.usdPrice, oToken.price.rate), 2);
-                        var hint = 'estimated at tx date';
-
-                        var cls = getDiffClass(diff);
-                        if(diff > 0){
-                            diff = '+' + Ethplorer.Utils.formatNum(diff, true, 2, true, true);;
-                        }
-                        var historyPrice = Ethplorer.Utils.formatNum(oOperation.usdPrice * valFloat, true, 2, true, true);
-
-                        usdPrice = '<span title="' + hint + '">~$ ' + historyPrice +
-                            '&nbsp<span class="' + cls + '">(' + diff + '%)</span></span>'
-                    }
-                    $('#historical-price').html(usdPrice);
+                    $('#historical-price').html(getHistUsdPriceString(oOperation.usdPrice, oToken.price.rate, valFloat));
                 }
 
                 if(oTx.blockNumber){
@@ -2281,4 +2253,21 @@ function getDiffString(diff){
     var str = ''; //(diff > 0 ? '+' : '');
     str +=  Ethplorer.Utils.formatNumWidget(diff, true, 2, true, true) + ' %';
     return str;
+}
+function getHistUsdPriceString(histPrice, currPrice, valFloat){
+    var usdPrice = '';
+    if(histPrice && Ethplorer.showHistoricalPrice && valFloat){
+        var diff = Ethplorer.Utils.round(Ethplorer.Utils.pdiff(histPrice, currPrice), 2);
+        var hint = 'estimated at tx date';
+
+        var cls = getDiffClass(diff);
+        if(diff > 0){
+            diff = '+' + Ethplorer.Utils.formatNum(diff, true, 2, true, true);;
+        }
+        var historyPrice = Ethplorer.Utils.formatNum(histPrice * valFloat, true, 2, true, true);
+
+        usdPrice = '<span title="' + hint + '">~$ ' + historyPrice +
+            '&nbsp<span class="' + cls + '">' + diff + '%</span></span>'
+    }
+    return usdPrice;
 }
