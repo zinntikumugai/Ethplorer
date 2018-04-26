@@ -1394,6 +1394,9 @@ a.token-update {
     font-size: 0.7em;
     color: rgba(255, 255, 255, 0.4);
 }
+.mrgnl-10 {
+    margin-left: 10px;
+}
 /* Scrollable */
 .scrollable{
     position: relative;

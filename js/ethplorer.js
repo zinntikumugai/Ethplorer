@@ -1145,8 +1145,10 @@ Ethplorer = {
                         }
                         if (tx.usdPrice && Ethplorer.showHistoricalPrice){
                             var hint = 'estimated at tx date';
-                            var historyPrice = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf*tx.usdPrice, 2)), true, 2, true);
-                            usdPrice = '<br><span class="historical-price"  title="' + hint + '">~$ ' + historyPrice +'&nbsp;&nbsp;@&nbsp;'+Ethplorer.Utils.formatNum(tx.usdPrice, true, 2, true)+'</span>'
+                            var totalHistoryPrice = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf*tx.usdPrice, 2)), true, 2, true);
+                            var historyPrice = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(tx.usdPrice, 2)), true, 2, true);
+                            usdPrice = '<br><span class="historical-price"  title="' + hint + '">~$ '
+                                + totalHistoryPrice +'<span class="mrgnl-10">@&nbsp;'+ historyPrice +'</span></span>'
                         }
                     }
                     value +=  usdPrice;
@@ -2296,7 +2298,7 @@ function getHistUsdPriceString(histPrice, valFloat){
         var historyPrice = Ethplorer.Utils.formatNum(histPrice, true, 2, true, true);
         var totalHistoryPrice = Ethplorer.Utils.formatNum(histPrice * valFloat, true, 2, true, true);
 
-        usdPrice = '<span title="' + hint + '">~$ ' + totalHistoryPrice +'&nbsp;&nbsp;@&nbsp;'+ historyPrice +'</span>'
+        usdPrice = '<span title="' + hint + '">~$ ' + totalHistoryPrice +'<span class="mrgnl-10">@&nbsp;'+ historyPrice +'</span></span>'
     }
     return usdPrice;
 }
