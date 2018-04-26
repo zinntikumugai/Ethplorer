@@ -517,6 +517,9 @@ if(is_array($rParts) && isset($rParts[2])){
                                 </h3>
                             </div>
                             <div class="scrollable"><div class="scrollwrapper"><table class="table"></table></div></div>
+                            <div class="text-center">
+                                <a class="expand-btn">Expand</a>
+                            </div>
                         </div>
                         <div class="block" id="address-chainy-info">
                             <div class="block-header">
