@@ -1144,9 +1144,9 @@ Ethplorer = {
                                 getHistDiffPriceString(tx.usdPrice, txToken.price.rate) + '</span>';
                         }
                         if (tx.usdPrice && Ethplorer.showHistoricalPrice){
-                            var hint = 'estimtable-loadingated at tx date';
+                            var hint = 'estimated at tx date';
                             var historyPrice = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf*tx.usdPrice, 2)), true, 2, true);
-                            usdPrice = '<br><span class="historical-price"  title="' + hint + '">~$ ' + historyPrice +'</span>'
+                            usdPrice = '<br><span class="historical-price"  title="' + hint + '">~$ ' + historyPrice +'&nbsp;&nbsp;@&nbsp;'+Ethplorer.Utils.formatNum(tx.usdPrice, true, 2, true)+'</span>'
                         }
                     }
                     value +=  usdPrice;
@@ -2220,6 +2220,33 @@ Ethplorer = {
                     $el.addClass('hide-bottom-gr')
                 }
 
+                // expand-btn now only for Token Balances block
+                // to extend functionality need to update storage keys depends on block
+                var $expand = $el.closest('.block').find('.expand-btn');
+                if ($expand.length && $el.outerHeight(true) < $el.children().outerHeight(true)) {
+                    $expand.show();
+                    var text = Ethplorer.Storage.get('expand-address-token-balances', 'expand');
+                    $expand
+                        .html(text + (text === 'collapse' ? '&uarr;': '&darr;'))
+                        .toggleClass('shift-up', text.indexOf('expand') !== -1)
+                        .parent()
+                        .siblings('.scrollable')
+                        .toggleClass('expanded', text.indexOf('collapse') !== -1)
+                    $(document).on('click', '.expand-btn', function(e){
+                        var $btn = $(e.target);
+                        var $scrollable = $btn.parent().siblings('.scrollable');
+                        var bool = $btn.text().indexOf('expand') !== -1;
+                        $scrollable.toggleClass('expanded', bool);
+                        text = bool ? 'collapse' : 'expand';
+                        $btn
+                            .toggleClass('shift-up', text === 'expand')
+                            .html(text + (bool ? '&uarr;': '&darr;'))
+                        Ethplorer.Storage.set('expand-address-token-balances', text);
+                        if (!bool){
+                            $('#address-balances-total')[0].scrollIntoView({behavior: "instant", block: "start"})
+                        }
+                    })
+                }
             }
             $('.scrollwrapper').one("DOMSubtreeModified", function(event){
                 setTimeout(() => {
@@ -2266,8 +2293,10 @@ function getHistUsdPriceString(histPrice, valFloat){
     var usdPrice = '';
     if(histPrice && Ethplorer.showHistoricalPrice && valFloat){
         var hint = 'estimated at tx date';
-        var historyPrice = Ethplorer.Utils.formatNum(histPrice * valFloat, true, 2, true, true);
-        usdPrice = '<span title="' + hint + '">~$ ' + historyPrice +'</span>'
+        var historyPrice = Ethplorer.Utils.formatNum(histPrice, true, 2, true, true);
+        var totalHistoryPrice = Ethplorer.Utils.formatNum(histPrice * valFloat, true, 2, true, true);
+
+        usdPrice = '<span title="' + hint + '">~$ ' + totalHistoryPrice +'&nbsp;&nbsp;@&nbsp;'+ historyPrice +'</span>'
     }
     return usdPrice;
 }
