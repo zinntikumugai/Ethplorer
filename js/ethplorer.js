@@ -1144,7 +1144,7 @@ Ethplorer = {
                                 getHistDiffPriceString(tx.usdPrice, txToken.price.rate) + '</span>';
                         }
                         if (tx.usdPrice && Ethplorer.showHistoricalPrice){
-                            var hint = 'estimated at tx date';
+                            var hint = 'estimtable-loadingated at tx date';
                             var historyPrice = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf*tx.usdPrice, 2)), true, 2, true);
                             usdPrice = '<br><span class="historical-price"  title="' + hint + '">~$ ' + historyPrice +'</span>'
                         }
@@ -1701,9 +1701,7 @@ Ethplorer = {
     showTableLoader: function(){
         $('.filter-box').addClass('processing');
         $('.paginationFooter, .notFoundRow').parents('.table').addClass('unclickable');
-        setTimeout(function(){
-            $('.total-records:visible').html('<i class="table-loading fa fa-spinner fa-spin fa-2x"></i>');
-        }, 500);
+        $('.total-records:visible').html('<i class="table-loading fa fa-spinner fa-spin fa-2x"></i>');
         $('.nav-tabs').addClass('unclickable');
     },
     hideTableLoader: function(){
