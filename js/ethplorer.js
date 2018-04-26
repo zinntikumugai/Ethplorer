@@ -329,7 +329,7 @@ Ethplorer = {
             var pf = parseFloat(totalSupply.replace(/\,/g,'').split(' ')[0]);
             if(pf){
                 pf = Ethplorer.Utils.round(pf * oToken.price.rate, 2);
-                totalSupply = totalSupply + '<br><span class="total-supply-usd">$ ' + Ethplorer.Utils.formatNum(pf, true, 2, true) + '</span>';
+                totalSupply = totalSupply + '<br><span class="total-supply-usd">$&nbsp;' + Ethplorer.Utils.formatNum(pf, true, 2, true) + '</span>';
                 $('#transaction-token-totalSupply').html(totalSupply);
             }
         }
@@ -363,7 +363,7 @@ Ethplorer = {
         }
         var value = oOperation.value;
         if(valFloat && oToken.price && oToken.price.rate){
-            value = value + '<br><span class="tx-value-price">$ ' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + '</span>';
+            value = value + '<br><span class="tx-value-price">$&nbsp;' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + '</span>';
             value += getHistDiffPriceString(op.usdPrice, oToken.price.rate);
         }
         $('#transfer-operation-value').html(value);
@@ -510,7 +510,7 @@ Ethplorer = {
                 var pf = parseFloat(totalSupply.replace(/\,/g,'').split(' ')[0]);
                 if(pf){
                     pf = Ethplorer.Utils.round(pf * oToken.price.rate, 2);
-                    totalSupply = totalSupply + '<br><span class="total-supply-usd">$ ' + Ethplorer.Utils.formatNum(pf, true, 2, true) + '</span>';
+                    totalSupply = totalSupply + '<br><span class="total-supply-usd">$&nbsp;' + Ethplorer.Utils.formatNum(pf, true, 2, true) + '</span>';
                     $('#transaction-token-totalSupply').html(totalSupply);
                 }
             }
@@ -609,7 +609,7 @@ Ethplorer = {
                 if(oOperation.value){
                     var value = oOperation.value;
                     if(valFloat && oToken.price && oToken.price.rate){
-                        value = value + '<br><span class="tx-value-price">$ ' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + '</span>';
+                        value = value + '<br><span class="tx-value-price">$&nbsp;' + Ethplorer.Utils.formatNum(oToken.price.rate * valFloat, true, 2, true, true) + '</span>';
                         value += getHistDiffPriceString(oOperation.usdPrice, oToken.price.rate);
                     }
                     $('#transfer-operation-value').html(value);
@@ -853,7 +853,7 @@ Ethplorer = {
                 var pf = parseFloat(totalSupply.replace(/\,/g,'').split(' ')[0]);
                 if(pf){
                     pf = Ethplorer.Utils.round(pf * oToken.price.rate, 2);
-                    totalSupply = totalSupply + '<br><span class="total-supply-usd">$ ' + Ethplorer.Utils.formatNum(pf, true, 2, true) + '</span>';
+                    totalSupply = totalSupply + '<br><span class="total-supply-usd">$&nbsp;' + Ethplorer.Utils.formatNum(pf, true, 2, true) + '</span>';
                     $('#address-token-totalSupply').html(totalSupply);
                 }
             }
@@ -913,7 +913,7 @@ Ethplorer = {
                 if(balances[k].price){
                     var rate = oToken.price;
                     var price = balances[k].balanceUSD;
-                    value += ('<br><div class="balances-price" title="$' + price + '">$ ' + Ethplorer.Utils.formatNum(price, true, 2, true) + ' ');
+                    value += ('<br><div class="balances-price" title="$' + price + '">$&nbsp;' + Ethplorer.Utils.formatNum(price, true, 2, true) + ' ');
                     if(rate.diff){
                         var cls = getDiffClass(rate.diff);
                         var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
@@ -946,7 +946,7 @@ Ethplorer = {
                 $('#address-token-balances table').append(row);
             }
             if(totalPrice){
-                var value = '~ $ ' + Ethplorer.Utils.formatNum(totalPrice, true, 2, true, true);
+                var value = '~ $&nbsp;' + Ethplorer.Utils.formatNum(totalPrice, true, 2, true, true);
                 if(totalDiff){
                     var cls = getDiffClass(totalDiff);
                     if(totalDiff > 0){
@@ -1130,7 +1130,7 @@ Ethplorer = {
                         value = (tx.type && ('burn' === tx.type)) ? '-' + value + '<br>&#128293;&nbsp;Burn' : value + '<br>&#9874;&nbsp;Issuance';
                     }
                     var pf = parseFloat(value.replace(/\,/g,'').split(' ')[0]);
-                    var usdPrice = '';
+                    var usdPrice = '<br>';
                     if(pf){
 
                         // Fill the tx.usdPrice if tx age less 10 minutes, because of delay price update scripts
@@ -1140,14 +1140,17 @@ Ethplorer = {
 
                         if(txToken.price && txToken.price.rate){
                             var usdval = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf * txToken.price.rate, 2)), true, 2, true);
-                            value = value + '<br><span class="transfer-usd" title="now">$ ' + usdval +
+                            value = value + '<br><span class="transfer-usd" title="now">$&nbsp;' + usdval +
                                 getHistDiffPriceString(tx.usdPrice, txToken.price.rate) + '</span>';
                         }
                         if (tx.usdPrice && Ethplorer.showHistoricalPrice){
                             var hint = 'estimated at tx date';
                             var totalHistoryPrice = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(pf*tx.usdPrice, 2)), true, 2, true);
                             var historyPrice = Ethplorer.Utils.formatNum(Math.abs(Ethplorer.Utils.round(tx.usdPrice, 2)), true, 2, true);
-                            usdPrice = '<br><span class="historical-price"  title="' + hint + '">~$ '
+                            if (historyPrice === '0.00') {
+                                historyPrice = '>0.00';
+                            }
+                            usdPrice = '<span class="historical-price"  title="' + hint + '">~$&nbsp;'
                                 + totalHistoryPrice +'<span class="mrgnl-10">@&nbsp;'+ historyPrice +'</span></span>'
                         }
                     }
@@ -1155,7 +1158,7 @@ Ethplorer = {
                     divData.html(
                         '<span class="show_small">Date:&nbsp;' + date + '<br></span>' +
                         (!data.token ? ('<span class="address-token-inline">Token:&nbsp;' + token + '<br></span>') : '') +
-                        '<span class="show_small ' + rowClass + '">Value:&nbsp;' + value + '<br></span>' +
+                        '<span class="show_small ' + rowClass + '">Value:&nbsp;' + value + '</span>' +
                         'Tx:&nbsp;' + Ethplorer.Utils.getEthplorerLink(tx.transactionHash) + '<br>' +
                         (from ? ('From:&nbsp;' + from + '<br>To:&nbsp;' + to) : ('Address:&nbsp;' + _address))
                     );
@@ -1240,7 +1243,7 @@ Ethplorer = {
                         if(pf){
                             pf = Ethplorer.Utils.round(pf * oToken.price.rate, 2);
                             var usdval = Ethplorer.Utils.formatNum(Math.abs(pf), true, 2, true);
-                            value = value + '<br><span class="transfer-usd">$ ' + usdval + '</span>';
+                            value = value + '<br><span class="transfer-usd">$&nbsp;' + usdval + '</span>';
                         }
                     }
                     tdQty.html(value);
@@ -1289,7 +1292,7 @@ Ethplorer = {
                     if(pf){
                         pf = Ethplorer.Utils.round(pf * oToken.price.rate, 2);
                         var usdval = Ethplorer.Utils.formatNum(Math.abs(pf), true, 2, true);
-                        balance = balance + '<br><span class="transfer-usd">$ ' + usdval + '</span>';
+                        balance = balance + '<br><span class="transfer-usd">$&nbsp;' + usdval + '</span>';
                     }
                 }
 
@@ -1639,9 +1642,10 @@ Ethplorer = {
             case 'price':
                 if(value && value.rate){
                     var rate = value;
-                    var hint = '$' +rate.rate + ' : Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
+                    var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
+                    var price = rate.rate < 0.01 ? rate.rate : Ethplorer.Utils.formatNum(rate.rate, true, 2, true);
 
-                    value = '<span title="' + hint + '">$ ' + Ethplorer.Utils.formatNum(rate.rate, true, 2, true) + '</span><br>';
+                    value = '<span title="' + hint + '">$&nbsp;' + price + '</span><br>';
 
                     value = value + '<span class="diff-span">24h<span class="' + getDiffClass(rate.diff) + '">'
                         + getDiffString(rate.diff) +'</span></span>'
@@ -1672,7 +1676,7 @@ Ethplorer = {
                             var cls = change > 0 ? 'diff-up' : 'diff-down';
                             var diff = "";
                             // var diff = change ? (' <span class="' + cls + '">(' + Ethplorer.Utils.round(change, 2) + '%)</span>') : '';
-                            res = res + '<br /><span class="transfer-usd">$ ' + price + diff + '</span>';
+                            res = res + '<br /><span class="transfer-usd">$&nbsp;' + price + diff + '</span>';
                         }
                     }
                     value = res;
@@ -2295,10 +2299,10 @@ function getHistUsdPriceString(histPrice, valFloat){
     var usdPrice = '';
     if(histPrice && Ethplorer.showHistoricalPrice && valFloat){
         var hint = 'estimated at tx date';
-        var historyPrice = Ethplorer.Utils.formatNum(histPrice, true, 2, true, true);
+        // var historyPrice = Ethplorer.Utils.formatNum(histPrice, true, 2, true, true);
         var totalHistoryPrice = Ethplorer.Utils.formatNum(histPrice * valFloat, true, 2, true, true);
 
-        usdPrice = '<span title="' + hint + '">~$ ' + totalHistoryPrice +'<span class="mrgnl-10">@&nbsp;'+ historyPrice +'</span></span>'
+        usdPrice = '<span title="' + hint + '">~$&nbsp;' + totalHistoryPrice +'<span class="mrgnl-10">@&nbsp;'+ histPrice +'</span></span>'
     }
     return usdPrice;
 }
