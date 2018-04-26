@@ -32,7 +32,7 @@ Ethplorer = {
             Ethplorer.Config = ethplorerConfig;
         }
         Ethplorer.isProd = ('ethplorer.io' === document.location.host);
-        Ethplorer.showHistoricalPrice = sessionStorage.getItem("enableHistoricalPrice") === 'true';
+        Ethplorer.showHistoricalPrice = true; // sessionStorage.getItem("enableHistoricalPrice") === 'true';
         BigNumber.config({ ERRORS: false });
         Ethplorer.Nav.init();
         Ethplorer.Storage.init();
