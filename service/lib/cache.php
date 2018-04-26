@@ -98,7 +98,7 @@ class evxCache {
         }
         $this->useLocks = $useLocks;
 
-        //if(class_exists('Redis') && (php_sapi_name() === 'cli') && isset($aConfig['redis'])) $this->driver = 'redis';
+        if(isset($aConfig['cliCacheDriver']) && (php_sapi_name() === 'cli')) $this->driver = $aConfig['cliCacheDriver'];
 
         if('memcached' === $this->driver){
             if(class_exists('Memcached')){
