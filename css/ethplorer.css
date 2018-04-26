@@ -596,16 +596,19 @@ a.dashed {
 .diff-down {
     color: #ae2525 !important;
 }
+#transfer-operation-value .diff-up,
+#transfer-operation-value .diff-zero,
+#transfer-operation-value .diff-down{
+    padding-left: 6px;
+}
 
 #transfer-operation-value .diff-up{
     color: #28d028 !important;
-    padding-left: 6px;
     font-size: 0.9em;
 }
 
 #transfer-operation-value .diff-down{
     color: #a92626 !important;
-    padding-left: 6px;
     font-size: 0.9em;
 }
 
@@ -650,6 +653,11 @@ a.dashed {
 }
 .transfer-usd span{
     padding-left: 6px;
+}
+@media screen and (max-width: 1199px) and (min-width: 767px) {
+    .transfer-usd span{
+        display: block;
+    }
 }
 
 .hash-from-to, .cut-long-text {
@@ -1391,6 +1399,7 @@ a.token-update {
     100%{transform:rotate(360deg)}
 }
 .historical-price {
+    display: block;
     font-size: 0.7em;
     color: rgba(255, 255, 255, 0.4);
 }
