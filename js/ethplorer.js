@@ -2138,8 +2138,9 @@ Ethplorer = {
                     res = JSON.parse(rrr);
                 }
             }
-            if(!res && str.indexOf("Issuance")){
-                res = {description: str.substr(str.indexOf("Issuance"))};
+            var fullStr = Ethplorer.Utils.hex2ascii(hex);
+            if(!res && fullStr.indexOf("Issuance")){
+                res = {description: fullStr.substr(fullStr.indexOf("Issuance"))};
             }
             return res;
         },
