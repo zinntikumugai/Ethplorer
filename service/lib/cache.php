@@ -154,15 +154,20 @@ class evxCache {
                 /*if($lifetime > evxCache::MONTH){
                     $lifetime = time() + $cacheLifetime;
                 }*/
+                $ttl = evxCache::MONTH;
                 if(!$lifetime){
-                    // 365 days if cache lifetime is not set
-                    $lifetime = time() + 12 * evxCache::MONTH + 5 * 24 * evxCache::HOUR;
+                    // 1 month if cache lifetime is not set
+                    $lifetime = time() + evxCache::MONTH;
                 }else{
+                    $ttl = $lifetime;
                     $lifetime = time() + $lifetime;
                 }
-                //$saveRes = $this->oDriver->set($entryName, $data, $lifetime);
                 $aCachedData = array('lifetime' => $lifetime, 'data' => $data, 'lock' => true);
-                $saveRes = $this->oDriver->set($entryName, ('redis' == $this->driver) ? json_encode($aCachedData) : $aCachedData);
+                if('redis' == $this->driver){
+                    $saveRes = $this->oDriver->set($entryName, json_encode($aCachedData), array('ex' => $ttl));
+                }else{
+                    $saveRes = $this->oDriver->set($entryName, $aCachedData);
+                }
                 if(('redis' == $this->driver) || (!in_array($entryName, array('tokens', 'rates')) && (0 !== strpos($entryName, 'rates-history-')))){
                     break;
                 }
