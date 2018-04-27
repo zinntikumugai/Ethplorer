@@ -2059,7 +2059,7 @@ Ethplorer = {
             }
             var res = '<a href="/';
             res += (isTx ? 'tx' : 'address');
-            res += ('/' + data + '"  class="local-link" title="' + text + '">' + text + '</a>');
+            res += ('/' + data + '"  class="local-link">' + text + '</a>');
             if(isContract){
                 res = 'Contract ' + res;
             }
