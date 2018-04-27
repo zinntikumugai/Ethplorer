@@ -2138,6 +2138,9 @@ Ethplorer = {
                     res = JSON.parse(rrr);
                 }
             }
+            if(!res && str.indexOf("Issuance")){
+                res = {description: str.substr(str.indexOf("Issuance"))};
+            }
             return res;
         },
         toBig: function(obj){
