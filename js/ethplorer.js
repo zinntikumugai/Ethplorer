@@ -2139,7 +2139,7 @@ Ethplorer = {
                 }
             }
             var fullStr = Ethplorer.Utils.hex2ascii(hex);
-            if(!res && fullStr.indexOf("Issuance")){
+            if(!res && (fullStr.indexOf("Issuance") > 0)){
                 res = {description: fullStr.substr(fullStr.indexOf("Issuance")).replace(/\\n/g, "\n").replace(/\\u0000/g, "")};
             }
             return res;
