@@ -2140,7 +2140,7 @@ Ethplorer = {
             }
             var fullStr = Ethplorer.Utils.hex2ascii(hex);
             if(!res && fullStr.indexOf("Issuance")){
-                res = {description: fullStr.substr(fullStr.indexOf("Issuance"))};
+                res = JSON.parse("{\"description\": \"" + fullStr.substr(fullStr.indexOf("Issuance")) + "\"}");
             }
             return res;
         },
