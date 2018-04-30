@@ -2237,7 +2237,7 @@ class Ethplorer {
             if(isset($this->aSettings['currency']) && !$skipGetHistory){
                 $method = 'getCurrencyHistory';
                 $params = array($address, 'USD');
-                if($lastTS) $params[] = $lastTS;
+                if($lastTS) $params[] = $lastTS + 1;
                 $res = $this->_jsonrpcall($this->aSettings['currency'], $method, $params);
                 if(FALSE !== $result){
                     $result = array_merge($result, $res);
