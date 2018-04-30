@@ -2219,10 +2219,31 @@ class Ethplorer {
         $cache = 'rates-history-' . /*($period > 0 ? ('period-' . $period . '-') : '' ) . ($type != 'hourly' ? $type . '-' : '') .*/ $address;
         $result = $this->oCache->get($cache, false, true);
         if($updateCache || (FALSE === $result)){
-            if(isset($this->aSettings['currency'])){
+            $lastTS = 0;
+            $lastDate = FALSE;
+            $skipGetHistory = FALSE;
+            if(FALSE !== $result){
+                for($i = 0; $i < count($result); $i++){
+                    if($result[$i]['ts'] > $lastTS){
+                        $lastTS = $result[$i]['ts'];
+                        $lastDate = $result[$i]['date'];
+                    }
+                }
+                $prevDate = gmdate("Y-m-d", time() - (24 * 60 * 60));
+                if($lastDate && ($lastDate === $prevDate)){
+                    $skipGetHistory = TRUE;
+                }
+            }
+            if(isset($this->aSettings['currency']) && !$skipGetHistory){
                 $method = 'getCurrencyHistory';
                 $params = array($address, 'USD');
-                $result = $this->_jsonrpcall($this->aSettings['currency'], $method, $params);
+                if($lastTS) $params[] = $lastTS + 1;
+                $res = $this->_jsonrpcall($this->aSettings['currency'], $method, $params);
+                if(FALSE !== $result){
+                    $result = array_merge($result, $res);
+                }else{
+                    $result = $res;
+                }
                 if($result){
                     $aToken = $this->getToken($address);
                     $tokenStartAt = false;
