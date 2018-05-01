@@ -56,7 +56,7 @@ if(strlen($search) || (false !== $data)){
                 if(2 === count($aPageParams)){
                     switch($aPageParams[0]){
                         case 'pageSize':
-                            $pageSize = intval($aPageParams[1]);
+                            //$pageSize = intval($aPageParams[1]);
                             break;
                         case 'transfers':
                         case 'issuances':

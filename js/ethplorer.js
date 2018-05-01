@@ -36,13 +36,13 @@ Ethplorer = {
         BigNumber.config({ ERRORS: false });
         Ethplorer.Nav.init();
         Ethplorer.Storage.init();
-        Ethplorer.pageSize = Ethplorer.Storage.get('pageSize', 10);
+        Ethplorer.pageSize = 10; // Ethplorer.Storage.get('pageSize', 10);
         if(Ethplorer.pageSize > 10){
             Ethplorer.Nav.set('pageSize', Ethplorer.pageSize);
         }
-        if(Ethplorer.Nav.get('pageSize')){
+        /*if(Ethplorer.Nav.get('pageSize')){
             Ethplorer.pageSize = Ethplorer.Nav.get('pageSize');
-        }
+        }*/
         if(Ethplorer.Nav.get('filter')){
             var filter = Ethplorer.Nav.get('filter');
             if(filter){
@@ -1502,7 +1502,7 @@ Ethplorer = {
                 }
                 pager.append(page);
             }
-            container.append(pageSizeSelect);
+            //container.append(pageSizeSelect);
             container.append(pager);
         }
     },
