@@ -1927,6 +1927,18 @@ class Ethplorer {
                     $res = $this->aSettings['apiKeys'][$key];
                 }else if(isset($this->aSettings['apiKeys'][$key][$option])){
                     $res = $this->aSettings['apiKeys'][$key][$option];
+
+                    if($key != 'freekey' && isset($this->aSettings['personalLimits'])){
+                        foreach($this->aSettings['personalLimits'] as $cmd => $aLimits){
+                            if($cmd == $option){
+                                foreach($aLimits as $opt => $limit){
+                                    if(!isset($res[$opt]) || ($res[$opt] < $limit)){
+                                        $res[$opt] = $limit;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
