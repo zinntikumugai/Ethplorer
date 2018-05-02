@@ -88,6 +88,7 @@ Ethplorer = {
         });
         $(document).on('click', '[data-toggle="tab"]', function(){
             Ethplorer.Nav.set('tab', $(this).parent().attr('id'));
+            if(Ethplorer.data) Ethplorer.showFilter(Ethplorer.data);
         });
         $('.download').click(function(){
             var date = new Date();
@@ -1005,6 +1006,17 @@ Ethplorer = {
         }
 
         Ethplorer.showAddressWidget(data);
+        Ethplorer.showFilter(data);
+    },
+    showFilter: function(data){
+        var activeTab = Ethplorer.getActiveTab();
+        if(activeTab && data.pager && data.pager[activeTab]){
+            if(data.pager[activeTab].records > 100000){
+                $('.filter-form').hide();
+            }else{
+                $('.filter-form').show();
+            }
+        }
     },
     showAddressWidget: function(data){
         //console.log('testWidget = ' + testWidget);
