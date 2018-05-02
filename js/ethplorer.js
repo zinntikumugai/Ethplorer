@@ -1503,6 +1503,8 @@ Ethplorer = {
                 pager.append(page);
             }
             //container.append(pageSizeSelect);
+            if(recordsCount > 100000) $('.filter-form').hide();
+            else $('.filter-form').show();
             container.append(pager);
         }
     },
