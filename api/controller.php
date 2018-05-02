@@ -122,6 +122,10 @@ class ethplorerController {
             }
             
             if(in_array($command, $this->apiPostCommands)){
+                // @todo: Temporary solution, special key property will be used later
+                if($key == "freekey"){
+                    $this->sendError(1, 'Invalid API key');
+                }
                 $result = call_user_func(array($this, $command));
                 return $result;
             }
