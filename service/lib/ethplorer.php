@@ -37,6 +37,8 @@ class Ethplorer {
      */
     const ADDRESS_ETH = '0x0000000000000000000000000000000000000000';
 
+    const MAX_OFFSET = 100000;
+
     /**
      * Settings
      *
@@ -334,10 +336,12 @@ class Ethplorer {
                 if(!$refresh || ($type === $refresh)){
                     $page = $this->getPager($type);
                     $offset = $this->getOffset($type);
+                    $offsetReverse = FALSE;
                     switch($type){
                         case 'transfers':
                             $count = $this->getContractOperationCount('transfer', $address);
                             $total = $this->filter ? $this->getContractOperationCount('transfer', $address, FALSE) : $count;
+                            $offsetReverse = $this->getOffsetReverse('transfers', $count);
                             $cmd = 'getContractTransfers';
                             break;
                         case 'issuances':
@@ -355,7 +359,7 @@ class Ethplorer {
                         $offset = 0;
                         $page = 1;
                     }
-                    $result[$type] = $this->{$cmd}($address, $limit, $offset);;
+                    $result[$type] = $this->{$cmd}($address, $limit, (($offsetReverse === FALSE) ? $offset : array($offset, $offsetReverse)));
                     $result['pager'][$type] = array(
                         'page' => $page,
                         'records' => $count,
@@ -1262,7 +1266,7 @@ class Ethplorer {
         if(!$showEth){
             $hint = 'addresses_1_isEth_1_timestamp_1';
             $sortOrder = -1;
-            if(is_array($offset) && ($offset[0] > 100000) && ($offset[0] > $offset[1])){
+            if(is_array($offset) && ($offset[0] > self::MAX_OFFSET) && ($offset[0] > $offset[1])){
                 $reverseOffset = TRUE;
                 $sortOrder = 1;
                 $skip = $offset[1];
@@ -1997,7 +2001,7 @@ class Ethplorer {
      * @return array
      */
     protected function getContractOperation($type, $address, $limit, $offset = FALSE){
-        evxProfiler::checkpoint('getContractOperation', 'START', 'type=' . (is_array($type) ? json_encode($type) : $type) . ', address=' . $address . ', limit=' . $limit . ', offset=' . (int)$offset);
+        evxProfiler::checkpoint('getContractOperation', 'START', 'type=' . (is_array($type) ? json_encode($type) : $type) . ', address=' . $address . ', limit=' . $limit . ', offset=' . (is_array($offset) ? print_r($offset, TRUE) : (int)$offset));
         $search = array("contract" => $address, 'type' => $type);
         if($this->filter){
             $search['$or'] = array(
@@ -2007,7 +2011,16 @@ class Ethplorer {
                 array('transactionHash'     => array('$regex' => $this->filter))
             );
         }
-        $cursor = $this->oMongo->find('operations', $search, array("timestamp" => -1), $limit, $offset);
+
+        $reverseOffset = FALSE;
+        $skip = is_array($offset) ? $offset[0] : $offset;
+        $sortOrder = -1;
+        if(is_array($offset) && ($offset[0] > self::MAX_OFFSET) && ($offset[0] > $offset[1])){
+            $reverseOffset = TRUE;
+            $sortOrder = 1;
+            $skip = $offset[1];
+        }
+        $cursor = $this->oMongo->find('operations', $search, array("timestamp" => $sortOrder), $limit, $skip);
 
         $result = array();
         $fetches = 0;
@@ -2015,6 +2028,9 @@ class Ethplorer {
             unset($transfer["_id"]);
             $result[] = $transfer;
             $fetches++;
+        }
+        if($reverseOffset){
+            $result = array_reverse($result);
         }
         evxProfiler::checkpoint('getContractOperation', 'FINISH');
         return $result;
