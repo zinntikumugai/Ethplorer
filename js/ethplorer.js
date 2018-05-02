@@ -1465,7 +1465,6 @@ Ethplorer = {
         container.empty();
 
         if(recordsCount){
-            var maxPageClick = 200000;
             var pages = Math.ceil(recordsCount / Ethplorer.pageSize);
             var lastPage = true;
             for(var i=1; i<=pages; i++){
@@ -1476,7 +1475,7 @@ Ethplorer = {
                     link.html(i);
                     if(i === currentPage){
                         page.addClass('active');
-                    }else if (i != pages || pages <= maxPageClick){
+                    }else{
                         link.attr('href', '#');
                         link.click(function(_container, _page, _pageData){
                             return function(e){
@@ -1489,9 +1488,6 @@ Ethplorer = {
                                 e.preventDefault();
                             };
                         }(container, i, pageData));
-                    }
-                    if(i == pages && pages > maxPageClick){
-                        page.addClass('disabled');
                     }
                     page.html(link);
                     lastPage = true;
