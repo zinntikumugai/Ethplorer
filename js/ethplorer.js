@@ -1505,8 +1505,6 @@ Ethplorer = {
             //container.append(pageSizeSelect);
             container.append(pager);
         }
-        if(recordsCount && recordsCount > 100000) $('.filter-form').hide();
-        else $('.filter-form').show();
     },
     prepareToken: function(oToken){
         if(!oToken){
