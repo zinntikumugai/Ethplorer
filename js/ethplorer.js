@@ -1093,7 +1093,7 @@ Ethplorer = {
             for(var i=0; i<data.transfers.length; i++){
                 var tx = data.transfers[i];
                 var qty = parseFloat(tx.value);// Ethplorer.Utils.toBig(tx.value);
-                if(parseInt(qty.toString()) || (tx.isEth)){
+                // if(parseInt(qty.toString()) || (tx.isEth)){
                     if(tx.isEth){
                         var txToken = {address: '0x0000000000000000000000000000000000000000', name: 'Ethereum', decimals: 18, symbol: 'ETH', totalSupply: 0};
                     }else{
@@ -1175,7 +1175,7 @@ Ethplorer = {
                     tdDate.find('a').attr('title', Ethplorer.Utils.ts2date(tx.timestamp, true));
                     row.append(tdQty);
                     $('#' + tableId + ' .table').append(row);
-                }
+                // }
             }
             // Pager
             if(data.pager && data.pager.transfers){
