@@ -251,6 +251,12 @@ class Ethplorer {
         return (1 === $this->getPager($section)) ? FALSE : ($this->getPager($section) - 1) * $limit;
     }
 
+    public function getOffsetReverse($section, $total){
+        $limit = $this->pageSize;
+        $numPages = ceil($total / $limit);
+        return (intval($numPages) === $this->getPager($section)) ? FALSE : ($total - ($this->getPager($section) * $this->pageSize));
+    }
+
     /**
      * Returns true if provided string is a valid ethereum address.
      *
@@ -390,7 +396,6 @@ class Ethplorer {
             $result["balances"] = $aBalances;
             $showEth = FALSE;
             if((isset($_GET['showEth']) && $_GET['showEth']) || $this->showEth) $showEth = TRUE;
-            $result["transfers"] = $this->getAddressOperations($address, $limit, $this->getOffset('transfers'), array('transfer'), $showEth);
             $countOperations = $this->countOperations($address, TRUE, $showEth);
             $totalOperations = $this->filter ? $this->countOperations($address, FALSE, $showEth) : $countOperations;
             $result['pager']['transfers'] = array(
@@ -398,6 +403,8 @@ class Ethplorer {
                 'records' => $countOperations,
                 'total' => $totalOperations,
             );
+            $aOffsets = [$this->getOffset('transfers'), $this->getOffsetReverse('transfers', $countOperations)];
+            $result["transfers"] = $this->getAddressOperations($address, $limit, $aOffsets, array('transfer'), $showEth);
         }
         if(!$refresh){
             $result['balance'] = $this->getBalance($address);
@@ -1220,7 +1227,7 @@ class Ethplorer {
      * @return array
      */
     public function getAddressOperations($address, $limit = 10, $offset = FALSE, array $aTypes = NULL, $showEth = FALSE){
-        evxProfiler::checkpoint('getAddressOperations', 'START', 'address=' . $address . ', limit=' . $limit . ', offset=' . (int)$offset);
+        evxProfiler::checkpoint('getAddressOperations', 'START', 'address=' . $address . ', limit=' . $limit . ', offset=' . (is_array($offset) ? print_r($offset, TRUE) : (int)$offset));
 
         $result = array();
         $search = array('addresses' => $address);
@@ -1250,12 +1257,19 @@ class Ethplorer {
                 )
             );
         }
-
+        $reverseOffset = FALSE;
+        $skip = is_array($offset) ? $offset[0] : $offset;
         if(!$showEth){
             $hint = 'addresses_1_isEth_1_timestamp_1';
-            $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => -1), $limit, $offset, false, $hint);
+            $sortOrder = -1;
+            if(is_array($offset) && ($offset[0] > 100000) && ($offset[0] > $offset[1])){
+                $reverseOffset = TRUE;
+                $sortOrder = 1;
+                $skip = $offset[1];
+            }
+            $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => $sortOrder), $limit, $skip, false, $hint);
         }else{
-            $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => -1), $limit, $offset);
+            $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => -1), $limit, $skip);
         }
 
         foreach($cursor as $transfer){
@@ -1263,6 +1277,9 @@ class Ethplorer {
                 unset($transfer["_id"]);
                 $result[] = $transfer;
             }
+        }
+        if($reverseOffset){
+            $result = array_reverse($result);
         }
         evxProfiler::checkpoint('getAddressOperations', 'FINISH');
         return $result;
