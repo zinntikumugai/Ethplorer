@@ -1965,13 +1965,6 @@ class Ethplorer {
                     }
                 }
             }
-            if(in_array($option, array('getTokenHistory', 'getAddressHistory', 'getAddressTransactions'))){
-                if($key == 'freekey'){
-                    $res['maxPeriod'] = 30 * 24 * 3600;
-                }else{
-                    $res['maxPeriod'] = 365 * 24 * 3600;
-                }
-            }
         }
         return $res;
     }
