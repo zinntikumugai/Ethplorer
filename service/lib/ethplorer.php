@@ -492,7 +492,7 @@ class Ethplorer {
      */
     public function getTransactions($address, $limit = 10, $timestamp = 0, $showZero = FALSE){
         $cache = 'transactions-' . $address . '-' . $limit . '-' . ($timestamp ? ($timestamp . '-') : '') . ($showZero ? '1' : '0');
-        $result = $this->oCache->get($cache, FALSE, TRUE, 15);        
+        $result = $this->oCache->get($cache, FALSE, TRUE, 30);        
         if(!$result){
             $result = array();
             $fields = ['from', 'to'];
