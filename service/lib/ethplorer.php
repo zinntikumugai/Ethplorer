@@ -1965,7 +1965,7 @@ class Ethplorer {
                     }
                 }
             }
-            if(in_array($option, array('getTokenHistory', 'getAddressHistory', 'getAddressTransactions')){
+            if(in_array($option, array('getTokenHistory', 'getAddressHistory', 'getAddressTransactions'))){
                 if($key == 'freekey'){
                     $res['maxPeriod'] = 30 * 24 * 3600;
                 }else{
