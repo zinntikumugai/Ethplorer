@@ -1146,7 +1146,7 @@ Ethplorer = {
                     if(pf){
 
                         // Fill the tx.usdPrice if tx age less 10 minutes, because of delay price update scripts
-                        if (!tx.usdPrice && txToken.price.rate && ((new Date().getTime()/1000 - tx.timestamp ) / 60 < 10)){
+                        if (!tx.usdPrice && txToken.price && txToken.price.rate && ((new Date().getTime()/1000 - tx.timestamp ) / 60 < 10)){
                             tx.usdPrice = txToken.price.rate;
                         }
 
