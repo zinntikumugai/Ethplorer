@@ -1949,8 +1949,10 @@ class Ethplorer {
             if(is_array($this->aSettings['apiKeys'][$key])){
                 if(FALSE === $option){
                     $res = $this->aSettings['apiKeys'][$key];
-                }else if(isset($this->aSettings['apiKeys'][$key][$option])){
-                    $res = $this->aSettings['apiKeys'][$key][$option];
+                }else{
+                    if(isset($this->aSettings['apiKeys'][$key][$option])){
+                        $res = $this->aSettings['apiKeys'][$key][$option];
+                    }
 
                     if($key != 'freekey' && isset($this->aSettings['personalLimits'])){
                         foreach($this->aSettings['personalLimits'] as $cmd => $aLimits){
