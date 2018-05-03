@@ -293,6 +293,7 @@ Ethplorer = {
         // Check TX hash format first
         txHash = txHash.toLowerCase();
         if(!/^0x[0-9a-f]{64}$/i.test(txHash)){
+            Ethplorer.gaSendEvent('TxState', 'tx-invalid-hash');
             Ethplorer.error('Invalid transaction hash');
             return;
         }
@@ -395,6 +396,7 @@ Ethplorer = {
 
         var oTx = txData.tx;
         if(false === oTx){
+            Ethplorer.gaSendEvent('TxState', 'tx-not-found');
             Ethplorer.error('Transaction not found');
             return;
         }
@@ -684,6 +686,8 @@ Ethplorer = {
         $("table").find("tr:visible:odd").addClass("odd");
         $("table").find("tr:visible:even").addClass("even");
         $("table").find("tr:visible:last").addClass("last");
+        
+        Ethplorer.gaSendEvent('TxState', 'tx-ok');
     },
     getAddressDetails: function(address){
         // Check Address format first
@@ -2282,6 +2286,11 @@ Ethplorer = {
         bool = bool === undefined;
         sessionStorage.setItem("enableHistoricalPrice", bool);
         location.reload();
+    },
+    gaSendEvent: function(category, action){
+        if(Ethplorer.Config.ga && ('undefined' !== typeof(ga))){
+            ga('send', 'event', category, action);
+        }
     }
 };
 

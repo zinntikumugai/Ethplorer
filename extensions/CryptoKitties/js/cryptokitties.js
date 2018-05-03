@@ -8,9 +8,7 @@ Ethplorer.Extensions.CryptoKitties = {
         Ethplorer.Events.addHandler("ethp_showAddressDetails_finish", Ethplorer.Extensions.CryptoKitties.onAddressDetails);
     },
     gaSendEvent: function(action){
-        if(Ethplorer.Config.ga && ('undefined' !== typeof(ga))){
-            ga('send', 'event', 'CryptoKitties', action);
-        }
+        Ethplorer.gaSendEvent('CryptoKitties', action);
     },
     onAddressDetails: function(addrData){
         if(!addrData.cryptokitties) return;
