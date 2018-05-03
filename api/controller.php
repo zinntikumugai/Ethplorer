@@ -130,7 +130,7 @@ class ethplorerController {
                 return $result;
             }
 
-            $timestamp = $this->getRequest('timestamp', FALSE);
+            $timestamp = $this->getRequest('ts', FALSE);
             $needCache = (FALSE !== $timestamp) || ($command === 'getAddressHistory');
 
             if($needCache){

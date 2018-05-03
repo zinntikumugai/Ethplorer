@@ -468,7 +468,7 @@ ethplorerWidget.Type['tokenHistory'] = function(element, options, templates){
    
     this.refresh = function(obj){
         return function(){
-            $.getJSON(obj.api, obj.getRequestParams(obj.ts ? {timestamp: obj.ts} : false), obj.refreshWidget);
+            $.getJSON(obj.api, obj.getRequestParams(obj.ts ? {ts: obj.ts} : false), obj.refreshWidget);
         }
     }(this);
 
@@ -486,7 +486,7 @@ ethplorerWidget.Type['tokenHistory'] = function(element, options, templates){
     };
 
     this.getRequestParams = function(additionalParams){
-        var requestOptions = ['limit', 'address', 'timestamp', 'showEth'];
+        var requestOptions = ['limit', 'address', 'ts', 'showEth'];
         var params = {
             apiKey: 'ethplorer.widget',
             type: 'transfer'
