@@ -490,8 +490,8 @@ class Ethplorer {
      * @param int     $limit
      * @return array
      */
-    public function getTransactions($address, $limit = 10, $showZero = FALSE){
-        $cache = 'transactions-' . $address . '-' . $limit . '-' . ($showZero ? '1' : '0');
+    public function getTransactions($address, $limit = 10, $timestamp = 0, $showZero = FALSE){
+        $cache = 'transactions-' . $address . '-' . $limit . '-' . ($timestamp ? ($timestamp . '-') : '') . ($showZero ? '1' : '0');
         $result = $this->oCache->get($cache, FALSE, TRUE, 15);        
         if(!$result){
             $result = array();
@@ -499,6 +499,9 @@ class Ethplorer {
             foreach($fields as $field){
                 $search = array();
                 $search[$field] = $address;
+                if($timestamp > 0){
+                    $search['timestamp'] = array('$lte' => $timestamp);
+                }
                 if(!$showZero){
                     $search['value'] = array('$gt' => 0);
                 }
@@ -1208,7 +1211,7 @@ class Ethplorer {
         $sort = array("timestamp" => -1);
 
         if(isset($options['timestamp']) && ($options['timestamp'] > 0)){
-            $search['timestamp'] = array('$gt' => $options['timestamp']);
+            $search['timestamp'] = array('$lte' => $options['timestamp']);
         }
 
         $limit = isset($options['limit']) ? (int)$options['limit'] : false;
@@ -1960,6 +1963,13 @@ class Ethplorer {
                             }
                         }
                     }
+                }
+            }
+            if(in_array($option, array('getTokenHistory', 'getAddressHistory', 'getAddressTransactions')){
+                if($key == 'freekey'){
+                    $res['maxPeriod'] = 30 * 24 * 3600;
+                }else{
+                    $res['maxPeriod'] = 365 * 24 * 3600;
                 }
             }
         }

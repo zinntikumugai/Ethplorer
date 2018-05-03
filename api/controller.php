@@ -348,8 +348,9 @@ class ethplorerController {
 
         $maxLimit = is_array($this->defaults) && isset($this->defaults['limit']) ? $this->defaults['limit'] : 50;
         $limit = max(min(abs((int)$this->getRequest('limit', 10)), $maxLimit), 1);
+        $timestamp = $this->_getTimestampParam();
         $showZeroValues = !!$this->getRequest('showZeroValues', FALSE);
-        $result = $this->db->getTransactions($address, $limit, $showZeroValues);
+        $result = $this->db->getTransactions($address, $limit, $timestamp, $showZeroValues);
 
         $this->sendResult($result);
     }
@@ -629,12 +630,10 @@ class ethplorerController {
         $options = array(
             'type'      => $this->getRequest('type', FALSE),
             'limit'     => max(min(abs((int)$this->getRequest('limit', 10)), $maxLimit), 1),
+            'timestamp' => $this->_getTimestampParam()
         );
         if(FALSE !== $address){
             $options['address'] = $address;
-        }
-        if(FALSE !== $this->getRequest('timestamp', FALSE)){
-            $options['timestamp'] = (int)$this->getRequest('timestamp');
         }
         if($addressHistoryMode){
             $token = $this->getRequest('token', FALSE);
@@ -672,6 +671,18 @@ class ethplorerController {
             }
         }
         return $result;
+    }
+
+    protected function _getTimestampParam(){
+        $timestamp = (int)$this->getRequest('timestamp', 0);
+        if($timestamp > 0){
+            $maxPeriod = is_array($this->defaults) && isset($this->defaults['maxPeriod']) ? $this->defaults['maxPeriod'] : 2592000;
+            if((time() - $timestamp) > $maxPeriod){
+                $this->sendError(108, 'Invalid timestamp');
+            }
+            return $timestamp;
+        }
+        return 0;
     }
 
     /**
