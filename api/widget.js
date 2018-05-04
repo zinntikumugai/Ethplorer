@@ -972,7 +972,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
         var params = {
             apiKey: 'freekey'
         };
-        if('undefined' === typeof(this.pathReported)){
+        if(true || 'undefined' === typeof(this.pathReported)){
             params['domain'] = document.location.href;
             this.pathReported = true;
         }
