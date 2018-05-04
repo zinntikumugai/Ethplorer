@@ -166,7 +166,6 @@ class evxCache {
                 $aCachedData = array('lifetime' => $lifetime, 'data' => $data, 'lock' => true);
                 if('redis' == $this->driver){
                     $saveRes = $this->oDriver->set($entryName, json_encode($aCachedData), 'ex', $ttl);
-                    $this->oDriver->getConnection()->switchToSlave();
                 }else{
                     $saveRes = $this->oDriver->set($entryName, $aCachedData);
                 }
