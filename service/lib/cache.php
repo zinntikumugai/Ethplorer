@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+require_once __DIR__ . '/../../vendor/autoload.php';
+
 /**
  * Cache class.
  */
@@ -114,12 +116,11 @@ class evxCache {
                 $this->driver = 'file';
             }
         }else if('redis' === $this->driver){
-            if(class_exists('Redis')){
-                $rc = new Redis();
-                $rc->connect($aConfig['redis']['server'], $aConfig['redis']['port']);
+            try{
+                $rc = new Predis\Client($aConfig['redis']['servers'], $aConfig['redis']['options']);
                 $this->oDriver = $rc;
-            }else{
-                die('Redis class not found');
+            }catch(\Exception $e){
+                die($e->getMessage());
             }
         }
     }
@@ -164,7 +165,7 @@ class evxCache {
                 }
                 $aCachedData = array('lifetime' => $lifetime, 'data' => $data, 'lock' => true);
                 if('redis' == $this->driver){
-                    $saveRes = $this->oDriver->set($entryName, json_encode($aCachedData), array('ex' => $ttl));
+                    $saveRes = $this->oDriver->set($entryName, json_encode($aCachedData), 'ex', $ttl);
                 }else{
                     $saveRes = $this->oDriver->set($entryName, $aCachedData);
                 }
@@ -219,7 +220,7 @@ class evxCache {
         if('memcached' === $this->driver){
             return $this->oDriver->add($entryName . '-lock', TRUE, evxCache::LOCK_TTL);
         }else if('redis' === $this->driver){
-            return $this->oDriver->set($entryName . '-lock', 'true', array('nx', 'ex' => evxCache::LOCK_TTL));
+            return $this->oDriver->set($entryName . '-lock', 'true', 'nx', 'ex', evxCache::LOCK_TTL);
         }else{
             $lockFilename = $this->path . '/' . $entryName . "-lock.tmp";
 
@@ -238,7 +239,9 @@ class evxCache {
      * @return boolean
      */
     public function deleteLock($entryName){
-        if('memcached' === $this->driver || 'redis' === $this->driver){
+        if('redis' === $this->driver){
+            return $this->oDriver->del($entryName . '-lock');
+        }elseif('memcached' === $this->driver){
             return $this->oDriver->delete($entryName . '-lock');
         }else{
             return @unlink($this->path . '/' . $entryName . '-lock.tmp');

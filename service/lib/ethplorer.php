@@ -490,15 +490,18 @@ class Ethplorer {
      * @param int     $limit
      * @return array
      */
-    public function getTransactions($address, $limit = 10, $showZero = FALSE){
-        $cache = 'transactions-' . $address . '-' . $limit . '-' . ($showZero ? '1' : '0');
-        $result = $this->oCache->get($cache, FALSE, TRUE, 15);        
+    public function getTransactions($address, $limit = 10, $timestamp = 0, $showZero = FALSE){
+        $cache = 'transactions-' . $address . '-' . $limit . '-' . ($timestamp ? ($timestamp . '-') : '') . ($showZero ? '1' : '0');
+        $result = $this->oCache->get($cache, FALSE, TRUE, 30);        
         if(!$result){
             $result = array();
             $fields = ['from', 'to'];
             foreach($fields as $field){
                 $search = array();
                 $search[$field] = $address;
+                if($timestamp > 0){
+                    $search['timestamp'] = array('$lte' => $timestamp);
+                }
                 if(!$showZero){
                     $search['value'] = array('$gt' => 0);
                 }
@@ -1208,7 +1211,7 @@ class Ethplorer {
         $sort = array("timestamp" => -1);
 
         if(isset($options['timestamp']) && ($options['timestamp'] > 0)){
-            $search['timestamp'] = array('$gt' => $options['timestamp']);
+            $search['timestamp'] = array('$lte' => $options['timestamp']);
         }
 
         $limit = isset($options['limit']) ? (int)$options['limit'] : false;
@@ -1946,8 +1949,10 @@ class Ethplorer {
             if(is_array($this->aSettings['apiKeys'][$key])){
                 if(FALSE === $option){
                     $res = $this->aSettings['apiKeys'][$key];
-                }else if(isset($this->aSettings['apiKeys'][$key][$option])){
-                    $res = $this->aSettings['apiKeys'][$key][$option];
+                }else{
+                    if(isset($this->aSettings['apiKeys'][$key][$option])){
+                        $res = $this->aSettings['apiKeys'][$key][$option];
+                    }
 
                     if($key != 'freekey' && isset($this->aSettings['personalLimits'])){
                         foreach($this->aSettings['personalLimits'] as $cmd => $aLimits){
