@@ -972,7 +972,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
         var params = {
             apiKey: 'ethplorer.widget'
         };
-        if(true || 'undefined' === typeof(this.pathReported)){
+        if('undefined' === typeof(this.pathReported)){
             params['domain'] = document.location.href;
             this.pathReported = true;
         }
