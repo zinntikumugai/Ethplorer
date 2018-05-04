@@ -721,7 +721,7 @@ ethplorerWidget.Type['topTokens'] = function(element, options, templates){
     this.getRequestParams = function(additionalParams){
         var requestOptions = ['limit', 'period', 'criteria'];
         var params = {
-            apiKey: 'freekey'
+            apiKey: 'ethplorer.widget'
         };
         if('undefined' === typeof(this.pathReported)){
             params['domain'] = document.location.href;
@@ -970,7 +970,7 @@ ethplorerWidget.Type['top'] = function(element, options, templates){
     this.getRequestParams = function(additionalParams){
         var requestOptions = ['limit', 'period', 'criteria'];
         var params = {
-            apiKey: 'freekey'
+            apiKey: 'ethplorer.widget'
         };
         if(true || 'undefined' === typeof(this.pathReported)){
             params['domain'] = document.location.href;
@@ -1473,7 +1473,7 @@ ethplorerWidget.Type['tokenHistoryGrouped'] = function(element, options, templat
     this.getRequestParams = function(additionalParams){
         var requestOptions = ['period', 'address', 'type', 'theme', 'cap', 'full'];
         var params = {
-            apiKey: 'freekey'
+            apiKey: 'ethplorer.widget'
         };
         if('undefined' === typeof(this.pathReported)){
             params['domain'] = document.location.href;
@@ -2016,7 +2016,7 @@ ethplorerWidget.Type['tokenPriceHistoryGrouped'] = function(element, options, te
     this.getRequestParams = function(additionalParams){
         var requestOptions = ['period', 'address', 'type', 'theme'];
         var params = {
-            apiKey: 'freekey'
+            apiKey: 'ethplorer.widget'
         };
         if('undefined' === typeof(this.pathReported)){
             params['domain'] = document.location.href;
