@@ -111,6 +111,15 @@ class Ethplorer {
      * @var array
      */
     protected $aTokens = FALSE;
+
+    /**
+     * Sentry client object
+     * composer require "sentry/sentry"
+     *
+     * @var Raven_Client
+     */
+    protected $sentryClient;
+
     /**
      * Constructor.
      *
@@ -135,6 +144,10 @@ class Ethplorer {
         if(isset($this->aSettings['bundles']) && is_array($this->aSettings['bundles'])){
             evxMongoPools::init($this->aSettings['bundles']);
             $this->oMongoPools = evxMongoPools::getInstance();
+        }
+        if(isset($this->aSettings['sentry']) && class_exists('Raven_Client')){
+            $this->sentryClient = new Raven_Client($this->aSettings['sentry']);
+            $this->sentryClient->install();
         }
     }
 
