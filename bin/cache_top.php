@@ -18,6 +18,9 @@
 require dirname(__FILE__) . '/../service/lib/ethplorer.php';
 $aConfig = require_once dirname(__FILE__) . '/../service/config.php';
 
+$startTime = microtime(TRUE);
+echo "\n[".date("Y-m-d H:i")."], Started.";
+
 $es = Ethplorer::db($aConfig);
 $es->createProcessLock('topTokens.lock');
 $aCriteries = array('cap', 'trade', 'count');
@@ -44,3 +47,5 @@ if($aTotals){
     @file_put_contents($historyFile, $json);
 }
 
+$ms = round(microtime(TRUE) - $startTime, 4);
+echo "\n[".date("Y-m-d H:i")."], Finished, {$ms} s.";

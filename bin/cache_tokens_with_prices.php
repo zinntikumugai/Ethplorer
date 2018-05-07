@@ -18,7 +18,7 @@
 define("MIN_TOKENS_NUM", 350);
 
 $startTime = microtime(TRUE);
-echo "[".date("Y-m-d H:i")."], Started.";
+echo "\n[".date("Y-m-d H:i")."], Started.";
 
 $aConfig = require_once dirname(__FILE__) . '/../service/config.php';
 
@@ -63,4 +63,4 @@ if($jsonResponse){
 }
 
 $ms = round(microtime(TRUE) - $startTime, 4);
-echo "[".date("Y-m-d H:i")."], Finished, {$ms} s.";
+echo "\n[".date("Y-m-d H:i")."], Finished, {$ms} s.";
