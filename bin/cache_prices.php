@@ -18,9 +18,15 @@
 require dirname(__FILE__) . '/../service/lib/ethplorer.php';
 $aConfig = require_once dirname(__FILE__) . '/../service/config.php';
 
+$startTime = microtime(TRUE);
+echo "[".date("Y-m-d H:i")."], Started.";
+
 $es = Ethplorer::db($aConfig);
 $es->createProcessLock('prices.lock');
 foreach($aConfig['updateRates'] as $address){
     $es->getCache()->clearLocalCache();
     $es->getTokenPrice($address, TRUE);
 }
+
+$ms = round(microtime(TRUE) - $startTime, 4);
+echo "[".date("Y-m-d H:i")."], Finished, {$ms} s.";
