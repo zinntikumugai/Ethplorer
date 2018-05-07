@@ -22,7 +22,7 @@ $startTime = microtime(TRUE);
 echo "\n[".date("Y-m-d H:i")."], Started.";
 
 $es = Ethplorer::db($aConfig);
-$es->createProcessLock('topTokens.lock');
+$es->createProcessLock('topTokens.lock', 600);
 $aCriteries = array('cap', 'trade', 'count');
 $aTotals = null;
 foreach($aCriteries as $criteria){

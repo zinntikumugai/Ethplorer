@@ -173,8 +173,8 @@ class Ethplorer {
      *
      * @return evxProcessLock
      */
-    public function createProcessLock($name){
-        $this->oProcessLock = new evxProcessLock($this->aSettings['locksDir'] . $name, $this->aSettings['lockTTL'], TRUE);
+    public function createProcessLock($name, $lockTTL = 0){
+        $this->oProcessLock = new evxProcessLock($this->aSettings['locksDir'] . $name, $lockTTL ? $lockTTL : $this->aSettings['lockTTL'], TRUE);
         return $this->oProcessLock;
     }
 
