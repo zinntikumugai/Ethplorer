@@ -21,12 +21,19 @@ $aConfig = require_once dirname(__FILE__) . '/../service/config.php';
 $startTime = microtime(TRUE);
 echo "\n[".date("Y-m-d H:i")."], Started.";
 
+$numPrices = 0;
+$maxTimeGetPrice = 0;
+
 $es = Ethplorer::db($aConfig);
 $es->createProcessLock('prices.lock');
 foreach($aConfig['updateRates'] as $address){
+    $startGetPrice = microtime(TRUE);
     $es->getCache()->clearLocalCache();
     $es->getTokenPrice($address, TRUE);
+    $numPrices++;
+    $timeGetPrice = round(microtime(TRUE) - $startGetPrice, 4);
+    if($timeGetPrice > $maxTimeGetPrice) $maxTimeGetPrice = $timeGetPrice;
 }
 
 $ms = round(microtime(TRUE) - $startTime, 4);
-echo "\n[".date("Y-m-d H:i")."], Finished, {$ms} s.";
+echo "\n[".date("Y-m-d H:i")."], Finished, {$ms} s. Total prices: " . $numPrices . " Max. time : " . $maxTimeGetPrice;
