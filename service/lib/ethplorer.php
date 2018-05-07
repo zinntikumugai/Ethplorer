@@ -134,6 +134,14 @@ class Ethplorer {
             "logsDir" => dirname(__FILE__) . "/../log/",
             "locksDir" => dirname(__FILE__) . "/../lock/",
         );
+        if(isset($this->aSettings['sentry']) && class_exists('Raven_Client')){
+            try {
+                $this->sentryClient = new Raven_Client($this->aSettings['sentry']);
+                $this->sentryClient->install();
+            }catch(\Exception $e){
+                error_log("Sentry initialization failed: " . $e->getMessage());
+            }
+        }
         $cacheDriver = isset($this->aSettings['cacheDriver']) ? $this->aSettings['cacheDriver'] : 'file';
         $useLocks = isset($this->aSettings['useLocks']) ? $this->aSettings['useLocks'] : FALSE;
         $this->oCache = new evxCache($this->aSettings, $cacheDriver, $useLocks);
@@ -144,10 +152,6 @@ class Ethplorer {
         if(isset($this->aSettings['bundles']) && is_array($this->aSettings['bundles'])){
             evxMongoPools::init($this->aSettings['bundles']);
             $this->oMongoPools = evxMongoPools::getInstance();
-        }
-        if(isset($this->aSettings['sentry']) && class_exists('Raven_Client')){
-            $this->sentryClient = new Raven_Client($this->aSettings['sentry']);
-            $this->sentryClient->install();
         }
     }
 
