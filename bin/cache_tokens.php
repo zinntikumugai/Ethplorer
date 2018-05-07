@@ -20,9 +20,15 @@ ini_set('memory_limit', '512M');
 require dirname(__FILE__) . '/../service/lib/ethplorer.php';
 $aConfig = require_once dirname(__FILE__) . '/../service/config.php';
 
+$startTime = microtime(TRUE);
+echo "[".date("Y-m-d H:i")."], Started.";
+
 $es = Ethplorer::db($aConfig);
 $es->createProcessLock('tokens.lock');
 
 $es->getTokens(true);
 $es->getTopTokens(10, 90);
 $es->getTopTokens(50, 90);
+
+$ms = round(microtime(TRUE) - $startTime, 4);
+echo "[".date("Y-m-d H:i")."], Finished, {$ms} s.";
