@@ -559,7 +559,7 @@ class apiTest extends TestCase
                 'method' => 'getTokenHistory',
                 'GET_params' =>  ['apiKey' => apiTest::APIKey,],
                 'asserts' => [
-                    ['type' => 'checkLastBlock', 'fields' => ['operations'], 'time' => 30],
+                    ['type' => 'checkLastBlock', 'fields' => ['operations'], 'time' => 90],
                 ]
             ]],
             // request with "period" field
@@ -677,7 +677,7 @@ class apiTest extends TestCase
                 'method' => 'getLastBlock',
                 'GET_params' =>  ['apiKey' => apiTest::APIKey],
                 'asserts' => [
-                    ['type' => 'timeCheck',   'fields' => ['time' => 30]]
+                    ['type' => 'timeCheck',   'fields' => ['time' => 90]]
                 ]
             ]],
             //Errors
