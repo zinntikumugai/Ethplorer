@@ -371,7 +371,7 @@ class apiTest extends TestCase
             [[
                 'method' => 'getAddressTransactions',
                 'description' => '= check request with "showZeroValues" parameter =',
-                'URL_params' => '0xb297cacf0f91c86dd9d2fb47c6d12783121ab780',
+                'URL_params' => '0xd26114cd6EE289AccF82350c8d8487fedB8A0C07',
                 'GET_params' =>  ['apiKey' => apiTest::APIKey, 'showZeroValues'=>'true'],
                 'asserts' => [
                     ['type' => 'isset', 'array' => 'true', 'fields' => ['timestamp', 'from', 'to', 'hash', 'value', 'input', 'success']],
