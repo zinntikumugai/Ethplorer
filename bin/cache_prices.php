@@ -25,7 +25,7 @@ $numPrices = 0;
 $maxTimeGetPrice = 0;
 
 $es = Ethplorer::db($aConfig);
-$es->createProcessLock('prices.lock', 600);
+$lock = $es->createProcessLock('prices.lock', 1200);
 foreach($aConfig['updateRates'] as $address){
     $startGetPrice = microtime(TRUE);
     $es->getCache()->clearLocalCache();
@@ -36,6 +36,7 @@ foreach($aConfig['updateRates'] as $address){
     $numPrices++;
     if($timeGetPrice > $maxTimeGetPrice) $maxTimeGetPrice = $timeGetPrice;
 }
+unset($lock);
 
 $ms = round(microtime(TRUE) - $startTime, 4);
 echo "\n[".date("Y-m-d H:i:s")."], Finished, {$ms} s. Total prices: " . $numPrices . " Max. time : " . $maxTimeGetPrice;
