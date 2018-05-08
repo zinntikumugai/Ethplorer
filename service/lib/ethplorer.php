@@ -1519,7 +1519,7 @@ class Ethplorer {
                             foreach($aHistoryCount as $aRecord){
                                 $aRec = $aRecord['_id'];
                                 if(is_object($aRecord['_id'])){
-                                    $aRec = json_decode($aRecord['_id'], JSON_OBJECT_AS_ARRAY);
+                                    $aRec = json_decode(json_encode($aRecord['_id']), JSON_OBJECT_AS_ARRAY);
                                 }
                                 if(!is_array($aRec)){
                                     continue;
