@@ -134,10 +134,19 @@ class Ethplorer {
             "logsDir" => dirname(__FILE__) . "/../log/",
             "locksDir" => dirname(__FILE__) . "/../lock/",
         );
-        if(isset($this->aSettings['sentry']) && class_exists('Raven_Client')){
+        if(isset($this->aSettings['sentry']) && is_array($this->aSettings['sentry']) && class_exists('Raven_Client')){
             try {
-                $this->sentryClient = new Raven_Client($this->aSettings['sentry']);
-                $this->sentryClient->install();
+                $aSentry = $this->aSettings['sentry'];
+                $url = isset($aSentry['url']) ? $aSentry['url'] : false;
+                $key = isset($aSentry['key']) ? $aSentry['key'] : false;
+                $secret = isset($aSentry['secret']) ? $aSentry['secret'] : false;
+                $id = isset($aSentry['id']) ? $aSentry['id'] : false;
+                if($url && $key && $secret && $id){
+                    $this->sentryClient = new Raven_Client("http://" . $key . ":" . $secret . "@" . $url . "/" . $id);
+                    $this->sentryClient->install();
+                }else{
+                    throw new \Exception("Invalid configuration: one of mandatory fields missing");
+                }
             }catch(\Exception $e){
                 error_log("Sentry initialization failed: " . $e->getMessage());
             }
