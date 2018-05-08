@@ -1526,13 +1526,17 @@ class Ethplorer {
                         $aHistoryCount = $this->getTokenHistoryGrouped(2, $address, 'hourly', 3600);
                         if(is_array($aHistoryCount)){
                             foreach($aHistoryCount as $aRecord){
-                                if(!is_object($aRecord['_id'])){
+                                $aRec = $aRecord['_id'];
+                                if(is_object($aRecord['_id'])){
+                                    $aRec = json_decode(json_encode($aRecord['_id']), JSON_OBJECT_AS_ARRAY);
+                                }
+                                if(!is_array($aRec)){
                                     continue;
                                 }
                                 $aPeriod = $aPeriods[0];
                                 $aRecordDate = date("Y-m-d", $aRecord['ts']);
-                                $inCurrentPeriod = ($aRecordDate > $aPeriod['currentPeriodStart']) || (($aRecordDate == $aPeriod['currentPeriodStart']) && ($aRecord['_id']->hour >= $curHour));
-                                $inPreviousPeriod = !$inCurrentPeriod && (($aRecordDate > $aPeriod['previousPeriodStart']) || (($aRecordDate == $aPeriod['previousPeriodStart']) && ($aRecord['_id']->hour >= $curHour)));
+                                $inCurrentPeriod = ($aRecordDate > $aPeriod['currentPeriodStart']) || (($aRecordDate == $aPeriod['currentPeriodStart']) && ($aRec['hour'] >= $curHour));
+                                $inPreviousPeriod = !$inCurrentPeriod && (($aRecordDate > $aPeriod['previousPeriodStart']) || (($aRecordDate == $aPeriod['previousPeriodStart']) && ($aRec['hour'] >= $curHour)));
                                 if($inCurrentPeriod){
                                     $aToken['txsCount-1d-current'] += $aRecord['cnt'];
                                 }else if($inPreviousPeriod){
