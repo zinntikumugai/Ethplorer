@@ -69,6 +69,15 @@ if(isset($_GET['debug']) && $_GET['debug']){
 
 $hasNotes = isset($aConfig['adv']) && count($aConfig['adv']);
 
+$sentryURL = false;
+if(isset($aConfig['sentry']) && is_array($aConfig['sentry']) && class_exists('Raven_Client')){
+    $url = isset($aSentry['url']) ? $aSentry['url'] : false;
+    $key = isset($aSentry['key']) ? $aSentry['key'] : false;
+    if($url && $key){
+        $sentryURL = "http://" . $key . "@" . $url;
+    }
+}
+
 $csvExport = '';
 if(is_array($rParts) && isset($rParts[2])){
     $csvExport = ' <span class="export-csv-spinner"><i class="fa fa-spinner fa-spin"></i> Export...</span><span class="export-csv"><a class="download" rel="nofollow" target="_blank" href="/service/csv.php?data=' . $rParts[2] . '">Export as CSV</a></span>';
@@ -105,6 +114,7 @@ if(is_array($rParts) && isset($rParts[2])){
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
     <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+<?php if($sentryURL):?><script src="/js/raven.min.js"></script><?php endif; ?>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
     <script src="https://www.google.com/jsapi"></script>
@@ -735,6 +745,15 @@ if(is_array($rParts) && isset($rParts[2])){
 </div>
 <div id="qr-code-popup" title="Address QR-Code" style="padding:5px;"><span id="qr-code-address"></span><br/><br/><center><div id="qr-code"></div></center><br/></div>
 <script>
+<?php if($sentryURL):?>
+if('undefined' !== typeof(Raven)){
+    try {
+        Raven.config("<?php echo $sentryURL; ?>").install();
+    } catch(e) {
+        console.log(e.message);
+    }
+}
+<?php endif; ?>
 $(document).ready(function(){
     $.fn.bootstrapBtn = $.fn.button.noConflict();
     <?php if($debugEnabled): ?>
