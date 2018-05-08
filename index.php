@@ -71,6 +71,7 @@ $hasNotes = isset($aConfig['adv']) && count($aConfig['adv']);
 
 $sentryURL = false;
 if(isset($aConfig['sentry']) && is_array($aConfig['sentry']) && class_exists('Raven_Client')){
+    $aSentry = $aConfig['sentry'];
     $url = isset($aSentry['url']) ? $aSentry['url'] : false;
     $key = isset($aSentry['key']) ? $aSentry['key'] : false;
     if($url && $key){
