@@ -141,11 +141,11 @@ class Ethplorer {
                 $key = isset($aSentry['key']) ? $aSentry['key'] : false;
                 $secret = isset($aSentry['secret']) ? $aSentry['secret'] : false;
                 $id = isset($aSentry['id']) ? $aSentry['id'] : false;
-                if($url && $key && $secret && $id){
-                    $this->sentryClient = new Raven_Client("http://" . $key . ":" . $secret . "@" . $url . "/" . $id);
+                if($url && $key){
+                    $this->sentryClient = new Raven_Client("http://" . $key . ($secret ? (":" . $secret) : "") . "@" . $url . ($id ? ("/" . $id) : ""));
                     $this->sentryClient->install();
                 }else{
-                    throw new \Exception("Invalid configuration: one of mandatory fields missing");
+                    throw new \Exception("Invalid configuration: one of mandatory field [" . ($url ? "key" : "url") . "] is missing");
                 }
             }catch(\Exception $e){
                 error_log("Sentry initialization failed: " . $e->getMessage());
