@@ -137,12 +137,14 @@ class Ethplorer {
         if(isset($this->aSettings['sentry']) && is_array($this->aSettings['sentry']) && class_exists('Raven_Client')){
             try {
                 $aSentry = $this->aSettings['sentry'];
+                $https = isset($aSentry['https']) ? !!$aSentry['https'] : false;
                 $url = isset($aSentry['url']) ? $aSentry['url'] : false;
                 $key = isset($aSentry['key']) ? $aSentry['key'] : false;
                 $secret = isset($aSentry['secret']) ? $aSentry['secret'] : false;
                 $id = isset($aSentry['id']) ? $aSentry['id'] : false;
                 if($url && $key){
-                    $this->sentryClient = new Raven_Client("http://" . $key . ($secret ? (":" . $secret) : "") . "@" . $url . ($id ? ("/" . $id) : ""));
+                    $protocol = $https ? "https" : "http";
+                    $this->sentryClient = new Raven_Client($protocol . "://" . $key . ($secret ? (":" . $secret) : "") . "@" . $url . ($id ? ("/" . $id) : ""));
                     $this->sentryClient->install();
                 }else{
                     throw new \Exception("Invalid configuration: one of mandatory field [" . ($url ? "key" : "url") . "] is missing");

@@ -72,10 +72,12 @@ $hasNotes = isset($aConfig['adv']) && count($aConfig['adv']);
 $sentryURL = false;
 if(isset($aConfig['sentry']) && is_array($aConfig['sentry']) && class_exists('Raven_Client')){
     $aSentry = $aConfig['sentry'];
+    $https = isset($aSentry['https']) ? !!$aSentry['https'] : false;
     $url = isset($aSentry['url']) ? $aSentry['url'] : false;
     $key = isset($aSentry['key']) ? $aSentry['key'] : false;
     if($url && $key){
-        $sentryURL = "http://" . $key . "@" . $url;
+        $protocol = $https ? "https" : "http";
+        $sentryURL = $protocol . "://" . $key . "@" . $url;
     }
 }
 
