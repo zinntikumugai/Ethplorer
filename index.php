@@ -70,7 +70,7 @@ if(isset($_GET['debug']) && $_GET['debug']){
 $hasNotes = isset($aConfig['adv']) && count($aConfig['adv']);
 
 $sentryURL = false;
-if(isset($aConfig['sentry']) && is_array($aConfig['sentry']) && class_exists('Raven_Client')){
+if(isset($aConfig['sentry']) && is_array($aConfig['sentry'])){
     $aSentry = $aConfig['sentry'];
     $https = isset($aSentry['https']) ? !!$aSentry['https'] : false;
     $url = isset($aSentry['url']) ? $aSentry['url'] : false;
