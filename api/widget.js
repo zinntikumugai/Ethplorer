@@ -74,7 +74,7 @@ ethplorerWidget = {
         document.getElementsByTagName("head")[0].appendChild(linkElem);
     },
     loadGoogleCharts: function(){
-        if(google && google.charts){
+        if(('undefined' !== typeof(google)) && google && google.charts){
             google.charts.load('current', {packages: ['corechart']});
 
             if(ethplorerWidget.chartWidgets && ethplorerWidget.chartWidgets.length)
@@ -83,7 +83,7 @@ ethplorerWidget = {
         }
     },
     loadGoogleControlCharts: function(){
-        if(google){
+        if(('undefined' !== typeof(google)) && google){
             google.load('visualization', '1', {'packages': ['controls'], 'language': 'en', callback : ethplorerWidget.drawGoogleControlCharts});
         }
     },
