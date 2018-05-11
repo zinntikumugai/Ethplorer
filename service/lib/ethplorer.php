@@ -2287,7 +2287,7 @@ class Ethplorer {
         return $result;
     }
 
-    public function getTokenPriceHistory($address, $period = 0, $type = 'hourly', $updateCache = FALSE){
+    public function getTokenPriceHistory($address, $period = 0, $type = 'hourly', $updateCache = FALSE, $updateFullHistory = FALSE){
         if(isset($this->aSettings['priceSource']) && isset($this->aSettings['priceSource'][$address])){
             $address = $this->aSettings['priceSource'][$address];
         }
@@ -2316,10 +2316,10 @@ class Ethplorer {
                     $skipGetHistory = TRUE;
                 }
             }
-            if(isset($this->aSettings['currency']) && !$skipGetHistory){
+            if(isset($this->aSettings['currency']) && (!$skipGetHistory || $updateFullHistory)){
                 $method = 'getCurrencyHistory';
                 $params = array($address, 'USD');
-                if($lastTS) $params[] = $lastTS + 1;
+                if($lastTS && !$updateFullHistory) $params[] = $lastTS + 1;
                 $res = $this->_jsonrpcall($this->aSettings['currency'], $method, $params);
                 if(FALSE !== $result){
                     $result = array_merge($result, $res);
