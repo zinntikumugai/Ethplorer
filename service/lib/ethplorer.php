@@ -2499,6 +2499,7 @@ class Ethplorer {
             $aTypes = array('transfer', 'issuance', 'burn', 'mint');
             $aResult = array();
             $minTs = false;
+            $maxTs = 0;
 
             if(FALSE === $result){
                 $result = array();
@@ -2522,6 +2523,9 @@ class Ethplorer {
                     }
                     if($record['type'] == 'transfer'){
                         $result['txs'][$date] += 1;
+                        if($record['timestamp'] > $maxTs){
+                            $maxTs = $record['timestamp'];
+                        }
                         if(!$updateCache && (!$minTs || ($record['timestamp'] < $minTs))){
                             $minTs = $record['timestamp'];
                             $result['firstDate'] = $date;
@@ -2544,11 +2548,10 @@ class Ethplorer {
                     $aResult[$record['timestamp']][] = array($record['contract'], $record['value'], $add);
                 }
             }
+            $result['timestamp'] = $maxTs;
             krsort($aResult, SORT_NUMERIC);
 
             $aAddressBalances = $this->getAddressBalances($address);
-            //file_put_contents(__DIR__ . '/../log/lexa.log', print_r($aAddressBalances, true) . "\n", FILE_APPEND);
-
             $ten = Decimal::create(10);
 
             if(isset($result['tokens'])) $aTokenInfo = $result['tokens'];
@@ -2558,7 +2561,7 @@ class Ethplorer {
             }
 
             $curDate = false;
-            unset($result['timestamp']);
+            //unset($result['timestamp']);
             foreach($aResult as $ts => $aRecords){
                 foreach($aRecords as $record){
                     $date = gmdate("Y-m-d", $ts);
@@ -2568,7 +2571,7 @@ class Ethplorer {
                     }
 
                     $contract = $record[0];
-                    if(!isset($result['timestamp'])) $result['timestamp'] = $ts;
+                    //if(!isset($result['timestamp'])) $result['timestamp'] = $ts;
 
                     $token = isset($aTokenInfo[$contract]) ? $aTokenInfo[$contract] : $this->getToken($contract);
                     if($token){
