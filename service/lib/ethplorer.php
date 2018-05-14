@@ -2548,7 +2548,7 @@ class Ethplorer {
                     $aResult[$record['timestamp']][] = array($record['contract'], $record['value'], $add);
                 }
             }
-            $result['timestamp'] = $maxTs;
+            if($maxTs > 0) $result['timestamp'] = $maxTs;
             krsort($aResult, SORT_NUMERIC);
 
             $aAddressBalances = $this->getAddressBalances($address);
