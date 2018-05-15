@@ -579,7 +579,7 @@ ethplorerWidget.Type['tokenHistory'] = function(element, options, templates){
             this.ts = data.operations[0].timestamp;
             var txTable = this.el.find(".txs.big-screen-table");
             var txSmall = this.el.find(".txs.small-screen-table");
-            for(var i=0; i<data.operations.length; i++){
+            for(var i=data.operations.length - 1; i>=0; i--){
                 var rowData = this.prepareData(data.operations[i]);
                 var bigRows = $(ethplorerWidget.parseTemplate(this.templates.bigScreenTable, rowData));
                 var smallRows = $(ethplorerWidget.parseTemplate(this.templates.smallScreenTable, rowData));
