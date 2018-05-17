@@ -162,8 +162,8 @@ class evxCache {
                 }*/
                 $ttl = evxCache::DAY;
                 if(!$lifetime){
-                    // 1 month if cache lifetime is not set
-                    $lifetime = time() + evxCache::MONTH;
+                    // 1 day if cache lifetime is not set
+                    $lifetime = time() + evxCache::DAY;
                 }else{
                     $ttl = $lifetime;
                     $lifetime = time() + $lifetime;
