@@ -532,7 +532,6 @@ ethplorerWidget.Type['tokenHistory'] = function(element, options, templates){
             if(!obj.ts){
                 return obj.cbFirstLoad(data);
             }
-            obj.el.find('tr').removeClass('hidden new');
             return obj.cbRefresh(data);
         };
     }(this);
@@ -590,7 +589,7 @@ ethplorerWidget.Type['tokenHistory'] = function(element, options, templates){
                 setTimeout(
                     function(el){
                         return function(){
-                            el.find('.hidden').addClass('new');
+                            el.find('.hidden').removeClass('hidden');
                         }
                     }(this.el),
                     200
