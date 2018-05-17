@@ -34,7 +34,7 @@ class evxCache {
     /**
      * Seconds in 1 day
      */
-    const DAY = 86400; // 1 * 24 * 3600
+    const DAY = 43200; // 1 * 24 * 3600
 
     /**
      * Cache locks ttl in seconds
