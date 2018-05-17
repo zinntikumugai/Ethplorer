@@ -32,6 +32,11 @@ class evxCache {
     const MONTH = 2592000; // 30 * 24 * 3600
 
     /**
+     * Seconds in 1 day
+     */
+    const DAY = 86400; // 1 * 24 * 3600
+
+    /**
      * Cache locks ttl in seconds
      */
     const LOCK_TTL = 120;
@@ -155,7 +160,7 @@ class evxCache {
                 /*if($lifetime > evxCache::MONTH){
                     $lifetime = time() + $cacheLifetime;
                 }*/
-                $ttl = evxCache::MONTH;
+                $ttl = evxCache::DAY;
                 if(!$lifetime){
                     // 1 month if cache lifetime is not set
                     $lifetime = time() + evxCache::MONTH;
