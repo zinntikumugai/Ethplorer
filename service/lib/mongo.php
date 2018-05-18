@@ -307,7 +307,7 @@ class evxMongo {
                 } catch (Exception $e){}
                 if($count > 0){
                     $aResult['result'] = array();
-                    $cursor = new IteratorIterator($cursor);
+                    //$cursor = new IteratorIterator($cursor);
                     foreach($cursor as $record){
                         $aResult['result'][] = (array)$record;
                     }
