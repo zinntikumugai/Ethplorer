@@ -805,7 +805,10 @@ class Ethplorer {
                         echo $address . " was recently updated (transfers count = " . $aToken['transfersCount'] . ")\n";
                     }
                     $aResult[$address]['issuancesCount'] = $this->getContractOperationCount(array('$in' => array('issuance', 'burn', 'mint')), $address, FALSE);
-                    $aResult[$address]['holdersCount'] = $this->getTokenHoldersCount($address);
+                    $hc = $this->getTokenHoldersCount($address);;
+                    if(FALSE !== $hc){
+                        $aResult[$address]['holdersCount'] = $hc;
+                    }
                 }else if(!isset($aPrevTokens[$address]) || !isset($aPrevTokens[$address]['issuancesCount'])){
                     $aResult[$address]['issuancesCount'] = $this->getContractOperationCount(array('$in' => array('issuance', 'burn', 'mint')), $address, FALSE);
                 }else{
@@ -861,7 +864,9 @@ class Ethplorer {
                 );
             }
             $result = $this->oMongo->count('balances', $search);
-            $this->oCache->save($cache, $result);
+            if(FALSE !== $result){
+                $this->oCache->save($cache, $result);
+            }
         }
         evxProfiler::checkpoint('getTokenHoldersCount', 'FINISH');
         return $result;
@@ -1071,10 +1076,10 @@ class Ethplorer {
                                 )
                             );
                         }
-                        $result += $this->oMongo->count('operations', $search);
+                        $result += (int)$this->oMongo->count('operations', $search);
 
                         $search['type'] = array('$eq' => array('approve'));
-                        $approves = $this->oMongo->count('operations', $search);
+                        $approves = (int)$this->oMongo->count('operations', $search);
                         if($approves){
                             $result -= $approves;
                         }
@@ -1128,7 +1133,7 @@ class Ethplorer {
                 }else{
                     foreach(array('from', 'to') as $where){
                         $search = array($where => $address);
-                        $result += $this->oMongo->count('transactions', $search);
+                        $result += (int)$this->oMongo->count('transactions', $search);
                     }
                 }
             }
@@ -2016,13 +2021,13 @@ class Ethplorer {
         $result = 0;
         if($useFilter && $this->filter){
             foreach(array('from', 'to', 'address', 'transactionHash') as $field){
-                $result += $this->oMongo->count('operations', array_merge($search, array($field => array('$regex' => $this->filter))));
+                $result += (int)$this->oMongo->count('operations', array_merge($search, array($field => array('$regex' => $this->filter))));
             }
         }else{
             if(('transfer' === $type) && ($aToken = $this->getToken($address))){
                 $result = isset($aToken['transfersCount']) ? $aToken['transfersCount'] : 0;
             } else {            
-                $result = $this->oMongo->count('operations', $search);
+                $result = (int)$this->oMongo->count('operations', $search);
             }
         }
         evxProfiler::checkpoint('getContractOperationCount', 'FINISH');
@@ -2176,7 +2181,7 @@ class Ethplorer {
                 )
             );
         }
-        $result = $this->oMongo->count('transactions', $search);
+        $result = (int)$this->oMongo->count('transactions', $search);
         return $result;
     }
 
@@ -2951,6 +2956,12 @@ class Ethplorer {
         return $result;
     }
 
+    public function reportException($exception, $data){
+        if(is_object($this->sentryClient)){
+            $this->sentryClient->captureException($exception, $data);
+        }
+    }
+    
     protected function txSuccessStatus(array $tx){
         if(isset($tx['status']) && $tx['status'] && is_string($tx['status'])){
             $tx['status'] = str_replace("0x", "", $tx['status']);

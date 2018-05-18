@@ -228,7 +228,20 @@ class evxMongo {
             case 'mongodb':
                 $query = new MongoDB\Driver\Query($aSearch, $aOptions);
                 $cursor = $this->oMongo->executeQuery($this->dbName . '.' . $this->aDBs[$collection], $query);
-                $result = iterator_count($cursor);
+                try {
+                    $result = iterator_count($cursor);
+                }catch(\Exception $e){
+                    if(class_exists("Ethplorer")){
+                        Ethplorer::db()->reportException($e, array(
+                            'extra' => array(
+                                'query' => 'count',
+                                'search' => $aSearch,
+                                'options' => $aOptions
+                            )
+                        ));
+                    }
+                    $result = FALSE;
+                }
                 /*
                 $command = new MongoDB\Driver\Command(array("count" => $this->aDBs[$collection], "query" => $aSearch));
                 $count = $this->oMongo->executeCommand($this->dbName, $command);
