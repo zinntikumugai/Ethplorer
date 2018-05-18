@@ -301,7 +301,7 @@ class evxMongo {
                     'cursor' => new stdClass,
                 ));
                 $cursor = $this->oMongo->executeCommand($this->dbName, $command);
-                if(count($cursor) > 0){
+                if($cursor && count($cursor) > 0){
                     $aResult['result'] = array();
                     $cursor = new IteratorIterator($cursor);
                     foreach($cursor as $record){
