@@ -418,7 +418,7 @@ class Ethplorer {
             $aBalances = array();
             evxProfiler::checkpoint('getTokenLoop', 'START');
             foreach($result["balances"] as $balance){
-                $balanceToken = $this->getToken($balance["contract"]);
+                $balanceToken = $this->getToken($balance["contract"], TRUE);
                 if($balanceToken){
                     $result["tokens"][$balance["contract"]] = $balanceToken;
                     $aBalances[] = $balance;
