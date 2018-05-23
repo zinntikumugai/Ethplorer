@@ -233,7 +233,7 @@ class ethplorerController {
                         continue;
                     }
                 }
-                $token = $this->db->getToken($balance['contract']);
+                $token = $this->db->getToken($balance['contract'], TRUE);
                 if($token){
                     unset($token['checked']);
                     unset($token['txsCount']);
@@ -295,7 +295,7 @@ class ethplorerController {
         $operations = $this->db->getOperations($txHash);
         if(is_array($operations) && !empty($operations)){
             foreach($operations as $i => $operation){
-                $token = $this->db->getToken($operation['contract']);
+                $token = $this->db->getToken($operation['contract'], TRUE);
                 if($token && is_array($token)){
                     unset($token['checked']);
                     unset($token['txsCount']);
