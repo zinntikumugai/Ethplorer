@@ -113,6 +113,13 @@ class Ethplorer {
     protected $aTokens = FALSE;
 
     /**
+     * Cache for current prices
+     *
+     * @var array
+     */
+    protected $aPrices = FALSE;
+
+    /**
      * Sentry client object
      * composer require "sentry/sentry"
      *
@@ -933,8 +940,13 @@ class Ethplorer {
         if($fast){
             $aTokens = $this->getTokens();
             $result = isset($aTokens[$address]) ? $aTokens[$address] : false;
-            if($result){
+            if($result && is_array($result)){
                 unset($result["_id"]);
+                $price = $this->getTokenPrice($address);
+                if(is_array($price)){
+                    $price['currency'] = 'USD';
+                }
+                $result['price'] = $price ? $price : false;
             }
             return $result;
         }
@@ -2245,6 +2257,9 @@ class Ethplorer {
     public function getTokenPrice($address, $updateCache = FALSE){
         // evxProfiler::checkpoint('getTokenPrice', 'START', 'address=' . $address . ', updateCache=' . ($updateCache ? 'TRUE' : 'FALSE'));
         $result = FALSE;
+        if(!$updateCache && isset($this->aPrices[$address])){
+            return $this->aPrices[$address];
+        }
         if(isset($this->aSettings['priceSource']) && isset($this->aSettings['priceSource'][$address])){
             $address = $this->aSettings['priceSource'][$address];
         }
