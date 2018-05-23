@@ -2593,7 +2593,7 @@ class Ethplorer {
                     $contract = $record[0];
                     //if(!isset($result['timestamp'])) $result['timestamp'] = $ts;
 
-                    $token = isset($aTokenInfo[$contract]) ? $aTokenInfo[$contract] : $this->getToken($contract);
+                    $token = isset($aTokenInfo[$contract]) ? $aTokenInfo[$contract] : $this->getToken($contract, TRUE);
                     if($token){
                         if(!isset($aTokenInfo[$contract])){
                             $result['tokens'][$contract] = $token;
