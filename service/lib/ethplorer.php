@@ -387,6 +387,7 @@ class Ethplorer {
                         case 'holders':
                             $count = $this->getTokenHoldersCount($address);
                             $total = $this->filter ? $this->getTokenHoldersCount($address, FALSE) : $count;
+                            $offsetReverse = $this->getOffsetReverse('holders', $count);
                             $cmd = 'getTokenHolders';
                             break;
                     }
@@ -887,7 +888,7 @@ class Ethplorer {
      * @return array
      */
     public function getTokenHolders($address, $limit = FALSE, $offset = FALSE){
-        evxProfiler::checkpoint('getTokenHolders', 'START', 'address=' . $address . ', limit=' . $limit . ', offset=' . $offset);
+        evxProfiler::checkpoint('getTokenHolders', 'START', 'address=' . $address . ', limit=' . $limit . ', offset=' . (is_array($offset) ? print_r($offset, TRUE) : (int)$offset));
         $result = array();
         $token = $this->getToken($address);
         if($token){
@@ -900,13 +901,21 @@ class Ethplorer {
                     )
                 );
             }
-            $cursor = $this->oMongo->find('balances', $search, array('balance' => -1), $limit, $offset);
+            $reverseOffset = FALSE;
+            $skip = is_array($offset) ? $offset[0] : $offset;
+            $sortOrder = -1;
+            if(is_array($offset) && ($offset[0] > self::MAX_OFFSET) && ($offset[0] > $offset[1])){
+                $reverseOffset = TRUE;
+                $sortOrder = 1;
+                $skip = $offset[1];
+            }
+            $cursor = $this->oMongo->find('balances', $search, array('balance' => $sortOrder), $limit, $skip);
             if($cursor){
                 $total = 0;
                 $aBalances = [];
                 foreach($cursor as $balance){
                     $aBalances[] = $balance;
-                }                
+                }
                 foreach($aBalances as $balance){
                     $total += floatval($balance['balance']);
                 }
@@ -920,6 +929,9 @@ class Ethplorer {
                             'balance' => floatval($balance['balance']),
                             'share' => round((floatval($balance['balance']) / $total) * 100, 2)
                         );
+                    }
+                    if($reverseOffset){
+                        $result = array_reverse($result);
                     }
                 }
             }
