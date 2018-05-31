@@ -2532,6 +2532,7 @@ class Ethplorer {
             $aSearch = array('from', 'to', 'address');
             $aTypes = array('transfer', 'issuance', 'burn', 'mint');
             $aResult = array();
+            $aContracts = array();
             $minTs = false;
             $maxTs = 0;
 
@@ -2570,6 +2571,11 @@ class Ethplorer {
                         continue;
                     }
 
+                    if(!in_array($record['contract'], $aContracts)){
+                        $aContracts[] = $record['contract'];
+                    }
+                    $indContract = array_search($record['contract'], $aContracts);
+
                     $add = 0;
                     if(!$updateCache && (!$minTs || ($record['timestamp'] < $minTs))){
                         $minTs = $record['timestamp'];
@@ -2579,7 +2585,8 @@ class Ethplorer {
                         $add = 1;
                     }
                     if(!isset($aResult[$record['timestamp']])) $aResult[$record['timestamp']] = array();
-                    $aResult[$record['timestamp']][] = array($record['contract'], $record['value'], $add);
+                    //$aResult[$record['timestamp']][] = array($record['contract'], $record['value'], $add);
+                    $aResult[$record['timestamp']][] = array(is_int($indContract) ? $indContract : $record['contract'], $record['value'], $add);
                 }
             }
             if($maxTs > 0) $result['timestamp'] = $maxTs;
@@ -2604,7 +2611,8 @@ class Ethplorer {
                         $nextDate = true;
                     }
 
-                    $contract = $record[0];
+                    //$contract = $record[0];
+                    $contract = is_int($record[0]) ? $aContracts[$record[0]] : $record[0];
                     //if(!isset($result['timestamp'])) $result['timestamp'] = $ts;
 
                     $token = isset($aTokenInfo[$contract]) ? $aTokenInfo[$contract] : $this->getToken($contract, TRUE);
