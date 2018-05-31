@@ -293,7 +293,7 @@ class Ethplorer {
         $numPages = ceil($total / $limit);
         $offsetReverse = $total - ($this->getPager($section) * $this->pageSize);
         if($offsetReverse < 0) $offsetReverse = 0;
-        return (intval($numPages) === $this->getPager($section)) ? FALSE : $offsetReverse;
+        return (intval($numPages) === $this->getPager($section)) ? 0 : $offsetReverse;
     }
 
     /**
