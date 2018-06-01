@@ -20,16 +20,14 @@
  */
 class evxMongoScanner extends evxMongo {
 
-    protected $useOperations2 = FALSE;
-
     /**
      * Initialization.
      *
      * @param array $aSettings
      */
     public static function init(array $aSettings = array(), $useOperations2 = FALSE){
-        $this->useOperations2 = $useOperations2;
         self::$oInstance = new evxMongoScanner($aSettings);
+        self::$oInstance->useOperations2 = $useOperations2;
     }
 
     protected function connectDb(){

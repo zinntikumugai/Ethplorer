@@ -73,6 +73,8 @@ class evxMongo {
     
     protected $isConnected = false;
 
+    protected $useOperations2 = FALSE;
+
     /**
      * Constructor.
      *
