@@ -81,7 +81,7 @@ class evxMongo {
      * @param array $aSettings
      * @throws \Exception
      */
-    protected function __construct(array $aSettings){
+    protected function __construct(array $aSettings, $useOperations2 = FALSE){
         
         $this->logFile = __DIR__ . '/../log/mongo-profile.log';
         // Default config
@@ -93,6 +93,7 @@ class evxMongo {
         );
 
         $this->aSettings = $aSettings;
+        $this->useOperations2 = $useOperations2;
         $this->dbName = $aSettings['dbName'];
         $this->driver = $aSettings['driver'];
     }
