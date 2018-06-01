@@ -127,6 +127,8 @@ class Ethplorer {
      */
     protected $sentryClient;
 
+    protected $useOperations2 = FALSE;
+
     /**
      * Constructor.
      *
@@ -162,9 +164,10 @@ class Ethplorer {
         }
         $cacheDriver = isset($this->aSettings['cacheDriver']) ? $this->aSettings['cacheDriver'] : 'file';
         $useLocks = isset($this->aSettings['useLocks']) ? $this->aSettings['useLocks'] : FALSE;
+        $this->useOperations2 = isset($this->aSettings['useOperations2']) ? $this->aSettings['useOperations2'] : FALSE;
         $this->oCache = new evxCache($this->aSettings, $cacheDriver, $useLocks);
         if(isset($this->aSettings['mongo']) && is_array($this->aSettings['mongo'])){
-            evxMongoScanner::init($this->aSettings['mongo']);
+            evxMongoScanner::init($this->aSettings['mongo'], $this->useOperations2);
             $this->oMongo = evxMongoScanner::getInstance();
         }
         if(isset($this->aSettings['bundles']) && is_array($this->aSettings['bundles'])){
@@ -750,7 +753,13 @@ class Ethplorer {
         if($type){
             $search['type'] = $type;
         }
-        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
+        if(!$showEth){
+            if($this->useOperations2){
+                $search['isEth'] = false;
+            }else{
+                $search['contract'] = array('$ne' => 'ETH');
+            }
+        }
         $cursor = $this->oMongo->find('operations', $search, array('priority' => 1));
         $result = array();
         foreach($cursor as $res){
@@ -1086,7 +1095,13 @@ class Ethplorer {
                     $aSearchFields = array('from', 'to', 'address');
                     foreach($aSearchFields as $searchField){
                         $search = array($searchField => $address);
-                        if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
+                        if(!$showEth){
+                            if($this->useOperations2){
+                                $search['isEth'] = false;
+                            }else{
+                                $search['contract'] = array('$ne' => 'ETH');
+                            }
+                        }
                         if($useFilter && $this->filter){
                             $search = array(
                                 '$and' => array(
@@ -1305,8 +1320,11 @@ class Ethplorer {
             }
         }
         if(!$showEth){
-            //$search['contract'] = array('$ne' => 'ETH');
-            $search['isEth'] = false;
+            if($this->useOperations2){
+                $search['isEth'] = false;
+            }else{
+                $search['contract'] = array('$ne' => 'ETH');
+            }
         }
 
         // @todo: remove $or, use special field with from-to-address-txHash concatination maybe
@@ -1439,7 +1457,13 @@ class Ethplorer {
         if($updateCache || (FALSE === $result)){
             $result = array();
             $aMatch = array("timestamp" => array('$gt' => time() - $period * 2 * 24 * 3600, '$lte' => time() - $period * 24 * 3600));
-            if(!$showEth) $aMatch['contract'] = array('$ne' => 'ETH');
+            if(!$showEth){
+                if($this->useOperations2){
+                    $aMatch['isEth'] = false;
+                }else{
+                    $aMatch['contract'] = array('$ne' => 'ETH');
+                }
+            }
             $prevData = $this->oMongo->aggregate(
                 'operations',
                 array(
@@ -1870,7 +1894,13 @@ class Ethplorer {
             $tsStart = gmmktime(0, 0, 0, date('n'), date('j') - $period, date('Y'));
             $aMatch = array("timestamp" => array('$gt' => $tsStart));
             if($address) $aMatch["contract"] = $address;
-            else if(!$showEth) $aMatch["contract"] = array('$ne' => 'ETH');
+            else if(!$showEth){
+                if($this->useOperations2){
+                    $aMatch['isEth'] = false;
+                }else{
+                    $aMatch["contract"] = array('$ne' => 'ETH');
+                }
+            }
             $result = array();
             $_id = array(
                 "year"  => array('$year' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
@@ -1927,7 +1957,13 @@ class Ethplorer {
                 $result = array();
 
                 $aMatch = array("timestamp" => array('$gte' => $tsStart + 1, '$lte' => $tsEnd));
-                if(!$showEth) $aMatch["contract"] = array('$ne' => 'ETH');
+                if(!$showEth){
+                    if($this->useOperations2){
+                        $aMatch['isEth'] = false;
+                    }else{
+                        $aMatch["contract"] = array('$ne' => 'ETH');
+                    }
+                }
                 $_id = array(
                     "year"  => array('$year' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
                     "month"  => array('$month' => array('$add' => array($this->oMongo->toDate(0), array('$multiply' => array('$timestamp', 1000))))),
@@ -1974,7 +2010,13 @@ class Ethplorer {
         if(FALSE === $result){
             $tsStart = gmmktime((int)date('G'), 0, 0, date('n'), date('j') - 1, date('Y'));
             $aMatch = array("timestamp" => array('$gte' => $tsStart));
-            if(!$showEth) $aMatch["contract"] = array('$ne' => 'ETH');
+            if(!$showEth){
+                if($this->useOperations2){
+                    $aMatch['isEth'] = false;
+                }else{
+                    $aMatch["contract"] = array('$ne' => 'ETH');
+                }
+            }
             $result = array();
             $dbData = $this->oMongo->aggregate(
                 'operations',
@@ -2545,7 +2587,13 @@ class Ethplorer {
 
             foreach($aSearch as $cond){
                 $search = array($cond => $address);
-                if(!$showEth) $search['contract'] = array('$ne' => 'ETH');
+                if(!$showEth){
+                    if($this->useOperations2){
+                        $search['isEth'] = false;
+                    }else{
+                        $search['contract'] = array('$ne' => 'ETH');
+                    }
+                }
                 if($updateCache){
                     $search = array('$and' => array($search, array('timestamp' => array('$gt' => $result['timestamp']))));
                 }
@@ -2794,7 +2842,7 @@ class Ethplorer {
         $cache = 'pool_operations-' . $poolId. '-' . $period;
         $aOps = $this->oCache->get($cache, false, true, 300);
         if($updateCache || (false === $aOps)){
-            $cursor = $this->oMongoPools->find('operations', array('pool' => $poolId, 'contract' => array('$ne' => 'ETH'), 'timestamp' => array('$gte' => time() - $period)), array("timestamp" => -1));
+            $cursor = $this->oMongoPools->find('operations', array('pool' => $poolId, 'isEth' => false, 'timestamp' => array('$gte' => time() - $period)), array("timestamp" => -1));
             $aOps = array();
             foreach($cursor as $op){
                 $aAddresses = [$op["from"]];

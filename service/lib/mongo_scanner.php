@@ -20,12 +20,15 @@
  */
 class evxMongoScanner extends evxMongo {
 
+    protected $useOperations2 = FALSE;
+
     /**
      * Initialization.
      *
      * @param array $aSettings
      */
-    public static function init(array $aSettings = array()){
+    public static function init(array $aSettings = array(), $useOperations2 = FALSE){
+        $this->useOperations2 = $useOperations2;
         self::$oInstance = new evxMongoScanner($aSettings);
     }
 
@@ -49,7 +52,7 @@ class evxMongoScanner extends evxMongo {
                     'blocks'       => $oDB->blocks,
                     'contracts'    => $oDB->contracts,
                     'tokens'       => $oDB->tokens,
-                    'operations'   => $oDB->tokenOperations,
+                    'operations'   => $this->useOperations2 ? $oDB->tokenOperations2 : $oDB->tokenOperations,
                     'operations2'  => $oDB->tokenOperations2,
                     'balances'     => $oDB->tokenBalances,
                     'addressCache' => $oDB->cacheAddressData
@@ -63,7 +66,7 @@ class evxMongoScanner extends evxMongo {
                     'blocks'       => "blocks",
                     'contracts'    => "contracts",
                     'tokens'       => "tokens",
-                    'operations'   => "tokenOperations",
+                    'operations'   => $this->useOperations2 ? "tokenOperations2" : "tokenOperations",
                     'operations2'  => "tokenOperations2",
                     'balances'     => "tokenBalances",
                     'addressCache' => "cacheAddressData"
