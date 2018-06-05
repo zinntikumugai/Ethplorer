@@ -1340,17 +1340,17 @@ class Ethplorer {
         }
         $reverseOffset = FALSE;
         $skip = is_array($offset) ? $offset[0] : $offset;
+        $sortOrder = -1;
+        if(is_array($offset) && ($offset[0] > self::MAX_OFFSET) && ($offset[0] > $offset[1])){
+            $reverseOffset = TRUE;
+            $sortOrder = 1;
+            $skip = $offset[1];
+        }
         if(!$showEth){
             $hint = 'addresses_1_isEth_1_timestamp_1';
-            $sortOrder = -1;
-            if(is_array($offset) && ($offset[0] > self::MAX_OFFSET) && ($offset[0] > $offset[1])){
-                $reverseOffset = TRUE;
-                $sortOrder = 1;
-                $skip = $offset[1];
-            }
             $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => $sortOrder), $limit, $skip, false, $hint);
         }else{
-            $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => -1), $limit, $skip);
+            $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => $sortOrder), $limit, $skip);
         }
 
         foreach($cursor as $transfer){
