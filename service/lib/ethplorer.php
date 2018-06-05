@@ -1346,11 +1346,11 @@ class Ethplorer {
             $sortOrder = 1;
             $skip = $offset[1];
         }
-        $hint = 'addresses_1_isEth_1_timestamp_1';
         if(!$showEth){
+            $hint = 'addresses_1_isEth_1_timestamp_1';
             $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => $sortOrder), $limit, $skip, false, $hint);
         }else{
-            $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => $sortOrder), $limit, $skip, false, $hint);
+            $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => $sortOrder), $limit, $skip);
         }
 
         foreach($cursor as $transfer){
