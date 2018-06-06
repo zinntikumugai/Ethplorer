@@ -148,7 +148,7 @@ class evxMongo {
                 if(is_array($sort)){
                     $cursor = $cursor->sort($sort);
                 }
-                if(false !== $skip){
+                if(false !== $skip && $skip > 0){
                     $cursor = $cursor->skip($skip);
                 }
                 if(false !== $limit){
@@ -164,7 +164,7 @@ class evxMongo {
                 if(is_array($sort)){
                     $aOptions['sort'] = $sort;
                 }
-                if(false !== $skip){
+                if(false !== $skip && $skip > 0){
                     $aOptions['skip'] = $skip;
                 }
                 if(false !== $limit){
