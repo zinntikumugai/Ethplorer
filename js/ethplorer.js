@@ -446,7 +446,7 @@ Ethplorer = {
                     titleAdd = 'Chainy ' + chainyTypes[obj['type']];
                     $('#chainy-op').text(chainyTypes[obj['type']]);
                     if('undefined' !== typeof(obj['url'])){
-                        $('#chainy-url').html('<a href="' + obj['url'] + '" target="_blank" class="external-link"><i class="fa fa-external-link"></i>&nbsp;' + obj['url'] + '</a>');
+                        $('#chainy-url').html('<a href="' + obj['url'] + '" target="_blank" class="external-link"><i class="fa fa-external-link-alt"></i>&nbsp;' + obj['url'] + '</a>');
                     }
                     var aFields = ['hash', 'filename', 'filesize', 'description'];
                     for(var f = 0; f < aFields.length; f++){
@@ -460,7 +460,7 @@ Ethplorer = {
                         try {
                             var data = log.data.slice(194).replace(/0+$/, '');
                             var link = Ethplorer.Utils.hex2ascii(data);
-                            $('#chainy-link').html('<a href="' + link + '" target="_blank" class="local-link"><i class="fa fa-external-link"></i>&nbsp;' + link + '</a>');
+                            $('#chainy-link').html('<a href="' + link + '" target="_blank" class="local-link"><i class="fa fa-external-link-alt"></i>&nbsp;' + link + '</a>');
                         }catch(e){}
                     }
                     $('.chainy').show();
@@ -797,16 +797,16 @@ Ethplorer = {
                 oToken.description = oToken.description + '<i class="fa fa-globe" title="Website" style="width:20px;"></i> <a href="' + oToken.website + '" target="_blank">' + oToken.website + '</a>';
             }
             if(oToken.facebook){
-                oToken.description = oToken.description + '<br><i class="fa fa-facebook" title="Facebook" style="width:20px;"></i> <a href="https://facebook.com/' + oToken.facebook + '" target="_blank">' + oToken.facebook + '</a>';
+                oToken.description = oToken.description + '<br><i class="fab fa-facebook-f" title="Facebook" style="width:20px;"></i> <a href="https://facebook.com/' + oToken.facebook + '" target="_blank">' + oToken.facebook + '</a>';
             }
             if(oToken.twitter){
-                oToken.description = oToken.description + '<br><i class="fa fa-twitter" title="Twitter" style="width:20px;"></i> <a href="https://twitter.com/' + oToken.twitter + '" target="_blank">' + oToken.twitter + '</a>';
+                oToken.description = oToken.description + '<br><i class="fab fa-twitter" title="Twitter" style="width:20px;"></i> <a href="https://twitter.com/' + oToken.twitter + '" target="_blank">' + oToken.twitter + '</a>';
             }
             if(oToken.reddit){
-                oToken.description = oToken.description + '<br><i class="fa fa-reddit-alien" title="Reddit" style="width:20px;"></i> <a href="https://reddit.com/r/' + oToken.reddit + '" target="_blank">' + oToken.reddit + '</a>';
+                oToken.description = oToken.description + '<br><i class="fab fa-reddit-alien" title="Reddit" style="width:20px;"></i> <a href="https://reddit.com/r/' + oToken.reddit + '" target="_blank">' + oToken.reddit + '</a>';
             }
             if(oToken.telegram){
-                oToken.description = oToken.description + '<br><i class="fa fa-telegram" title="Telegram" style="width:20px;"></i> <a href="' + oToken.telegram + '" target="_blank">Join Channel</a>';
+                oToken.description = oToken.description + '<br><i class="fab fa-telegram" title="Telegram" style="width:20px;"></i> <a href="' + oToken.telegram + '" target="_blank">Join Channel</a>';
             }
             if(oToken.links){
                 oToken.links = oToken.links.replace(/http[s]?\:\/\/[^\s]*/g, '<a href="$&" target="_blank">$&</a>');
@@ -1385,7 +1385,7 @@ Ethplorer = {
                         type = chainyTypes[obj.type];
                     }
                     link = Ethplorer.Utils.hex2ascii(tx.link);
-                    link = '<a href="' + link + '" target="_blank" class="external-link"><i class="fa fa-external-link"></i>&nbsp;' + link + '</a>';
+                    link = '<a href="' + link + '" target="_blank" class="external-link"><i class="fa fa-external-link-alt"></i>&nbsp;' + link + '</a>';
                 }
                 var row = $('<tr>');
                 var tdDate = $('<td>');
