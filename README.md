@@ -1,17 +1,19 @@
-# Ethplorer
+# Ethplorer - Ethereum Tokens Explorer
 
-Ethereum tokens viewer.
+Easy viewer for investors and ICOs
+API and Widgets for developers
 
-Easy to view tokens and custom data. Users first.
-
-Support tokens developed with Ethereum's [ERC20 (before known as EIP20)](https://github.com/ethereum/EIPs/issues/20) standard.
-
-Provides API, Widgets for websites.
+Provides API, TOP charts, Ethereum Tokens Index, Widgets for websites.
 
 [Online version at Ethplorer.io](https://ethplorer.io)
 
-![alt tag](https://github.com/EverexIO/Ethplorer/blob/develop/images/ethplorer-home2.png)
+![alt tag](https://github.com/EverexIO/Ethplorer/blob/master/images/ethplorer-home.png)
 
+# [Ethereum Tokens Index](https://ethplorer.io/index?from=github)
+![alt tag](https://github.com/EverexIO/Ethplorer/blob/master/images/ethplorer-token-index.png)
+
+# [TOP Tokens by Activity, Capitalization and Trade volume](https://ethplorer.io/top?from=github#count)
+![alt tag](https://github.com/EverexIO/Ethplorer/blob/master/images/ethplorer-top-operations.png)
 
 # Widgets for third-party websites
 ![alt tag](https://github.com/EverexIO/Ethplorer/blob/develop/images/augur-widget.png)
