@@ -1122,9 +1122,8 @@ Ethplorer = {
                     var divData = $('<div>').addClass('hash-from-to');
                     var tdQty = $('<td>').addClass('hide-small text-right');
                     var date = Ethplorer.Utils.ts2date(tx.timestamp, false);
-                    var value = Ethplorer.Utils.formatNum(qty, true, txToken.decimals, 2) + ' ' + (tx.isEth ? '<i class="fab fa-ethereum eth-val"></i> ' : '') + txToken.symbol;
+                    var value = Ethplorer.Utils.formatNum(qty, true, txToken.decimals, 2) + ' ' + (tx.isEth ? '<i class="fab fa-ethereum"></i> ' : '') + txToken.symbol;
                     var token = Ethplorer.Utils.getEthplorerLink(tx.contract, txToken.name, false);
-                    if(tx.isEth) token += ' <i class="fab fa-ethereum eth-token" style="font-size: 1.1em;"></i>';
                     address = address.toLowerCase();
                     var from = tx.from ? ((tx.from !== address) ? Ethplorer.Utils.getEthplorerLink(tx.from) : ('<span class="same-address">' + address + '</span>')) : false;
                     var to = tx.to ? ((tx.to !== address) ? Ethplorer.Utils.getEthplorerLink(tx.to) : ('<span class="same-address">' + address + '</span>')) : false;
