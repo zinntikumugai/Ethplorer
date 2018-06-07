@@ -293,7 +293,7 @@ Ethplorer = {
         // Check TX hash format first
         txHash = txHash.toLowerCase();
         if(!/^0x[0-9a-f]{64}$/i.test(txHash)){
-            Ethplorer.gaSendEvent('TxState', 'tx-invalid-hash');
+            Ethplorer.gaSendEvent('pageView', 'viewTx', 'tx-invalid-hash');
             Ethplorer.error('Invalid transaction hash');
             return;
         }
@@ -396,7 +396,7 @@ Ethplorer = {
 
         var oTx = txData.tx;
         if(false === oTx){
-            Ethplorer.gaSendEvent('TxState', 'tx-not-found');
+            Ethplorer.gaSendEvent('pageView', 'viewTx', 'tx-not-found');
             Ethplorer.error('Transaction not found');
             return;
         }
@@ -687,7 +687,7 @@ Ethplorer = {
         $("table").find("tr:visible:even").addClass("even");
         $("table").find("tr:visible:last").addClass("last");
         
-        Ethplorer.gaSendEvent('TxState', 'tx-ok');
+        Ethplorer.gaSendEvent('pageView', 'viewTx', 'tx-ok');
     },
     getAddressDetails: function(address){
         // Check Address format first
@@ -750,6 +750,7 @@ Ethplorer = {
         }
         var qrIcon = '<a style="float:right;position:relative;" href="javascript:void(0)" onclick="Ethplorer.showQRCode(\'' + address + '\');"><i class="fa fa-qrcode"></i></a>';
         if(data.isContract && data.token){
+           
             qrIcon = '<a style="float:right;position:relative;line-height:48px;" href="javascript:void(0)" onclick="Ethplorer.showQRCode(\'' + address + '\');"><i class="fa fa-qrcode"></i></a>';
             $('#address-token-details').show();
             var oToken = Ethplorer.prepareToken(data.token);
@@ -866,6 +867,9 @@ Ethplorer = {
             if(oToken.estimatedDecimals){
                 $('#address-token-decimals').append(' <small>(estimated)</small>');
             }
+
+            Ethplorer.gaSendEvent('pageView', 'viewToken', oToken.name ? oToken.name : 'N/A');
+
         }else if(data.balances && data.balances.length){
             // Fill prices
             var totalPrice = 0;
@@ -963,6 +967,7 @@ Ethplorer = {
             }else{
                 $('#address-balances-total').html('&nbsp;');
             }
+            Ethplorer.gaSendEvent('pageView', 'viewAddress');
         }
 
         if(!data.isContract || !data.token){
@@ -1215,7 +1220,7 @@ Ethplorer = {
     showEthTransfers: function(switcher){
         Ethplorer.Nav.del('transfers');
         Ethplorer.showEth = switcher.checked ? 1 : 0;
-        // Ethplorer.gaSendEvent('TxList', 'showEth', Ethplorer.showEth);
+        Ethplorer.gaSendEvent('userAction', 'listShowETH', !!Ethplorer.showEth ? 'true' : 'false');
         Ethplorer.Storage.set('showEth', Ethplorer.showEth);
         Ethplorer.Nav.set('showEth', Ethplorer.showEth);
         var tab = Ethplorer.getActiveTab();
@@ -1469,7 +1474,7 @@ Ethplorer = {
                 _container.parents('.block').find('.total-records').html(str);
                 var filter = Ethplorer.Nav.get('filter');
                 if(filter){
-                    // Ethplorer.gaSendEvent('TxList', 'filter', filter);
+                    Ethplorer.gaSendEvent('userAction', 'listFilter', filter);
                     _container.parents('.table').find('a.local-link').each(function(){
                         var text = $(this).text();
                         if(0 === text.indexOf('0x')){

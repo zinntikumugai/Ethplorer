@@ -12,7 +12,7 @@ Ethplorer.Extensions.CryptoKitties = {
     },
     onAddressDetails: function(addrData){
         if(!addrData.cryptokitties) return;
-        Ethplorer.Extensions.CryptoKitties.gaSendEvent('addressDetails');
+        Ethplorer.Extensions.CryptoKitties.gaSendEvent('CK-addressDetails');
         var limit = 2;
         var address = addrData.address.toLowerCase();
         $('#address-token-balances').parent().append('<div id="ck-loading" class="text-center">Loading CryptoKitties...</div>');
@@ -51,7 +51,7 @@ Ethplorer.Extensions.CryptoKitties = {
     onTxDetails: function(txData){
         var oTx = txData.tx;
         if(oTx.to && (Ethplorer.Extensions.CryptoKitties.contract === oTx.to) && oTx.method){
-            Ethplorer.Extensions.CryptoKitties.gaSendEvent('txDetails');
+            Ethplorer.Extensions.CryptoKitties.gaSendEvent('CK-txDetails');
             var p = oTx.method.replace('(', ' ').replace(',', ' ').replace(')', '').split(' ');
             var cmd = p[0];
             $('.token-operation-type').text(cmd);
