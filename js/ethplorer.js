@@ -681,7 +681,7 @@ Ethplorer = {
         Ethplorer.Events.fire('ethp_showTxDetails_finish', txData);
         Ethplorer.Utils.hideEmptyFields();
         Ethplorer.hideLoader();
-        $('#disqus_thread').show();
+        // $('#disqus_thread').show();
         $('#txDetails').show();
         $("table").find("tr:visible:odd").addClass("odd");
         $("table").find("tr:visible:even").addClass("even");
@@ -996,7 +996,7 @@ Ethplorer = {
         Ethplorer.Utils.hideEmptyFields();
         Ethplorer.hideLoader();
         if(!data.isContract || (data.contract && data.contract.isChainy)) $('#ethplorer-path').html(qrIcon + "Address: " + address);
-        $('#disqus_thread').show();
+        //$('#disqus_thread').show();
         $('#addressDetails').show();
 
         $("table").find("tr:visible:odd").addClass("odd");
@@ -1215,6 +1215,7 @@ Ethplorer = {
     showEthTransfers: function(switcher){
         Ethplorer.Nav.del('transfers');
         Ethplorer.showEth = switcher.checked ? 1 : 0;
+        gaSendEvent('TxList', 'showEth', Ethplorer.showEth);
         Ethplorer.Storage.set('showEth', Ethplorer.showEth);
         Ethplorer.Nav.set('showEth', Ethplorer.showEth);
         var tab = Ethplorer.getActiveTab();
@@ -1468,6 +1469,7 @@ Ethplorer = {
                 _container.parents('.block').find('.total-records').html(str);
                 var filter = Ethplorer.Nav.get('filter');
                 if(filter){
+                    gaSendEvent('TxList', 'filter', filter);
                     _container.parents('.table').find('a.local-link').each(function(){
                         var text = $(this).text();
                         if(0 === text.indexOf('0x')){
@@ -1740,7 +1742,7 @@ Ethplorer = {
         if(Ethplorer.loaderTimeout){
             clearTimeout(Ethplorer.loaderTimeout);
         }
-        setTimeout(function(){ $('#disqus_thread iframe').css('height', ''); }, 100);
+        //setTimeout(function(){ $('#disqus_thread iframe').css('height', ''); }, 100);
     },
     downloadData: function(address){
         console.log('Download data for ' + address);
@@ -2287,9 +2289,9 @@ Ethplorer = {
         sessionStorage.setItem("enableHistoricalPrice", bool);
         location.reload();
     },
-    gaSendEvent: function(category, action){
+    gaSendEvent: function(category, action, label){
         if(Ethplorer.Config.ga && ('undefined' !== typeof(ga))){
-            ga('send', 'event', category, action);
+            ga('send', 'event', category, action, label);
         }
     }
 };
