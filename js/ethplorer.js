@@ -681,7 +681,7 @@ Ethplorer = {
         Ethplorer.Events.fire('ethp_showTxDetails_finish', txData);
         Ethplorer.Utils.hideEmptyFields();
         Ethplorer.hideLoader();
-        // $('#disqus_thread').show();
+        $('#disqus_thread').show();
         $('#txDetails').show();
         $("table").find("tr:visible:odd").addClass("odd");
         $("table").find("tr:visible:even").addClass("even");
@@ -996,7 +996,7 @@ Ethplorer = {
         Ethplorer.Utils.hideEmptyFields();
         Ethplorer.hideLoader();
         if(!data.isContract || (data.contract && data.contract.isChainy)) $('#ethplorer-path').html(qrIcon + "Address: " + address);
-        //$('#disqus_thread').show();
+        $('#disqus_thread').show();
         $('#addressDetails').show();
 
         $("table").find("tr:visible:odd").addClass("odd");
@@ -1742,7 +1742,6 @@ Ethplorer = {
         if(Ethplorer.loaderTimeout){
             clearTimeout(Ethplorer.loaderTimeout);
         }
-        //setTimeout(function(){ $('#disqus_thread iframe').css('height', ''); }, 100);
     },
     downloadData: function(address){
         console.log('Download data for ' + address);
