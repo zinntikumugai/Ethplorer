@@ -1216,7 +1216,7 @@ Ethplorer = {
     showEthTransfers: function(switcher){
         Ethplorer.Nav.del('transfers');
         Ethplorer.showEth = switcher.checked ? 1 : 0;
-        gaSendEvent('TxList', 'showEth', Ethplorer.showEth);
+        // Ethplorer.gaSendEvent('TxList', 'showEth', Ethplorer.showEth);
         Ethplorer.Storage.set('showEth', Ethplorer.showEth);
         Ethplorer.Nav.set('showEth', Ethplorer.showEth);
         var tab = Ethplorer.getActiveTab();
@@ -1470,7 +1470,7 @@ Ethplorer = {
                 _container.parents('.block').find('.total-records').html(str);
                 var filter = Ethplorer.Nav.get('filter');
                 if(filter){
-                    gaSendEvent('TxList', 'filter', filter);
+                    // Ethplorer.gaSendEvent('TxList', 'filter', filter);
                     _container.parents('.table').find('a.local-link').each(function(){
                         var text = $(this).text();
                         if(0 === text.indexOf('0x')){
