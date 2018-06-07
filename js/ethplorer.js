@@ -1016,9 +1016,9 @@ Ethplorer = {
         var activeTab = Ethplorer.getActiveTab();
         if(activeTab && data.pager && data.pager[activeTab]){
             if(data.pager[activeTab].records > 100000){
-                $('.filter-form').hide();
+                $('#filter_list').hide();
             }else{
-                $('.filter-form').show();
+                $('#filter_list').show();
             }
         }
     },
