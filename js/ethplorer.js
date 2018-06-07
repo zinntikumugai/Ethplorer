@@ -1100,7 +1100,7 @@ Ethplorer = {
         var data = Ethplorer.data;
         var tableId = data.token ? 'address-token-transfers' : 'address-transfers';
         $('#' + tableId).find('.table').empty();
-        if(!data.token && !$('#showEth').length({ // && (Ethplorer.Storage.get('showEth', 0) > 0)){
+        if(!data.token && !$('#showEth').length){ // && (Ethplorer.Storage.get('showEth', 0) > 0)){
             $('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfers(this);"  id="showEth" type="checkbox" ' + (Ethplorer.showEth > 0 ? 'checked="checked"' : '') + ' name="showEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
         }
         if(!data.transfers || !data.transfers.length){
