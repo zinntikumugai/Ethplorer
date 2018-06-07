@@ -58,8 +58,8 @@ Ethplorer = {
                 }
             }
         }
-        /*
         Ethplorer.showEth = Ethplorer.Storage.get('showEth', 1);
+        /*
         Ethplorer.Nav.set('showEth', Ethplorer.showEth);
         */
         Ethplorer.route();
