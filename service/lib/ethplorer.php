@@ -852,6 +852,7 @@ class Ethplorer {
                 foreach($cursor as $aCachedData) break;
                 if(false !== $aCachedData){
                     $aResult[$address]['txsCount'] = $aCachedData['txsCount'];
+                    $aResult[$address]['ethTransfersCount'] = $aCachedData['ethTransfersCount'];
                 }
             }
             if(isset($aResult['0x0000000000000000000000000000000000000000'])){
@@ -979,7 +980,7 @@ class Ethplorer {
             $result = isset($aTokens[$address]) ? $aTokens[$address] : false;
             if($result){
                 unset($result["_id"]);
-                $result += array('txsCount' => 0, 'transfersCount' => 0, 'issuancesCount' => 0, 'holdersCount' => 0, "symbol" => "");
+                $result += array('txsCount' => 0, 'transfersCount' => 0, 'ethTransfersCount' => 0, 'issuancesCount' => 0, 'holdersCount' => 0, "symbol" => "");
                 if(!isset($result['decimals']) || !intval($result['decimals'])){
                     $result['decimals'] = 0;
                     if(isset($result['totalSupply']) && ((float)$result['totalSupply'] > 1e+18)){
@@ -2080,7 +2081,7 @@ class Ethplorer {
      * @param string $address  Contract address
      * @return array
      */
-    protected function getContractOperationCount($type, $address, $useFilter = TRUE){
+    protected function getContractOperationCount($type, $address, $useFilter = TRUE, $showEth = FALSE){
         evxProfiler::checkpoint('getContractOperationCount', 'START', 'address=' . $address . ', type=' . (is_array($type) ? json_encode($type) : $type) . ', useFilter=' . (int)$useFilter);
         $search = array("contract" => $address, 'type' => $type);
         $result = 0;
