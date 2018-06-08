@@ -721,6 +721,7 @@ Ethplorer = {
                     Ethplorer.ethPrice = data.ethPrice;
                 }
                 callback(_address, data);
+                if(Ethplorer.data) Ethplorer.showFilter(Ethplorer.data);
             }
         }(address));
     },
