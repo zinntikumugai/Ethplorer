@@ -852,7 +852,7 @@ class Ethplorer {
                 foreach($cursor as $aCachedData) break;
                 if(false !== $aCachedData){
                     $aResult[$address]['txsCount'] = $aCachedData['txsCount'];
-                    $aResult[$address]['ethTransfersCount'] = $aCachedData['ethTransfersCount'];
+                    if(isset($aCachedData['ethTransfersCount'])) $aResult[$address]['ethTransfersCount'] = $aCachedData['ethTransfersCount'];
                 }
             }
             if(isset($aResult['0x0000000000000000000000000000000000000000'])){
