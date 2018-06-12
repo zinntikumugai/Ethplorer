@@ -106,6 +106,12 @@ class Ethplorer {
     protected $showEth = FALSE;
 
     /**
+     *
+     * @var bool
+     */
+    protected $showEthForToken = FALSE;
+
+    /**
      * Cache for getTokens
      *
      * @var array
@@ -281,6 +287,15 @@ class Ethplorer {
     }
 
     /**
+     * Set show ETH flag
+     *
+     * @param bool $showEth
+     */
+    public function setShowEthForToken($showEth){
+        $this->showEthForToken = $showEth;
+    }
+
+    /**
      * Returns item offset for section.
      *
      * @param string $section
@@ -372,6 +387,8 @@ class Ethplorer {
         }
         if($result['isContract'] && isset($result['token'])){
             $result['pager'] = array('pageSize' => $limit);
+            $showEthForToken = FALSE;
+            if((isset($_GET['showEthForToken']) && $_GET['showEthForToken']) || $this->showEthForToken) $showEthForToken = TRUE;
             foreach(array('transfers', 'issuances', 'holders') as $type){
                 if(!$refresh || ($type === $refresh)){
                     $page = $this->getPager($type);
@@ -381,6 +398,12 @@ class Ethplorer {
                         case 'transfers':
                             $count = $this->getContractOperationCount('transfer', $address);
                             $total = $this->filter ? $this->getContractOperationCount('transfer', $address, FALSE) : $count;
+                            if($showEthForToken){
+                                $countEth = (int)$this->getContractOperationCount('transfer', $address, TRUE, TRUE);
+                                $totalEth = (int)$this->filter ? $this->getContractOperationCount('transfer', $address, FALSE, TRUE) : $countEth;
+                                $count += $countEth;
+                                $total += $totalEth;
+                            }
                             $offsetReverse = $this->getOffsetReverse('transfers', $count);
                             $cmd = 'getContractTransfers';
                             break;
@@ -2081,18 +2104,26 @@ class Ethplorer {
      * @param string $address  Contract address
      * @return array
      */
-    protected function getContractOperationCount($type, $address, $useFilter = TRUE, $showEth = FALSE){
-        evxProfiler::checkpoint('getContractOperationCount', 'START', 'address=' . $address . ', type=' . (is_array($type) ? json_encode($type) : $type) . ', useFilter=' . (int)$useFilter);
+    protected function getContractOperationCount($type, $address, $useFilter = TRUE, $countEth = FALSE){
+        evxProfiler::checkpoint('getContractOperationCount', 'START', 'address=' . $address . ', type=' . (is_array($type) ? json_encode($type) : $type) . ', useFilter=' . (int)$useFilter . ', countEth=' . (int)$countEth);
         $search = array("contract" => $address, 'type' => $type);
+        if($countEth){
+            $search = array('addresses' => $address, 'type' => $type, 'isEth' => true);
+        }
         $result = 0;
         if($useFilter && $this->filter){
             foreach(array('from', 'to', 'address', 'transactionHash') as $field){
                 $result += (int)$this->oMongo->count('operations', array_merge($search, array($field => array('$regex' => $this->filter))));
             }
         }else{
-            if(('transfer' === $type) && ($aToken = $this->getToken($address))){
-                $result = isset($aToken['transfersCount']) ? $aToken['transfersCount'] : 0;
-            } else {            
+            $aToken = $this->getToken($address);
+            if(('transfer' === $type) && $aToken){
+                if($countEth) $result = isset($aToken['ethTransfersCount']) ? $aToken['ethTransfersCount'] : 0;
+                else $result = isset($aToken['transfersCount']) ? $aToken['transfersCount'] : 0;
+            }else{
+                if(!$countEth) $result = (int)$this->oMongo->count('operations', $search);
+            }
+            if($countEth && ('transfer' === $type) && $aToken && !isset($aToken['ethTransfersCount'])){
                 $result = (int)$this->oMongo->count('operations', $search);
             }
         }
@@ -2118,6 +2149,16 @@ class Ethplorer {
                 array('address'             => array('$regex' => $this->filter)),
                 array('transactionHash'     => array('$regex' => $this->filter))
             );
+        }
+        $showEth = FALSE;
+        if((isset($_GET['showEth']) && $_GET['showEth']) || $this->showEth) $showEth = TRUE;
+        if($showEth && !$this->filter && $type == 'transfer'){
+            //if(isset($search['$or'])){
+                $search['$or'] = array(
+                    'addresses' => $address,
+                    'isEth' => TRUE
+                );
+            //}
         }
 
         $reverseOffset = FALSE;
