@@ -2151,7 +2151,7 @@ class Ethplorer {
             );
         }
         $showEth = FALSE;
-        if((isset($_GET['showEth']) && $_GET['showEth']) || $this->showEth) $showEth = TRUE;
+        if((isset($_GET['showEthForToken']) && $_GET['showEthForToken']) || $this->showEthForToken) $showEth = TRUE;
         if($showEth && !$this->filter && $type == 'transfer'){
             //if(isset($search['$or'])){
                 $search['$or'] = array(
