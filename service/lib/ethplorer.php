@@ -2155,8 +2155,8 @@ class Ethplorer {
         if($showEth && !$this->filter && $type == 'transfer'){
             //if(isset($search['$or'])){
                 $search['$or'] = array(
-                    'addresses' => $address,
-                    'isEth' => TRUE
+                    array('addresses' => $address),
+                    array('isEth' => TRUE)
                 );
             //}
         }
