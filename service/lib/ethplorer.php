@@ -2153,12 +2153,12 @@ class Ethplorer {
         $showEth = FALSE;
         if((isset($_GET['showEthForToken']) && $_GET['showEthForToken']) || $this->showEthForToken) $showEth = TRUE;
         if($showEth && !$this->filter && $type == 'transfer'){
-            //if(isset($search['$or'])){
-                $search['$or'] = array(
-                    array('addresses' => $address),
-                    array('isEth' => TRUE)
-                );
-            //}
+            $search = array(
+                '$or' => array(
+                    array("contract" => $address, 'type' => $type),
+                    array('addresses' => $address, 'isEth' => TRUE)
+                )
+            );
         }
 
         $reverseOffset = FALSE;
