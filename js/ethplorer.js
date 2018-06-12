@@ -60,7 +60,7 @@ Ethplorer = {
         }
         Ethplorer.showEth = 0;//Ethplorer.Storage.get('showEth', 1);
         Ethplorer.showEthForToken = Ethplorer.Storage.get('showEthForToken', 0);
-        //if(Ethplorer.showEth == 0) Ethplorer.Nav.set('showEth', Ethplorer.showEth);
+        if(Ethplorer.showEthForToken == 1) Ethplorer.Nav.set('showEthForToken', Ethplorer.showEthForToken);
         /*
         Ethplorer.Nav.set('showEth', Ethplorer.showEth);
         */
