@@ -1125,7 +1125,7 @@ Ethplorer = {
                 var qty = parseFloat(tx.value);// Ethplorer.Utils.toBig(tx.value);
                 // if(parseInt(qty.toString()) || (tx.isEth)){
                     if(tx.isEth){
-                        var txToken = {address: '0x0000000000000000000000000000000000000000', name: 'Ethereum', decimals: 18, symbol: 'ETH', totalSupply: 0};
+                        var txToken = {address: '0x0000000000000000000000000000000000000000', name: 'Ethereum', decimals: 18, symbol: 'ETH', totalSupply: 0, price: Ethplorer.ethPrice};
                     }else{
                         var txToken = Ethplorer.prepareToken(data.token ? data.token : data.tokens[tx.contract]);
                     }
