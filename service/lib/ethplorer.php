@@ -2141,24 +2141,33 @@ class Ethplorer {
      */
     protected function getContractOperation($type, $address, $limit, $offset = FALSE){
         evxProfiler::checkpoint('getContractOperation', 'START', 'type=' . (is_array($type) ? json_encode($type) : $type) . ', address=' . $address . ', limit=' . $limit . ', offset=' . (is_array($offset) ? print_r($offset, TRUE) : (int)$offset));
+
         $search = array("contract" => $address, 'type' => $type);
+        $fltSearch = array(
+            array('from'                => array('$regex' => $this->filter)),
+            array('to'                  => array('$regex' => $this->filter)),
+            array('address'             => array('$regex' => $this->filter)),
+            array('transactionHash'     => array('$regex' => $this->filter))
+        );
         if($this->filter){
-            $search['$or'] = array(
-                array('from'                => array('$regex' => $this->filter)),
-                array('to'                  => array('$regex' => $this->filter)),
-                array('address'             => array('$regex' => $this->filter)),
-                array('transactionHash'     => array('$regex' => $this->filter))
-            );
+            $search['$or'] = $fltSearch;
         }
+
         $showEth = FALSE;
         if((isset($_GET['showEthForToken']) && $_GET['showEthForToken']) || $this->showEthForToken) $showEth = TRUE;
-        if($showEth && !$this->filter && $type == 'transfer'){
-            $search = array(
-                '$or' => array(
-                    array("contract" => $address, 'type' => $type),
-                    array('addresses' => $address, 'isEth' => TRUE)
-                )
+        if($showEth && $type == 'transfer'){
+            $ethSearch = array(
+                array("contract" => $address, 'type' => $type),
+                array('addresses' => $address, 'isEth' => TRUE)
             );
+            $search = array('$or' => $ethSearch);
+            if($this->filter){
+                $search = array(
+                    '$and' => array(
+                        '$or' => $ethSearch,
+                        '$or' => $fltSearch
+                );
+            }
         }
 
         $reverseOffset = FALSE;
