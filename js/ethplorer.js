@@ -1026,6 +1026,9 @@ Ethplorer = {
             if(data.pager[activeTab].records > 100000){
                 $('#filter_list').hide();
             }else{
+                if(data.token && (Ethplorer.Storage.get('showEthForToken', 0) > 0)){
+                    $('.filter-box').prepend('<style>@media screen and (max-width: 992px) { .filter-box.in-tabs {text-align: right !important; margin-top: 10px !important; height: 40px !important;} .filter-box.in-tabs .filter-form {width: 100% !important;} .filter-box.in-tabs #filter_list {width: 100% !important;} }</style>');
+                }
                 $('#filter_list').show();
             }
         }
@@ -1111,7 +1114,7 @@ Ethplorer = {
             //$('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfers(this);"  id="showEth" type="checkbox" ' + (Ethplorer.showEth > 0 ? 'checked="checked"' : '') + ' name="showEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
         }
         if(data.token && !$('#showEthForToken').length && (Ethplorer.Storage.get('showEthForToken', 0) > 0)){
-            $('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfersForToken(this);"  id="showEthForToken" type="checkbox" ' + (Ethplorer.showEthForToken > 0 ? 'checked="checked"' : '') + ' name="showEthForToken" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
+            $('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfersForToken(this);"  id="showEthForToken" type="checkbox" ' + (Ethplorer.showEthForToken > 0 ? 'checked="checked"' : '') + ' name="showEthForToken" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
         }
         if(!data.transfers || !data.transfers.length){
             $('#' + tableId).find('.total-records').empty();
