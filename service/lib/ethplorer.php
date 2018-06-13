@@ -2166,6 +2166,7 @@ class Ethplorer {
                     '$and' => array(
                         '$or' => $ethSearch,
                         '$or' => $fltSearch
+                    )
                 );
             }
         }
