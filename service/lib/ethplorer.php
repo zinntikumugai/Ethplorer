@@ -2164,8 +2164,8 @@ class Ethplorer {
             if($this->filter){
                 $search = array(
                     '$and' => array(
-                        '$or' => $ethSearch,
-                        '$or' => $fltSearch
+                        array('$or' => $ethSearch),
+                        array('$or' => $fltSearch)
                     )
                 );
             }
