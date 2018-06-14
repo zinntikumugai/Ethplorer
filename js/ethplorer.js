@@ -1540,6 +1540,14 @@ Ethplorer = {
                     splitter.html('...');
                     page.append(splitter);
                     page.addClass('disabled');
+                } else if(i < pages - 4){
+                    if(i > currentPage + 1){
+                        i = pages - 4;
+                    }else if(i < currentPage - 1 && currentPage <= pages - 4){
+                        i = currentPage - 2;
+                    }else{
+                        i = pages - 5;
+                    }
                 }
                 pager.append(page);
             }
