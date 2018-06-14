@@ -202,7 +202,13 @@ if(is_array($rParts) && isset($rParts[2])){
                 <?php else: ?>
 
                 <div id="loader" class="text-center">
-                    <div class="timer"></div>
+                <div class="loader-wrapper">
+                    <div class="dot-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
+                </div>
                     <div id="searchInProgressText">search in progress...</div>
                 </div>
 
