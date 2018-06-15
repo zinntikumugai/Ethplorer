@@ -456,9 +456,20 @@ class Ethplorer {
             $result['balanceOut'] = 0;
             $result['balanceIn'] = 0;
             if(!$this->isHighloadedAddress($address)){
-                $result['balanceOut'] = $this->getEtherTotalOut($address);
-                $result['balanceIn'] = $result['balanceOut'] + $result['balance'];
+                if(isset($this->aSettings['totalIn'])){
+                    $in = $this->getEtherTotalIn($address);
+                    $out = $in - $result['balance'];
+                    if($out < 0){
+                        $in = $result['balance'];
+                        $out = 0;
+                    }
+                }else{
+                    $out = $this->getEtherTotalOut($address);
+                    $in = $out + $result['balance'];
+                }
             }
+            $result['balanceOut'] = $out;
+            $result['balanceIn'] = $in;
         }
         evxProfiler::checkpoint('getAddressDetails', 'FINISH');
         return $result;
@@ -488,6 +499,42 @@ class Ethplorer {
         return $result;
     }
 
+    /**
+     * Returns ETH address total in.
+     * Total out can be calculated as total in - current balance.
+     *
+     * @param string $address
+     * @param bool $updateCache
+     * @return float
+     */
+    public function getEtherTotalIn($address, $updateCache = FALSE){
+        $cache = 'ethIn-' . $address;
+        $result = $this->oCache->get($cache, FALSE, TRUE, 3600);
+        if($updateCache || (FALSE === $result)){
+            evxProfiler::checkpoint('getEtherTotalIn', 'START', 'address=' . $address);
+            if($this->isValidAddress($address)){
+                $aResult = $this->oMongo->aggregate('operations2', array(
+                    array('$match' => array("to" => $address, "isEth" => true)),
+                    array(
+                        '$group' => array(
+                            "_id" => '$to',
+                            'in' => array('$sum' => '$value')
+                        )
+                    ),
+                ));
+                $result = 0;
+                if(is_array($aResult) && isset($aResult['result'])){
+                    foreach($aResult['result'] as $record){
+                        $result += floatval($record['in']);
+                    }
+                }
+                $this->oCache->save($cache, $result);
+            }
+            evxProfiler::checkpoint('getEtherTotalIn', 'FINISH');
+        }
+        return (float)$result;
+    }    
+    
     /**
      * Returns ETH address total out.
      * Total in can be calculated as total out + current balance.
