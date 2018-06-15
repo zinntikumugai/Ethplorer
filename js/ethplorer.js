@@ -58,8 +58,9 @@ Ethplorer = {
                 }
             }
         }
-        Ethplorer.showEth = Ethplorer.Storage.get('showEth', 1);
-        if(Ethplorer.showEth == 0) Ethplorer.Nav.set('showEth', Ethplorer.showEth);
+        Ethplorer.showEth = 0;//Ethplorer.Storage.get('showEth', 1);
+        Ethplorer.showEthForToken = Ethplorer.Storage.get('showEthForToken', 0);
+        if(Ethplorer.showEthForToken == 1) Ethplorer.Nav.set('showEthForToken', Ethplorer.showEthForToken);
         /*
         Ethplorer.Nav.set('showEth', Ethplorer.showEth);
         */
@@ -721,6 +722,7 @@ Ethplorer = {
                     Ethplorer.ethPrice = data.ethPrice;
                 }
                 callback(_address, data);
+                if(Ethplorer.data) Ethplorer.showFilter(Ethplorer.data);
             }
         }(address));
     },
@@ -1024,6 +1026,9 @@ Ethplorer = {
             if(data.pager[activeTab].records > 100000){
                 $('#filter_list').hide();
             }else{
+                if(data.token && (Ethplorer.Storage.get('showEthForToken', 0) > 0)){
+                    $('.filter-box').prepend('<style>@media screen and (max-width: 992px) { .filter-box.in-tabs {text-align: right !important; margin-top: 10px !important; height: 40px !important;} .filter-box.in-tabs .filter-form {width: 100% !important;} .filter-box.in-tabs #filter_list {width: 100% !important;} }</style>');
+                }
                 $('#filter_list').show();
             }
         }
@@ -1106,7 +1111,10 @@ Ethplorer = {
         var tableId = data.token ? 'address-token-transfers' : 'address-transfers';
         $('#' + tableId).find('.table').empty();
         if(!data.token && !$('#showEth').length){ // && (Ethplorer.Storage.get('showEth', 0) > 0)){
-            $('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfers(this);"  id="showEth" type="checkbox" ' + (Ethplorer.showEth > 0 ? 'checked="checked"' : '') + ' name="showEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
+            //$('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfers(this);"  id="showEth" type="checkbox" ' + (Ethplorer.showEth > 0 ? 'checked="checked"' : '') + ' name="showEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
+        }
+        if(data.token && !$('#showEthForToken').length && (Ethplorer.Storage.get('showEthForToken', 0) > 0)){
+            $('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfersForToken(this);"  id="showEthForToken" type="checkbox" ' + (Ethplorer.showEthForToken > 0 ? 'checked="checked"' : '') + ' name="showEthForToken" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
         }
         if(!data.transfers || !data.transfers.length){
             $('#' + tableId).find('.total-records').empty();
@@ -1117,7 +1125,7 @@ Ethplorer = {
                 var qty = parseFloat(tx.value);// Ethplorer.Utils.toBig(tx.value);
                 // if(parseInt(qty.toString()) || (tx.isEth)){
                     if(tx.isEth){
-                        var txToken = {address: '0x0000000000000000000000000000000000000000', name: 'Ethereum', decimals: 18, symbol: 'ETH', totalSupply: 0};
+                        var txToken = {address: '0x0000000000000000000000000000000000000000', name: 'Ethereum', decimals: 18, symbol: 'ETH', totalSupply: 0, price: Ethplorer.ethPrice};
                     }else{
                         var txToken = Ethplorer.prepareToken(data.token ? data.token : data.tokens[tx.contract]);
                     }
@@ -1224,6 +1232,15 @@ Ethplorer = {
         Ethplorer.gaSendEvent('userAction', 'listShowETH', !!Ethplorer.showEth ? 'true' : 'false');
         Ethplorer.Storage.set('showEth', Ethplorer.showEth);
         Ethplorer.Nav.set('showEth', Ethplorer.showEth);
+        var tab = Ethplorer.getActiveTab();
+        Ethplorer.reloadTab(tab);
+    },
+    showEthTransfersForToken: function(switcher){
+        Ethplorer.Nav.del('transfers');
+        Ethplorer.showEthForToken = switcher.checked ? 1 : 0;
+        Ethplorer.gaSendEvent('userAction', 'listShowETH', !!Ethplorer.showEthForToken ? 'true' : 'false');
+        Ethplorer.Storage.set('showEthForToken', Ethplorer.showEthForToken);
+        Ethplorer.Nav.set('showEthForToken', Ethplorer.showEthForToken);
         var tab = Ethplorer.getActiveTab();
         Ethplorer.reloadTab(tab);
     },
@@ -1523,6 +1540,14 @@ Ethplorer = {
                     splitter.html('...');
                     page.append(splitter);
                     page.addClass('disabled');
+                }else if(i < pages - 4){
+                    if(i > currentPage + 1){
+                        i = pages - 4;
+                    }else if(i < currentPage - 1 && currentPage <= pages - 4){
+                        i = currentPage - 2;
+                    }else{
+                        i = pages - 5;
+                    }
                 }
                 pager.append(page);
             }
