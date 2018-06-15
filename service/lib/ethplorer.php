@@ -478,15 +478,16 @@ class Ethplorer {
             $result['balance'] = $this->getBalance($address);
             $result['balanceOut'] = 0;
             $result['balanceIn'] = 0;
-            if(!$this->isHighloadedAddress($address)){
-                if(isset($this->aSettings['totalIn'])){
-                    $in = $this->getEtherTotalIn($address);
-                    $out = $in - $result['balance'];
-                    if($out < 0){
-                        $in = $result['balance'];
-                        $out = 0;
-                    }
-                }else{
+            $in = $out = 0;
+            if(true || isset($this->aSettings['totalIn'])){
+                $in = $this->getEtherTotalIn($address);
+                $out = $in - $result['balance'];
+                if($out < 0){
+                    $in = $result['balance'];
+                    $out = 0;
+                }
+            }else{
+                if(!$this->isHighloadedAddress($address)){
                     $out = $this->getEtherTotalOut($address);
                     $in = $out + $result['balance'];
                 }
@@ -532,23 +533,32 @@ class Ethplorer {
      */
     public function getEtherTotalIn($address, $updateCache = FALSE){
         $cache = 'ethIn-' . $address;
-        $result = $this->oCache->get($cache, FALSE, TRUE, 3600);
+        $result = $this->oCache->get($cache, FALSE, TRUE, 300);
         if($updateCache || (FALSE === $result)){
             evxProfiler::checkpoint('getEtherTotalIn', 'START', 'address=' . $address);
             if($this->isValidAddress($address)){
-                $aResult = $this->oMongo->aggregate('operations2', array(
-                    array('$match' => array("to" => $address, "isEth" => true)),
-                    array(
-                        '$group' => array(
-                            "_id" => '$to',
-                            'in' => array('$sum' => '$value')
-                        )
-                    ),
-                ));
-                $result = 0;
-                if(is_array($aResult) && isset($aResult['result'])){
-                    foreach($aResult['result'] as $record){
-                        $result += floatval($record['in']);
+                $balance = false;
+                // Get totalIn from DB
+                $cursor = $this->oMongo->find('ethBalances', array('address' => $address));
+                foreach($cursor as $balance) break;
+                if($balance && isset($balance['balance'])){
+                    $result = $balance['totalIn'];
+                }else{
+                    // Get from parity
+                    $aResult = $this->oMongo->aggregate('operations2', array(
+                        array('$match' => array("to" => $address, "isEth" => true)),
+                        array(
+                            '$group' => array(
+                                "_id" => '$to',
+                                'in' => array('$sum' => '$value')
+                            )
+                        ),
+                    ));
+                    $result = 0;
+                    if(is_array($aResult) && isset($aResult['result'])){
+                        foreach($aResult['result'] as $record){
+                            $result += floatval($record['in']);
+                        }
                     }
                 }
                 $this->oCache->save($cache, $result);
@@ -756,13 +766,20 @@ class Ethplorer {
         $cacheId = 'ethBalance-' . $address;
         $balance = $this->oCache->get($cacheId, false, true, 30);
         if(false === $balance){
-            $balance = $this->_callRPC('eth_getBalance', array($address, 'latest'));
-            if(false !== $balance){
-                $balance = hexdec(str_replace('0x', '', $balance)) / pow(10, 18);
-                $this->oCache->save($cacheId, $balance);
+            $result = false;
+            $cursor = $this->oMongo->find('ethBalances', array('address' => $address));
+            foreach($cursor as $result) break;
+            if($result && isset($result['balance'])){
+                $balance = $result['balance'];               
             }else{
-                file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . '] - get balance for ' . $address . " failed\n", FILE_APPEND);
-                $this->oCache->save($cacheId, -1);
+                $balance = $this->_callRPC('eth_getBalance', array($address, 'latest'));
+                if(false !== $balance){
+                    $balance = hexdec(str_replace('0x', '', $balance)) / pow(10, 18);
+                    $this->oCache->save($cacheId, $balance);
+                }else{
+                    file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . '] - get balance for ' . $address . " failed\n", FILE_APPEND);
+                    $this->oCache->save($cacheId, -1);
+                }
             }
         }
         $qTime = microtime(true) - $time;
@@ -783,7 +800,7 @@ class Ethplorer {
         evxProfiler::checkpoint('getTransaction', 'START', 'hash=' . $tx);
         $cursor = $this->oMongo->find('transactions', array("hash" => $tx));
         $result = false;
-        foreach($cursor as $result) break;        
+        foreach($cursor as $result) break;
         if($result){
             $receipt = isset($result['receipt']) ? $result['receipt'] : false;
             $result['gasLimit'] = $result['gas'];
