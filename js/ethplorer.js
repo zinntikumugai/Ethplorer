@@ -313,6 +313,10 @@ Ethplorer = {
                         Ethplorer.ethPrice = data.ethPrice;
                     }
                     if(showResult) {
+                        // if transaction is pending need send ga event
+                        if (data.pending) {
+                            Ethplorer.gaSendEvent('pageView', 'viewTx', 'tx-pending');
+                        }
                         Ethplorer.showTxDetails(_txHash, data);
                     } else if (!data.pending) {
                         // Transaction not pending anymore. Reloading the view.
