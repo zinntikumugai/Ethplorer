@@ -479,7 +479,7 @@ class Ethplorer {
             $result['balanceOut'] = 0;
             $result['balanceIn'] = 0;
             $in = $out = 0;
-            if(true || isset($this->aSettings['totalIn'])){
+            if(true){
                 $in = $this->getEtherTotalIn($address);
                 $out = $in - $result['balance'];
                 if($out < 0){
