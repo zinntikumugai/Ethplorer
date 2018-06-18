@@ -43,6 +43,8 @@ if($debugId){
 if(strlen($search) || (false !== $data)){
 
     $es = Ethplorer::db($aConfig);
+    $es->setShowEth(TRUE);
+    $es->setShowEthForToken(TRUE);
     //if(isset($aConfig['showEth']) && $aConfig['showEth']) $es->setShowEth(TRUE);
     //if(isset($aConfig['showEthForToken']) && $aConfig['showEthForToken']) $es->setShowEthForToken(TRUE);
 

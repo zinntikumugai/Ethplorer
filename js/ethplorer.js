@@ -58,9 +58,9 @@ Ethplorer = {
                 }
             }
         }
-        Ethplorer.showEth = 0;//Ethplorer.Storage.get('showEth', 1);
-        Ethplorer.showEthForToken = Ethplorer.Storage.get('showEthForToken', 0);
-        if(Ethplorer.showEthForToken == 1) Ethplorer.Nav.set('showEthForToken', Ethplorer.showEthForToken);
+        Ethplorer.showEth = Ethplorer.Storage.get('showEth', 1);
+        Ethplorer.showEthForToken = Ethplorer.Storage.get('showEthForToken', 1);
+        //if(Ethplorer.showEthForToken == 1) Ethplorer.Nav.set('showEthForToken', Ethplorer.showEthForToken);
         /*
         Ethplorer.Nav.set('showEth', Ethplorer.showEth);
         */
@@ -1111,9 +1111,9 @@ Ethplorer = {
         var tableId = data.token ? 'address-token-transfers' : 'address-transfers';
         $('#' + tableId).find('.table').empty();
         if(!data.token && !$('#showEth').length){ // && (Ethplorer.Storage.get('showEth', 0) > 0)){
-            //$('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfers(this);"  id="showEth" type="checkbox" ' + (Ethplorer.showEth > 0 ? 'checked="checked"' : '') + ' name="showEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
+            $('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfers(this);"  id="showEth" type="checkbox" ' + (Ethplorer.showEth > 0 ? 'checked="checked"' : '') + ' name="showEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
         }
-        if(data.token && !$('#showEthForToken').length && (Ethplorer.Storage.get('showEthForToken', 0) > 0)){
+        if(data.token && !$('#showEthForToken').length){// && (Ethplorer.Storage.get('showEthForToken', 0) > 0)){
             $('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfersForToken(this);"  id="showEthForToken" type="checkbox" ' + (Ethplorer.showEthForToken > 0 ? 'checked="checked"' : '') + ' name="showEthForToken" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
         }
         if(!data.transfers || !data.transfers.length){
