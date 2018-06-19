@@ -624,14 +624,13 @@ class Ethplorer {
             $tx = $this->getTransaction($hash);
             $result = array(
                 "tx" => $tx,
-                "pending" => false,
                 "contracts" => array()
             );
             // if transaction is not mained trying get it from pedding pool
             if(false === $tx){
                 $transaction = $this->getTransactionFromPoolByHash($hash);
                 // transaction is pending if has no blockHash
-                $result['pending'] = $transaction && null === $transaction['blockHash'];
+                $transaction['pending'] = $transaction && null === $transaction['blockHash'];
                 $result['tx'] = $transaction ?: false;
             }
             $tokenAddr = false;
@@ -670,7 +669,7 @@ class Ethplorer {
                     }
                 }
             }
-            if($result['tx']){
+            if($result['tx'] && (!isset($result['tx']['pending']) || !$result['tx']['pending'])){
                 $this->oCache->save($cache, $result);
             }
         }
@@ -718,6 +717,10 @@ class Ethplorer {
         if(false === $transaction){
             $transaction = $this->_callRPC('eth_getTransactionByHash', [$hash]);
             if (false !== $transaction) {
+                $transaction['blockNumber'] = hexdec(str_replace('0x', '', $transaction['blockNumber']));
+                $transaction['gas'] = hexdec(str_replace('0x', '', $transaction['gas'])) / pow(10, 18);
+                $transaction['gasPrice'] = hexdec(str_replace('0x', '', $transaction['gasPrice'])) / pow(10, 18);
+                $transaction['nonce'] = hexdec(str_replace('0x', '', $transaction['nonce']));
                 $this->oCache->save($cacheId, $transaction);
             } else {
                 file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . "] - getting transaction by hash from pending pool is failed\n", FILE_APPEND);

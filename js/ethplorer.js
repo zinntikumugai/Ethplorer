@@ -314,16 +314,16 @@ Ethplorer = {
                     }
                     if(showResult) {
                         // if transaction is pending need send ga event
-                        if (data.pending) {
+                        if (data.tx && data.tx.pending) {
                             Ethplorer.gaSendEvent('pageView', 'viewTx', 'tx-pending');
                         }
                         Ethplorer.showTxDetails(_txHash, data);
-                    } else if (!data.pending) {
+                    } else if (data.tx && !data.tx.pending) {
                         // Transaction not pending anymore. Reloading the view.
                         location.reload();
                     }
                     // is transaction is pending
-                    if(data.pending){
+                    if(data.tx && data.tx.pending){
                         setTimeout(function() { loadTxDetails(false) }, 30000); // every 30 seconds
                     }
                 }
