@@ -197,18 +197,24 @@ class ethplorerController {
         if(!$this->db->isValidAddress($address) || ($onlyToken && !$this->db->isValidAddress($onlyToken))){
             $this->sendError(104, 'Invalid address format');
         }
+        $balance = $this->db->getBalance($address);
         $result = array(
             'address' => $address,
             'ETH' => array(
-                'balance'   => $this->db->getBalance($address),
+                'balance'   => $balance,
                 'totalIn'   => 0,
                 'totalOut'  => 0,
             ),
             'countTxs' => $this->db->countTransactions($address)
         );
-        if($result['countTxs'] && ($result['countTxs'] < 10000)){
-            $out = $this->db->getEtherTotalOut($address);
-            $result['ETH']['totalIn'] = $result['ETH']['balance'] + $out;
+        if($result['countTxs']){
+            $in = $this->db->getEtherTotalIn($address);
+            $out = $in - $balance;
+            if($out < 0){
+                $in = $balance;
+                $out = 0;
+            }
+            $result['ETH']['totalIn'] = $in;
             $result['ETH']['totalOut'] = $out;
         }
         if($contract = $this->db->getContract($address)){
@@ -498,7 +504,8 @@ class ethplorerController {
                 $this->sendError(104, 'Invalid address format');
             }
         }
-        $result = array('history' => $this->db->getAddressPriceHistoryGrouped($address));
+        $withEth = !!$this->getRequest('withEth', FALSE);
+        $result = array('history' => $this->db->getAddressPriceHistoryGrouped($address, FALSE, $withEth));
         if(isset($result['history']['cache'])) $this->cacheState = $result['history']['cache'];
         else $this->cacheState = '';
         $this->sendResult($result);
