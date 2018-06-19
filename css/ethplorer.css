@@ -235,10 +235,10 @@ tr.odd {
 }
 
 #loader {
-    margin-top: 90px;
-    padding: 40px;
+    margin-top: 40px;
+    padding: 0 40px;
     width: 300px;
-    height: 300px;
+    height: 115px;
     border-radius: 150px;
     margin-left: auto;
     margin-right: auto;
@@ -974,7 +974,7 @@ li.ui-menu-item.have-more {
 
 .loader-wrapper {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     margin: 0 auto;
     padding: 0 20px;
@@ -1272,13 +1272,7 @@ a.token-update {
     }
 }
 
-@media screen and (max-width: 767px) {
-
-    #loader {
-        margin-top: -40px;
-    }    
-
-    
+@media screen and (max-width: 767px) { 
     #disqus_thread {
         padding-bottom: 430px;
     }
@@ -1525,8 +1519,4 @@ a.token-update {
 }
 .diff-zero{
     color: rgba(255, 255, 255, 0.6);
-}
-
-#page-create {
-    min-height: 650px;
 }
