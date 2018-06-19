@@ -942,8 +942,9 @@ class Ethplorer {
                     if(isset($aCachedData['ethTransfersCount'])) $aResult[$address]['ethTransfersCount'] = $aCachedData['ethTransfersCount'];
                 }
             }
-            if(isset($aResult['0x0000000000000000000000000000000000000000'])){
-                unset($aResult['0x0000000000000000000000000000000000000000']);
+            if(isset($aResult[self::ADDRESS_ETH])){
+                $this->oCache->save('token-' . self::ADDRESS_ETH, $aResult[self::ADDRESS_ETH]);
+                unset($aResult[self::ADDRESS_ETH]);
             }
             $this->oCache->save('tokens', $aResult);
             evxProfiler::checkpoint('getTokens', 'FINISH');
@@ -2788,7 +2789,11 @@ class Ethplorer {
                     $contract = is_int($record[0]) ? $aContracts[$record[0]] : $record[0];
                     //if(!isset($result['timestamp'])) $result['timestamp'] = $ts;
 
-                    $token = isset($aTokenInfo[$contract]) ? $aTokenInfo[$contract] : $this->getToken($contract, TRUE);
+                    if($contract == self::ADDRESS_ETH){
+                        $token = $this->oCache->get('token-' . self::ADDRESS_ETH);
+                    }else{
+                        $token = isset($aTokenInfo[$contract]) ? $aTokenInfo[$contract] : $this->getToken($contract, TRUE);
+                    }
                     if($token){
                         if(!isset($aTokenInfo[$contract])){
                             $result['tokens'][$contract] = $token;
