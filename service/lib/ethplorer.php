@@ -683,7 +683,6 @@ class Ethplorer {
                 "tx" => $tx,
                 "contracts" => array()
             );
-<<<<<<< HEAD
             // if transaction is not mained trying get it from pedding pool
             if(false === $tx){
                 $transaction = $this->getTransactionFromPoolByHash($hash);
@@ -691,8 +690,6 @@ class Ethplorer {
                 $transaction['pending'] = $transaction && null === $transaction['blockHash'];
                 $result['tx'] = $transaction ?: false;
             }
-=======
->>>>>>> develop
             $tokenAddr = false;
             if(isset($tx["creates"]) && $tx["creates"]){
                 $result["contracts"][] = $tx["creates"];
@@ -765,7 +762,6 @@ class Ethplorer {
     }
 
     /**
-<<<<<<< HEAD
      * Returns a list of transactions currently in the queue of Parity
      * @param String $hash Transaction hash
      * @return Array|null
@@ -797,8 +793,6 @@ class Ethplorer {
     }
 
     /**
-=======
->>>>>>> develop
      * Return address ETH balance.
      *
      * @param string  $address  Address
