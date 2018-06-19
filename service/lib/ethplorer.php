@@ -943,7 +943,6 @@ class Ethplorer {
                 }
             }
             if(isset($aResult[self::ADDRESS_ETH])){
-                $this->oCache->save('token-' . self::ADDRESS_ETH, $aResult[self::ADDRESS_ETH]);
                 unset($aResult[self::ADDRESS_ETH]);
             }
             $this->oCache->save('tokens', $aResult);
@@ -2790,7 +2789,7 @@ class Ethplorer {
                     //if(!isset($result['timestamp'])) $result['timestamp'] = $ts;
 
                     if($contract == self::ADDRESS_ETH){
-                        $token = $this->oCache->get('token-' . self::ADDRESS_ETH);
+                        $token = $this->getEthToken();
                     }else{
                         $token = isset($aTokenInfo[$contract]) ? $aTokenInfo[$contract] : $this->getToken($contract, TRUE);
                     }
@@ -3182,6 +3181,15 @@ class Ethplorer {
             $tx['status'] = str_replace("0x", "", $tx['status']);
         }
         return !!$tx['status'];
+    }
+
+    protected function getEthToken(){
+        return array(
+            'address' => self::ADDRESS_ETH,
+            'name' => 'Ethereum',
+            'symbol' => 'ETH',
+            'decimals' => 18
+        );
     }
 
     protected function _cliDebug($message){
