@@ -504,7 +504,8 @@ class ethplorerController {
                 $this->sendError(104, 'Invalid address format');
             }
         }
-        $result = array('history' => $this->db->getAddressPriceHistoryGrouped($address));
+        $withEth = !!$this->getRequest('withEth', FALSE);
+        $result = array('history' => $this->db->getAddressPriceHistoryGrouped($address, FALSE, $withEth));
         if(isset($result['history']['cache'])) $this->cacheState = $result['history']['cache'];
         else $this->cacheState = '';
         $this->sendResult($result);

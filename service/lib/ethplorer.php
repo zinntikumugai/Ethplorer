@@ -1320,9 +1320,9 @@ class Ethplorer {
      * @param bool $withZero   Returns zero balances if true
      * @return array
      */
-    public function getAddressBalances($address, $withZero = true){
+    public function getAddressBalances($address, $withZero = TRUE, $withEth = FALSE){
         evxProfiler::checkpoint('getAddressBalances', 'START', 'address=' . $address);
-        $cache = 'getAddressBalances-' . $address;
+        $cache = 'getAddressBalances-' . $address . ($withEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true, 60);
         if(FALSE === $result){
             $search = array("address" => $address);
@@ -1335,6 +1335,14 @@ class Ethplorer {
             foreach($cursor as $balance){
                 unset($balance["_id"]);
                 $result[] = $balance;
+            }
+            if($withEth){
+                $result[] = array(
+                    'contract' => self::ADDRESS_ETH,
+                    'balance' => $this->getBalance($address),
+                    'totalIn' => 0,
+                    'totalOut' => 0
+                );
             }
             $this->oCache->save($cache, $result);
         }
@@ -2669,10 +2677,10 @@ class Ethplorer {
         return $aResult;
     }
 
-    public function getAddressPriceHistoryGrouped($address, $updateCache = FALSE, $showEth = FALSE){
-        evxProfiler::checkpoint('getAddressPriceHistoryGrouped', 'START', 'address=' . $address);
+    public function getAddressPriceHistoryGrouped($address, $updateCache = FALSE, $withEth = FALSE){
+        evxProfiler::checkpoint('getAddressPriceHistoryGrouped', 'START', 'address=' . $address . ', withEth=' . ($withEth ? 'TRUE' : 'FALSE'));
 
-        $cache = 'address_operations_history-' . $address . ($showEth ? '-eth' : '');
+        $cache = 'address_operations_history-' . $address . ($withEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true);
         $updateCache = false;
         if($result && isset($result['timestamp'])){
@@ -2700,7 +2708,7 @@ class Ethplorer {
 
             foreach($aSearch as $cond){
                 $search = array($cond => $address);
-                if(!$showEth){
+                if(!$withEth){
                     if($this->useOperations2){
                         $search['isEth'] = false;
                     }else{
@@ -2728,6 +2736,10 @@ class Ethplorer {
                         }
                     }
 
+                    if($withEth && ($record['contract'] == 'ETH')){
+                        $record['contract'] = self::ADDRESS_ETH;
+                    }
+
                     if((FALSE === array_search($record['contract'], $this->aSettings['updateRates'])) || !in_array($record['type'], $aTypes)){
                         continue;
                     }
@@ -2753,7 +2765,7 @@ class Ethplorer {
             if($maxTs > 0) $result['timestamp'] = $maxTs;
             krsort($aResult, SORT_NUMERIC);
 
-            $aAddressBalances = $this->getAddressBalances($address);
+            $aAddressBalances = $this->getAddressBalances($address, TRUE, $withEth);
             $ten = Decimal::create(10);
 
             if(isset($result['tokens'])) $aTokenInfo = $result['tokens'];
