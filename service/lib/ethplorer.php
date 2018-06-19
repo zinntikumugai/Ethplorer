@@ -2807,7 +2807,7 @@ class Ethplorer {
                             foreach($aAddressBalances as $addressBalance){
                                 if($addressBalance["contract"] == $contract){
                                     $balance = Decimal::create($addressBalance["balance"]);
-                                    if($dec){
+                                    if($dec && $contract != self::ADDRESS_ETH){
                                         $balance = $balance->div($ten->pow($dec));
                                     }
                                     break;
@@ -2822,7 +2822,9 @@ class Ethplorer {
                         if($dec){
                             // operation value
                             $value = Decimal::create($record[1]);
-                            $value = $value->div($ten->pow($dec));
+                            if($contract != self::ADDRESS_ETH){
+                                $value = $value->div($ten->pow($dec));
+                            }
 
                             // get volume
                             $curDateVolume = Decimal::create(0);
