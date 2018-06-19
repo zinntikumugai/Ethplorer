@@ -782,7 +782,6 @@ class Ethplorer {
                 $this->oCache->save($cacheId, $transaction);
             } else {
                 file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . "] - getting transaction by hash from pending pool is failed\n", FILE_APPEND);
-                $this->oCache->save($cacheId, -1);
             }
         }
         $qTime = microtime(true) - $time;
