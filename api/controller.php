@@ -208,7 +208,7 @@ class ethplorerController {
             'countTxs' => $this->db->countTransactions($address)
         );
         if($result['countTxs']){
-            $in = $this->db->getEtherTotalIn($address);
+            $in = $this->db->getEtherTotalIn($address, FALSE, !$this->db->isHighloadedAddress($address));
             $out = $in - $balance;
             if($out < 0){
                 $in = $balance;
