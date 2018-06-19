@@ -686,9 +686,11 @@ class Ethplorer {
             // if transaction is not mained trying get it from pedding pool
             if(false === $tx){
                 $transaction = $this->getTransactionFromPoolByHash($hash);
-                // transaction is pending if has no blockHash
-                $transaction['pending'] = $transaction && null === $transaction['blockHash'];
-                $result['tx'] = $transaction ?: false;
+                if ($transaction) {
+                    // transaction is pending if has no blockHash
+                    $transaction['pending'] = $transaction && null === $transaction['blockHash'];
+                    $result['tx'] = $transaction ?: false;
+                }
             }
             $tokenAddr = false;
             if(isset($tx["creates"]) && $tx["creates"]){
@@ -731,7 +733,6 @@ class Ethplorer {
             }
         }
         if(is_array($result) && is_array($result['tx'])){
-
             $confirmations = 1;
             $lastblock = $this->getLastBlock();
             if($lastblock){
