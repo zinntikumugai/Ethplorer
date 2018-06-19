@@ -190,6 +190,7 @@ class ethplorerController {
         $address = $this->getParam(0, '');
         $address = strtolower($address);
         $onlyToken = $this->getRequest('token', FALSE);
+        $showETHTotals = !!$this->getRequest('showETHTotals', FALSE);
         if((FALSE === $address)){
             $this->sendError(103, 'Missing address');
         }
@@ -201,18 +202,20 @@ class ethplorerController {
         $result = array(
             'address' => $address,
             'ETH' => array(
-                'balance'   => $balance,
-                'totalIn'   => 0,
-                'totalOut'  => 0,
+                'balance'   => $balance
             ),
             'countTxs' => $this->db->countTransactions($address)
         );
-        if($result['countTxs']){
-            $in = $this->db->getEtherTotalIn($address, FALSE, !$this->db->isHighloadedAddress($address));
-            $out = $in - $balance;
-            if($out < 0){
-                $in = $balance;
-                $out = 0;
+        if($showETHTotals){
+            $in = 0;
+            $out = 0;
+            if($result['countTxs']){
+                $in = $this->db->getEtherTotalIn($address, FALSE, !$this->db->isHighloadedAddress($address));
+                $out = $in - $balance;
+                if($out < 0){
+                    $in = $balance;
+                    $out = 0;
+                }
             }
             $result['ETH']['totalIn'] = $in;
             $result['ETH']['totalOut'] = $out;
