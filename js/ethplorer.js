@@ -425,7 +425,7 @@ Ethplorer = {
 
         Ethplorer.knownContracts = txData.contracts ? txData.contracts : [];
 
-        if(oTx.blockNumber){
+        if(oTx.blockNumber && !oTx.pending){
             $('#txEthStatus')[oTx.success ? 'removeClass' : 'addClass']('text-danger');
             $('#txEthStatus')[oTx.success ? 'addClass' : 'removeClass']('text-success');
             $('#txEthStatus').html(oTx.success ? 'Success' : 'Failed' + (oTx.failedReason ? (': ' + Ethplorer.getTxErrorReason(oTx.failedReason)) : ''));
