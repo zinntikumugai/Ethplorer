@@ -681,16 +681,8 @@ class Ethplorer {
             $tx = $this->getTransaction($hash);
             $result = array(
                 "tx" => $tx,
-                "pending" => false,
                 "contracts" => array()
             );
-            // if transaction is not mained trying get it from pedding pool
-            if(false === $tx){
-                $transaction = $this->getTransactionFromPoolByHash($hash);
-                // transaction is pending if has no blockHash
-                $result['pending'] = $transaction && null === $transaction['blockHash'];
-                $result['tx'] = $transaction;
-            }
             $tokenAddr = false;
             if(isset($tx["creates"]) && $tx["creates"]){
                 $result["contracts"][] = $tx["creates"];
@@ -760,33 +752,6 @@ class Ethplorer {
         }
         evxProfiler::checkpoint('getTransactionDetails', 'FINISH');
         return $result;
-    }
-
-    /**
-     * Returns a list of transactions currently in the queue of Parity
-     * @param String $hash Transaction hash
-     * @return Array|null
-     */
-    public function getTransactionFromPoolByHash(string $hash) {
-        evxProfiler::checkpoint('getTransactionFromPoolByHash', 'START');
-        $time = microtime(true);
-        $cacheId = 'ethTransactionByHash-' . $hash;
-        $transaction = $this->oCache->get($cacheId, false, true, 30);
-        if(false === $transaction){
-            $transaction = $this->_callRPC('eth_getTransactionByHash', [$hash]);
-            if (false !== $transaction) {
-                $this->oCache->save($cacheId, $transaction);
-            } else {
-                file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . "] - getting transaction by hash from pending pool is failed\n", FILE_APPEND);
-                $this->oCache->save($cacheId, -1);
-            }
-        }
-        $qTime = microtime(true) - $time;
-        if($qTime > 0.5){
-            file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . '] - (' . $qTime . "s) getting transaction by hash from pending pool too slow\n", FILE_APPEND);
-        }
-        evxProfiler::checkpoint('getTransactionFromPoolByHash', 'FINISH');
-        return $transaction;
     }
 
     /**
@@ -3126,7 +3091,7 @@ class Ethplorer {
         $rjson = curl_exec($ch);
         if($rjson && (is_string($rjson)) && ('{' === $rjson[0])){
             $json = json_decode($rjson, JSON_OBJECT_AS_ARRAY);
-            if(array_key_exists('result', $json)){
+            if(isset($json["result"])){
                 $result = $json["result"];
             }
         }
