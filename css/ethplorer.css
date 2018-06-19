@@ -1526,3 +1526,7 @@ a.token-update {
 .diff-zero{
     color: rgba(255, 255, 255, 0.6);
 }
+
+#page-create {
+    min-height: 650px;
+}
