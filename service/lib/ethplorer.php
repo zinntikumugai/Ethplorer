@@ -775,7 +775,7 @@ class Ethplorer {
         if(false === $transaction){
             $transaction = $this->_callRPC('eth_getTransactionByHash', [$hash]);
             if (false !== $transaction) {
-                $transaction['blockNumber'] = hexdec(str_replace('0x', '', $transaction['blockNumber']));
+                $transaction['blockNumber'] = $transaction['blockNumber'] ? hexdec(str_replace('0x', '', $transaction['blockNumber'])) : null;
                 $transaction['value'] = hexdec(str_replace('0x', '', $transaction['value'])) / pow(10, 18);
                 $transaction['gas'] = hexdec(str_replace('0x', '', $transaction['gas'])) / pow(10, 18);
                 $transaction['gasPrice'] = hexdec(str_replace('0x', '', $transaction['gasPrice'])) / pow(10, 18);
