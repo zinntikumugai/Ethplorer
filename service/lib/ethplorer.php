@@ -728,7 +728,7 @@ class Ethplorer {
                     }
                 }
             }
-            if($result['tx'] && (!isset($result['tx']['pending']) || !$result['tx']['pending'])){
+            if($result['tx']){
                 $this->oCache->save($cache, $result);
             }
         }
