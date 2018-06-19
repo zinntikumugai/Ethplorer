@@ -632,7 +632,7 @@ class Ethplorer {
                 $transaction = $this->getTransactionFromPoolByHash($hash);
                 // transaction is pending if has no blockHash
                 $result['pending'] = $transaction && null === $transaction['blockHash'];
-                $result['tx'] = $transaction;
+                $result['tx'] = $transaction ?: false;
             }
             $tokenAddr = false;
             if(isset($tx["creates"]) && $tx["creates"]){
