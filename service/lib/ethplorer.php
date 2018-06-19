@@ -688,7 +688,7 @@ class Ethplorer {
                 $transaction = $this->getTransactionFromPoolByHash($hash);
                 if ($transaction) {
                     // transaction is pending if has no blockHash
-                    $transaction['pending'] = $transaction && null === $transaction['blockHash'];
+                    $transaction['pending'] = true;
                     $result['tx'] = $transaction ?: false;
                 }
             }
@@ -728,7 +728,7 @@ class Ethplorer {
                     }
                 }
             }
-            if($result['tx']){
+            if($result['tx'] && (!isset($result['tx']['pending']) || $result['tx']['pending'])) {
                 $this->oCache->save($cache, $result);
             }
         }
@@ -776,6 +776,7 @@ class Ethplorer {
             $transaction = $this->_callRPC('eth_getTransactionByHash', [$hash]);
             if (false !== $transaction) {
                 $transaction['blockNumber'] = hexdec(str_replace('0x', '', $transaction['blockNumber']));
+                $transaction['value'] = hexdec(str_replace('0x', '', $transaction['value'])) / pow(10, 18);
                 $transaction['gas'] = hexdec(str_replace('0x', '', $transaction['gas'])) / pow(10, 18);
                 $transaction['gasPrice'] = hexdec(str_replace('0x', '', $transaction['gasPrice'])) / pow(10, 18);
                 $transaction['nonce'] = hexdec(str_replace('0x', '', $transaction['nonce']));
