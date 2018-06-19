@@ -478,10 +478,22 @@ class Ethplorer {
             $result['balance'] = $this->getBalance($address);
             $result['balanceOut'] = 0;
             $result['balanceIn'] = 0;
-            if(!$this->isHighloadedAddress($address)){
-                $result['balanceOut'] = $this->getEtherTotalOut($address);
-                $result['balanceIn'] = $result['balanceOut'] + $result['balance'];
+            $in = $out = 0;
+            if(true){
+                $in = $this->getEtherTotalIn($address);
+                $out = $in - $result['balance'];
+                if($out < 0){
+                    $in = $result['balance'];
+                    $out = 0;
+                }
+            }else{
+                if(!$this->isHighloadedAddress($address)){
+                    $out = $this->getEtherTotalOut($address);
+                    $in = $out + $result['balance'];
+                }
             }
+            $result['balanceOut'] = $out;
+            $result['balanceIn'] = $in;
         }
         evxProfiler::checkpoint('getAddressDetails', 'FINISH');
         return $result;
@@ -511,6 +523,51 @@ class Ethplorer {
         return $result;
     }
 
+    /**
+     * Returns ETH address total in.
+     * Total out can be calculated as total in - current balance.
+     *
+     * @param string $address
+     * @param bool $updateCache
+     * @return float
+     */
+    public function getEtherTotalIn($address, $updateCache = FALSE){
+        $cache = 'ethIn-' . $address;
+        $result = $this->oCache->get($cache, FALSE, TRUE, 300);
+        if($updateCache || (FALSE === $result)){
+            evxProfiler::checkpoint('getEtherTotalIn', 'START', 'address=' . $address);
+            if($this->isValidAddress($address)){
+                $balance = false;
+                // Get totalIn from DB
+                $cursor = $this->oMongo->find('ethBalances', array('address' => $address));
+                foreach($cursor as $balance) break;
+                if($balance && isset($balance['balance'])){
+                    $result = $balance['totalIn'];
+                }else{
+                    // Get from parity
+                    $aResult = $this->oMongo->aggregate('operations2', array(
+                        array('$match' => array("to" => $address, "isEth" => true)),
+                        array(
+                            '$group' => array(
+                                "_id" => '$to',
+                                'in' => array('$sum' => '$value')
+                            )
+                        ),
+                    ));
+                    $result = 0;
+                    if(is_array($aResult) && isset($aResult['result'])){
+                        foreach($aResult['result'] as $record){
+                            $result += floatval($record['in']);
+                        }
+                    }
+                }
+                $this->oCache->save($cache, $result);
+            }
+            evxProfiler::checkpoint('getEtherTotalIn', 'FINISH');
+        }
+        return (float)$result;
+    }    
+    
     /**
      * Returns ETH address total out.
      * Total in can be calculated as total out + current balance.
@@ -626,6 +683,7 @@ class Ethplorer {
                 "tx" => $tx,
                 "contracts" => array()
             );
+<<<<<<< HEAD
             // if transaction is not mained trying get it from pedding pool
             if(false === $tx){
                 $transaction = $this->getTransactionFromPoolByHash($hash);
@@ -633,6 +691,8 @@ class Ethplorer {
                 $transaction['pending'] = $transaction && null === $transaction['blockHash'];
                 $result['tx'] = $transaction ?: false;
             }
+=======
+>>>>>>> develop
             $tokenAddr = false;
             if(isset($tx["creates"]) && $tx["creates"]){
                 $result["contracts"][] = $tx["creates"];
@@ -705,6 +765,7 @@ class Ethplorer {
     }
 
     /**
+<<<<<<< HEAD
      * Returns a list of transactions currently in the queue of Parity
      * @param String $hash Transaction hash
      * @return Array|null
@@ -736,6 +797,8 @@ class Ethplorer {
     }
 
     /**
+=======
+>>>>>>> develop
      * Return address ETH balance.
      *
      * @param string  $address  Address
@@ -747,13 +810,20 @@ class Ethplorer {
         $cacheId = 'ethBalance-' . $address;
         $balance = $this->oCache->get($cacheId, false, true, 30);
         if(false === $balance){
-            $balance = $this->_callRPC('eth_getBalance', array($address, 'latest'));
-            if(false !== $balance){
-                $balance = hexdec(str_replace('0x', '', $balance)) / pow(10, 18);
-                $this->oCache->save($cacheId, $balance);
+            $result = false;
+            $cursor = $this->oMongo->find('ethBalances', array('address' => $address));
+            foreach($cursor as $result) break;
+            if($result && isset($result['balance'])){
+                $balance = $result['balance'];               
             }else{
-                file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . '] - get balance for ' . $address . " failed\n", FILE_APPEND);
-                $this->oCache->save($cacheId, -1);
+                $balance = $this->_callRPC('eth_getBalance', array($address, 'latest'));
+                if(false !== $balance){
+                    $balance = hexdec(str_replace('0x', '', $balance)) / pow(10, 18);
+                    $this->oCache->save($cacheId, $balance);
+                }else{
+                    file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . '] - get balance for ' . $address . " failed\n", FILE_APPEND);
+                    $this->oCache->save($cacheId, -1);
+                }
             }
         }
         $qTime = microtime(true) - $time;
@@ -774,7 +844,7 @@ class Ethplorer {
         evxProfiler::checkpoint('getTransaction', 'START', 'hash=' . $tx);
         $cursor = $this->oMongo->find('transactions', array("hash" => $tx));
         $result = false;
-        foreach($cursor as $result) break;        
+        foreach($cursor as $result) break;
         if($result){
             $receipt = isset($result['receipt']) ? $result['receipt'] : false;
             $result['gasLimit'] = $result['gas'];
@@ -916,8 +986,8 @@ class Ethplorer {
                     if(isset($aCachedData['ethTransfersCount'])) $aResult[$address]['ethTransfersCount'] = $aCachedData['ethTransfersCount'];
                 }
             }
-            if(isset($aResult['0x0000000000000000000000000000000000000000'])){
-                unset($aResult['0x0000000000000000000000000000000000000000']);
+            if(isset($aResult[self::ADDRESS_ETH])){
+                unset($aResult[self::ADDRESS_ETH]);
             }
             $this->oCache->save('tokens', $aResult);
             evxProfiler::checkpoint('getTokens', 'FINISH');
@@ -1294,9 +1364,9 @@ class Ethplorer {
      * @param bool $withZero   Returns zero balances if true
      * @return array
      */
-    public function getAddressBalances($address, $withZero = true){
+    public function getAddressBalances($address, $withZero = TRUE, $withEth = FALSE){
         evxProfiler::checkpoint('getAddressBalances', 'START', 'address=' . $address);
-        $cache = 'getAddressBalances-' . $address;
+        $cache = 'getAddressBalances-' . $address . ($withEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true, 60);
         if(FALSE === $result){
             $search = array("address" => $address);
@@ -1309,6 +1379,14 @@ class Ethplorer {
             foreach($cursor as $balance){
                 unset($balance["_id"]);
                 $result[] = $balance;
+            }
+            if($withEth){
+                $result[] = array(
+                    'contract' => self::ADDRESS_ETH,
+                    'balance' => $this->getBalance($address),
+                    'totalIn' => 0,
+                    'totalOut' => 0
+                );
             }
             $this->oCache->save($cache, $result);
         }
@@ -2643,10 +2721,10 @@ class Ethplorer {
         return $aResult;
     }
 
-    public function getAddressPriceHistoryGrouped($address, $updateCache = FALSE, $showEth = FALSE){
-        evxProfiler::checkpoint('getAddressPriceHistoryGrouped', 'START', 'address=' . $address);
+    public function getAddressPriceHistoryGrouped($address, $updateCache = FALSE, $withEth = FALSE){
+        evxProfiler::checkpoint('getAddressPriceHistoryGrouped', 'START', 'address=' . $address . ', withEth=' . ($withEth ? 'TRUE' : 'FALSE'));
 
-        $cache = 'address_operations_history-' . $address . ($showEth ? '-eth' : '');
+        $cache = 'address_operations_history-' . $address . ($withEth ? '-eth' : '');
         $result = $this->oCache->get($cache, false, true);
         $updateCache = false;
         if($result && isset($result['timestamp'])){
@@ -2674,7 +2752,7 @@ class Ethplorer {
 
             foreach($aSearch as $cond){
                 $search = array($cond => $address);
-                if(!$showEth){
+                if(!$withEth){
                     if($this->useOperations2){
                         $search['isEth'] = false;
                     }else{
@@ -2702,6 +2780,10 @@ class Ethplorer {
                         }
                     }
 
+                    if($withEth && ($record['contract'] == 'ETH')){
+                        $record['contract'] = self::ADDRESS_ETH;
+                    }
+
                     if((FALSE === array_search($record['contract'], $this->aSettings['updateRates'])) || !in_array($record['type'], $aTypes)){
                         continue;
                     }
@@ -2727,7 +2809,7 @@ class Ethplorer {
             if($maxTs > 0) $result['timestamp'] = $maxTs;
             krsort($aResult, SORT_NUMERIC);
 
-            $aAddressBalances = $this->getAddressBalances($address);
+            $aAddressBalances = $this->getAddressBalances($address, TRUE, $withEth);
             $ten = Decimal::create(10);
 
             if(isset($result['tokens'])) $aTokenInfo = $result['tokens'];
@@ -2750,7 +2832,11 @@ class Ethplorer {
                     $contract = is_int($record[0]) ? $aContracts[$record[0]] : $record[0];
                     //if(!isset($result['timestamp'])) $result['timestamp'] = $ts;
 
-                    $token = isset($aTokenInfo[$contract]) ? $aTokenInfo[$contract] : $this->getToken($contract, TRUE);
+                    if($contract == self::ADDRESS_ETH){
+                        $token = $this->getEthToken();
+                    }else{
+                        $token = isset($aTokenInfo[$contract]) ? $aTokenInfo[$contract] : $this->getToken($contract, TRUE);
+                    }
                     if($token){
                         if(!isset($aTokenInfo[$contract])){
                             $result['tokens'][$contract] = $token;
@@ -2765,7 +2851,7 @@ class Ethplorer {
                             foreach($aAddressBalances as $addressBalance){
                                 if($addressBalance["contract"] == $contract){
                                     $balance = Decimal::create($addressBalance["balance"]);
-                                    if($dec){
+                                    if($dec && $contract != self::ADDRESS_ETH){
                                         $balance = $balance->div($ten->pow($dec));
                                     }
                                     break;
@@ -2780,7 +2866,9 @@ class Ethplorer {
                         if($dec){
                             // operation value
                             $value = Decimal::create($record[1]);
-                            $value = $value->div($ten->pow($dec));
+                            if($contract != self::ADDRESS_ETH){
+                                $value = $value->div($ten->pow($dec));
+                            }
 
                             // get volume
                             $curDateVolume = Decimal::create(0);
@@ -3047,7 +3135,7 @@ class Ethplorer {
         $rjson = curl_exec($ch);
         if($rjson && (is_string($rjson)) && ('{' === $rjson[0])){
             $json = json_decode($rjson, JSON_OBJECT_AS_ARRAY);
-            if(array_key_exists('result', $json)){
+            if(isset($json["result"])){
                 $result = $json["result"];
             }
         }
@@ -3139,6 +3227,15 @@ class Ethplorer {
             $tx['status'] = str_replace("0x", "", $tx['status']);
         }
         return !!$tx['status'];
+    }
+
+    protected function getEthToken(){
+        return array(
+            'address' => self::ADDRESS_ETH,
+            'name' => 'Ethereum',
+            'symbol' => 'ETH',
+            'decimals' => 18
+        );
     }
 
     protected function _cliDebug($message){
