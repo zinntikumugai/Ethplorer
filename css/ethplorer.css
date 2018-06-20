@@ -1272,12 +1272,17 @@ a.token-update {
     }
 }
 
+@media screen and (max-height: 1024px) {
+    #loader {
+        margin-top: -20px;
+    }
+}
+
 @media screen and (max-width: 767px) {
 
     #loader {
         margin-top: -40px;
-    }    
-
+    }
     
     #disqus_thread {
         padding-bottom: 430px;
