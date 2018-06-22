@@ -685,14 +685,13 @@ class Ethplorer {
                     $result['pending'] = true;
                     $result['tx'] = $transaction ?: false;
                     
-                    if (true || isset($transaction['to'])) {
-                        $token = []; //$this->getToken($transaction['to']);
-                        // var_dump($token); die();
-                        if (true || $token) {
+                    if (isset($transaction['to'])) {
+                        $token = $this->getToken($transaction['to']);
+                        if ($token) {
                             $result['token'] = $token;
 
                             // Need for operations
-                            if ( true || substr($result['tx']['input'], 0, 4) === '0xA9059CBB') {
+                            if (substr($result['tx']['input'], 0, 4) === '0xA9059CBB') {
                                 $value = hexdec(substr($result['tx']['input'], 4));
                                 $result['operations'] = [
                                     [
@@ -791,7 +790,6 @@ class Ethplorer {
             $result['token'] = $this->getToken($result['token']['address']);
         }
         evxProfiler::checkpoint('getTransactionDetails', 'FINISH');
-        // var_dump($result); die();
         return $result;
     }
 
