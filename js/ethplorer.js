@@ -1135,7 +1135,7 @@ Ethplorer = {
             var showTxChecks = '<span style="color: white;vertical-align:middle;">ETH:</span> <input onClick="Ethplorer.showTransfers(this, \'eth\');" id="showTxEth" type="checkbox" ' + ((Ethplorer.showTx == 'all' || Ethplorer.showTx == 'eth') ? 'checked="checked"' : '') + ' name="showTxEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">' + ' <span style="color: white;vertical-align:middle;">Tokens:</span> <input onClick="Ethplorer.showTransfers(this, \'tokens\');" id="showTxTokens" type="checkbox" ' + ((Ethplorer.showTx == 'all' || Ethplorer.showTx == 'tokens') ? 'checked="checked"' : '') + ' name="showTxTokens" value="1" style="vertical-align: text-bottom;margin-right:5px;">';
 
             if(!data.token){
-                $('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style>' + showTxChecks);
+                $('.filter-form').prepend('<style>@media screen and (max-width: 448px) {.filter-box.out-of-tabs{height: 35px;}}</style>' + showTxChecks);
             }else{
                 $('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style>' + showTxChecks);
             }
