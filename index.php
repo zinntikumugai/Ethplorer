@@ -215,6 +215,7 @@ if(is_array($rParts) && isset($rParts[2])){
                 <div id="error" class="content-page text-center">
                     <h1 class="text-danger"></h1>
                     <h3 id="error-reason" class="text-danger"></h3>
+                    <p id="error-info"></p>
                 </div>
 
                 <div>

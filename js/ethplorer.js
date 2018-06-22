@@ -276,10 +276,13 @@ Ethplorer = {
                 Ethplorer.error('Invalid request');
         }
     },
-    error: function(message){
+    error: function(message, addationalInfo = ''){
         Ethplorer.hideLoader();
         $('.content-page').hide();
         $('#error-reason').text(message);
+        if (addationalInfo.length) {
+            $('#error-info').html(addationalInfo);
+        }
         $('#error').show();
         $('#ethplorer-path').hide();
     },
@@ -419,7 +422,10 @@ Ethplorer = {
         var oTx = txData.tx;
         if(false === oTx){
             Ethplorer.gaSendEvent('pageView', 'viewTx', 'tx-not-found');
-            Ethplorer.error('Transaction not found');
+            Ethplorer.error(
+                'Transaction not found',
+                'If transaction was created recently, it may not have reached mempool yet.<br/> Wait a minute and try to <a href="javascript:void()" onClick="Ethplorer.gaSendEvent(\'pageView\', \'viewTx\', \'refresh\'); location.reload();">refresh</a> the page.'
+            );
             return;
         }
 

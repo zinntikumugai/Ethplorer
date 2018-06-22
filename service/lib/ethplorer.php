@@ -478,19 +478,11 @@ class Ethplorer {
             $result['balance'] = $this->getBalance($address);
             $result['balanceOut'] = 0;
             $result['balanceIn'] = 0;
-            $in = $out = 0;
-            if(true){
-                $in = $this->getEtherTotalIn($address);
-                $out = $in - $result['balance'];
-                if($out < 0){
-                    $in = $result['balance'];
-                    $out = 0;
-                }
-            }else{
-                if(!$this->isHighloadedAddress($address)){
-                    $out = $this->getEtherTotalOut($address);
-                    $in = $out + $result['balance'];
-                }
+            $in = $this->getEtherTotalIn($address, FALSE, !$this->isHighloadedAddress($address));
+            $out = $in - $result['balance'];
+            if($out < 0){
+                $in = $result['balance'];
+                $out = 0;
             }
             $result['balanceOut'] = $out;
             $result['balanceIn'] = $in;
@@ -531,7 +523,7 @@ class Ethplorer {
      * @param bool $updateCache
      * @return float
      */
-    public function getEtherTotalIn($address, $updateCache = FALSE){
+    public function getEtherTotalIn($address, $updateCache = FALSE, $parityOnly = FALSE){
         $cache = 'ethIn-' . $address;
         $result = $this->oCache->get($cache, FALSE, TRUE, 300);
         if($updateCache || (FALSE === $result)){
@@ -539,8 +531,10 @@ class Ethplorer {
             if($this->isValidAddress($address)){
                 $balance = false;
                 // Get totalIn from DB
-                $cursor = $this->oMongo->find('ethBalances', array('address' => $address));
-                foreach($cursor as $balance) break;
+                if(!$parityOnly){
+                    $cursor = $this->oMongo->find('ethBalances', array('address' => $address));
+                    foreach($cursor as $balance) break;
+                }
                 if($balance && isset($balance['balance'])){
                     $result = $balance['totalIn'];
                 }else{
@@ -728,7 +722,7 @@ class Ethplorer {
                     }
                 }
             }
-            if($result['tx'] && (!isset($result['tx']['pending']) || $result['tx']['pending'])) {
+            if($result['tx'] && !isset($result['tx']['pending'])) {
                 $this->oCache->save($cache, $result);
             }
         }
@@ -1264,16 +1258,19 @@ class Ethplorer {
         $cache = 'highloaded-address-' . $address;
         $result = $this->oCache->get($cache, false, true);
         if(FALSE === $result){
-            // ).limit(10000).count({ applySkipLimit: true })
-            $count = $this->countTransactions($address, 10000);
-            if($count >= 10000){
-                $result = true;
-                $this->oCache->save($cache, $result);
+            $count = $this->countTransactions($address, 1000);
+            if($count >= 1000){
+                $this->oCache->save($cache, true);
+                return true;
+            }
+            $opCount = $this->countOperations($address, FALSE, FALSE);
+            if($opCount >= 1000){
+                $this->oCache->save($cache, true);
+                return true;
             }
         }
         return $result;
     }
-
 
     /**
      * Returns total number of transactions for the address (incoming, outoming, contract creation).
@@ -1301,7 +1298,7 @@ class Ethplorer {
                 }else{
                     foreach(array('from', 'to') as $where){
                         $search = array($where => $address);
-                        $result += (int)$this->oMongo->count('transactions', $search);
+                        $result += (int)$this->oMongo->count('transactions', $search, $limit);
                     }
                 }
             }
