@@ -1257,10 +1257,10 @@ Ethplorer = {
             Ethplorer.showTx = 'all';
         }else{
             if(type == 'eth'){
-                Ethplorer.showTx = 'tokens';
+                Ethplorer.showTx = type = 'tokens';
                 $('#showTxTokens').prop('checked', true);
             }else{
-                Ethplorer.showTx = 'eth';
+                Ethplorer.showTx = type = 'eth';
                 $('#showTxEth').prop('checked', true);
             }
         }
