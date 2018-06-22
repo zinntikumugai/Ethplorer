@@ -1048,7 +1048,7 @@ Ethplorer = {
                 $('#filter_list').hide();
             }else{
                 if(data.token){
-                    $('.filter-box').prepend('<style>@media screen and (max-width: 992px) { .filter-box.in-tabs {text-align: right !important; margin-top: 10px !important; height: 40px !important;} .filter-box.in-tabs .filter-form {width: 100% !important;} .filter-box.in-tabs #filter_list {width: 100% !important;} }</style>');
+                    $('.filter-box').prepend('<style>@media screen and (max-width: 992px) { .filter-box.in-tabs {text-align: right !important; margin-top: 10px !important; height: 15px !important;} .filter-box.in-tabs .filter-form {width: 100% !important;} .filter-box.in-tabs #filter_list {width: 100% !important;} } @media screen and (max-width: 379px) {.filter-box.in-tabs {height: 40px !important;} }</style>');
                 }
                 $('#filter_list').show();
             }
@@ -1137,7 +1137,7 @@ Ethplorer = {
             if(!data.token){
                 $('.filter-form').prepend('<style>@media screen and (max-width: 448px) {.filter-box.out-of-tabs{height: 35px;}}</style>' + showTxChecks);
             }else{
-                $('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style>' + showTxChecks);
+                $('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 448px) {.filter-box.out-of-tabs{height: 35px;}}</style>' + showTxChecks);
             }
         }
         if(!data.transfers || !data.transfers.length){
