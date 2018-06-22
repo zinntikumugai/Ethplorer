@@ -36,13 +36,13 @@ Ethplorer = {
         BigNumber.config({ ERRORS: false });
         Ethplorer.Nav.init();
         Ethplorer.Storage.init();
-        Ethplorer.pageSize = 10; // Ethplorer.Storage.get('pageSize', 10);
+        Ethplorer.pageSize = Ethplorer.Storage.get('pageSize', 10);
         if(Ethplorer.pageSize > 10){
             Ethplorer.Nav.set('pageSize', Ethplorer.pageSize);
         }
-        /*if(Ethplorer.Nav.get('pageSize')){
+        if(Ethplorer.Nav.get('pageSize')){
             Ethplorer.pageSize = Ethplorer.Nav.get('pageSize');
-        }*/
+        }
         if(Ethplorer.Nav.get('filter')){
             var filter = Ethplorer.Nav.get('filter');
             if(filter){
@@ -58,12 +58,7 @@ Ethplorer = {
                 }
             }
         }
-        Ethplorer.showEth = 0;//Ethplorer.Storage.get('showEth', 1);
-        Ethplorer.showEthForToken = 0;//Ethplorer.Storage.get('showEthForToken', 1);
-        //if(Ethplorer.showEthForToken == 1) Ethplorer.Nav.set('showEthForToken', Ethplorer.showEthForToken);
-        /*
-        Ethplorer.Nav.set('showEth', Ethplorer.showEth);
-        */
+        Ethplorer.showTx = Ethplorer.Storage.get('showTx', null);
         Ethplorer.route();
         $('#network').text(Ethplorer.Config.testnet ? 'Test' : 'Modern');
         $('.navbar-nav li[data-page]').click(function(){
@@ -1058,8 +1053,8 @@ Ethplorer = {
             if(data.pager[activeTab].records > 100000){
                 $('#filter_list').hide();
             }else{
-                if(data.token && (Ethplorer.Storage.get('showEthForToken', 0) > 0)){
-                    $('.filter-box').prepend('<style>@media screen and (max-width: 992px) { .filter-box.in-tabs {text-align: right !important; margin-top: 10px !important; height: 40px !important;} .filter-box.in-tabs .filter-form {width: 100% !important;} .filter-box.in-tabs #filter_list {width: 100% !important;} }</style>');
+                if(Ethplorer.showTx && data.token){
+                    $('.filter-box').prepend('<style>@media screen and (max-width: 992px) { .filter-box.in-tabs {text-align: right !important; margin-top: 10px !important; height: 15px !important;} .filter-box.in-tabs .filter-form {width: 100% !important;} .filter-box.in-tabs #filter_list {width: 100% !important;} } @media screen and (max-width: 379px) {.filter-box.in-tabs {height: 40px !important;} }</style>');
                 }
                 $('#filter_list').show();
             }
@@ -1142,11 +1137,14 @@ Ethplorer = {
         var data = Ethplorer.data;
         var tableId = data.token ? 'address-token-transfers' : 'address-transfers';
         $('#' + tableId).find('.table').empty();
-        if(!data.token && !$('#showEth').length){ // && (Ethplorer.Storage.get('showEth', 0) > 0)){
-            //$('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfers(this);"  id="showEth" type="checkbox" ' + (Ethplorer.showEth > 0 ? 'checked="checked"' : '') + ' name="showEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
-        }
-        if(data.token && !$('#showEthForToken').length){// && (Ethplorer.Storage.get('showEthForToken', 0) > 0)){
-            //$('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfersForToken(this);"  id="showEthForToken" type="checkbox" ' + (Ethplorer.showEthForToken > 0 ? 'checked="checked"' : '') + ' name="showEthForToken" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
+        if(Ethplorer.showTx && !$('#showTxEth').length){
+            var showTxChecks = '<span style="color: white;vertical-align:middle;"><label for="showTxEth">ETH:</label></span> <input onClick="Ethplorer.showTransfers(this, \'eth\');" id="showTxEth" type="checkbox" ' + ((Ethplorer.showTx == 'all' || Ethplorer.showTx == 'eth') ? 'checked="checked"' : '') + ' name="showTxEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">' + ' <span style="color: white;vertical-align:middle;"><label for="showTxTokens">Tokens:</label></span> <input onClick="Ethplorer.showTransfers(this, \'tokens\');" id="showTxTokens" type="checkbox" ' + ((Ethplorer.showTx == 'all' || Ethplorer.showTx == 'tokens') ? 'checked="checked"' : '') + ' name="showTxTokens" value="1" style="vertical-align: text-bottom;margin-right:5px;">';
+
+            if(!data.token){
+                $('.filter-form').prepend('<style>@media screen and (max-width: 448px) {.filter-box.out-of-tabs{height: 35px;}}</style>' + showTxChecks);
+            }else{
+                $('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 448px) {.filter-box.out-of-tabs{height: 35px;}}</style>' + showTxChecks);
+            }
         }
         if(!data.transfers || !data.transfers.length){
             $('#' + tableId).find('.total-records').empty();
@@ -1258,21 +1256,24 @@ Ethplorer = {
 
         $('#' + tableId).show();
     },
-    showEthTransfers: function(switcher){
+    showTransfers: function(switcher, type){
         Ethplorer.Nav.del('transfers');
-        Ethplorer.showEth = switcher.checked ? 1 : 0;
-        Ethplorer.gaSendEvent('userAction', 'listShowETH', !!Ethplorer.showEth ? 'true' : 'false');
-        Ethplorer.Storage.set('showEth', Ethplorer.showEth);
-        Ethplorer.Nav.set('showEth', Ethplorer.showEth);
-        var tab = Ethplorer.getActiveTab();
-        Ethplorer.reloadTab(tab);
-    },
-    showEthTransfersForToken: function(switcher){
-        Ethplorer.Nav.del('transfers');
-        Ethplorer.showEthForToken = switcher.checked ? 1 : 0;
-        Ethplorer.gaSendEvent('userAction', 'listShowETH', !!Ethplorer.showEthForToken ? 'true' : 'false');
-        Ethplorer.Storage.set('showEthForToken', Ethplorer.showEthForToken);
-        Ethplorer.Nav.set('showEthForToken', Ethplorer.showEthForToken);
+        if(switcher.checked){
+            type = 'all';
+            Ethplorer.showTx = 'all';
+        }else{
+            if(type == 'eth'){
+                Ethplorer.showTx = type = 'tokens';
+                $('#showTxTokens').prop('checked', true);
+            }else{
+                Ethplorer.showTx = type = 'eth';
+                $('#showTxEth').prop('checked', true);
+            }
+        }
+        Ethplorer.gaSendEvent('userAction', 'listShowTx', type);
+        Ethplorer.Storage.set('showTx', type);
+        if(type != 'all') Ethplorer.Nav.set('showTx', type);
+        else Ethplorer.Nav.del('showTx');
         var tab = Ethplorer.getActiveTab();
         Ethplorer.reloadTab(tab);
     },
@@ -1583,7 +1584,7 @@ Ethplorer = {
                 }
                 pager.append(page);
             }
-            //container.append(pageSizeSelect);
+            container.append(pageSizeSelect);
             container.append(pager);
         }
     },

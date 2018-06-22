@@ -43,8 +43,7 @@ if($debugId){
 if(strlen($search) || (false !== $data)){
 
     $es = Ethplorer::db($aConfig);
-    //if(isset($aConfig['showEth']) && $aConfig['showEth']) $es->setShowEth(TRUE);
-    //if(isset($aConfig['showEthForToken']) && $aConfig['showEthForToken']) $es->setShowEthForToken(TRUE);
+    //if(isset($aConfig['showTx']) && $aConfig['showTx']) $es->setShowTx($aConfig['showTx']);
 
     if(strlen($search)){
         $result = $es->searchToken($search);
@@ -57,7 +56,7 @@ if(strlen($search) || (false !== $data)){
                 if(2 === count($aPageParams)){
                     switch($aPageParams[0]){
                         case 'pageSize':
-                            //$pageSize = intval($aPageParams[1]);
+                            $pageSize = intval($aPageParams[1]);
                             break;
                         case 'transfers':
                         case 'issuances':
@@ -68,13 +67,8 @@ if(strlen($search) || (false !== $data)){
                         case 'filter':
                             $es->setFilter($aPageParams[1]);
                             break;
-                        case 'showEth':
-                            $showEth = (intval($aPageParams[1]) > 0) ? TRUE : FALSE;
-                            $es->setShowEth($showEth);
-                            break;
-                        case 'showEthForToken':
-                            $showEthForToken = (intval($aPageParams[1]) > 0) ? TRUE : FALSE;
-                            $es->setShowEthForToken($showEthForToken);
+                        case 'showTx':
+                            $es->setShowTx($aPageParams[1]);
                             break;
                     }
                 }

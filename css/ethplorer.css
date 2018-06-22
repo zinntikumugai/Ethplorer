@@ -844,6 +844,14 @@ tr.paginationFooter td {
     padding-top: 4px;
 }
 
+.filter-box {
+	z-index:200;
+}
+
+#address-transfers {
+	z-index:100;
+}
+
 .filter-box.in-tabs {
     text-align: right;
     height: 0px;
