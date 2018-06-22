@@ -58,7 +58,7 @@ Ethplorer = {
                 }
             }
         }
-        Ethplorer.showTx = Ethplorer.Storage.get('showTx', 'all');
+        Ethplorer.showTx = Ethplorer.Storage.get('showTx', null);
         Ethplorer.route();
         $('#network').text(Ethplorer.Config.testnet ? 'Test' : 'Modern');
         $('.navbar-nav li[data-page]').click(function(){
@@ -1047,7 +1047,7 @@ Ethplorer = {
             if(data.pager[activeTab].records > 100000){
                 $('#filter_list').hide();
             }else{
-                if(data.token){
+                if(Ethplorer.showTx && data.token){
                     $('.filter-box').prepend('<style>@media screen and (max-width: 992px) { .filter-box.in-tabs {text-align: right !important; margin-top: 10px !important; height: 15px !important;} .filter-box.in-tabs .filter-form {width: 100% !important;} .filter-box.in-tabs #filter_list {width: 100% !important;} } @media screen and (max-width: 379px) {.filter-box.in-tabs {height: 40px !important;} }</style>');
                 }
                 $('#filter_list').show();
@@ -1131,7 +1131,7 @@ Ethplorer = {
         var data = Ethplorer.data;
         var tableId = data.token ? 'address-token-transfers' : 'address-transfers';
         $('#' + tableId).find('.table').empty();
-        if(!$('#showTxEth').length){
+        if(Ethplorer.showTx && !$('#showTxEth').length){
             var showTxChecks = '<span style="color: white;vertical-align:middle;"><label for="showTxEth">ETH:</label></span> <input onClick="Ethplorer.showTransfers(this, \'eth\');" id="showTxEth" type="checkbox" ' + ((Ethplorer.showTx == 'all' || Ethplorer.showTx == 'eth') ? 'checked="checked"' : '') + ' name="showTxEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">' + ' <span style="color: white;vertical-align:middle;"><label for="showTxTokens">Tokens:</label></span> <input onClick="Ethplorer.showTransfers(this, \'tokens\');" id="showTxTokens" type="checkbox" ' + ((Ethplorer.showTx == 'all' || Ethplorer.showTx == 'tokens') ? 'checked="checked"' : '') + ' name="showTxTokens" value="1" style="vertical-align: text-bottom;margin-right:5px;">';
 
             if(!data.token){

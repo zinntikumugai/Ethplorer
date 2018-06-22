@@ -43,7 +43,7 @@ if($debugId){
 if(strlen($search) || (false !== $data)){
 
     $es = Ethplorer::db($aConfig);
-    if(isset($aConfig['showTx']) && $aConfig['showTx']) $es->setShowTx($aConfig['showTx']);
+    //if(isset($aConfig['showTx']) && $aConfig['showTx']) $es->setShowTx($aConfig['showTx']);
 
     if(strlen($search)){
         $result = $es->searchToken($search);
