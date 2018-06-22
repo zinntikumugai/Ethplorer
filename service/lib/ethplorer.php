@@ -39,6 +39,12 @@ class Ethplorer {
 
     const MAX_OFFSET = 100000;
 
+    const SHOW_TX_ALL = 'all';
+
+    const SHOW_TX_ETH = 'eth';
+
+    const SHOW_TX_TOKENS = 'tokens';
+
     /**
      * Settings
      *
@@ -100,16 +106,11 @@ class Ethplorer {
     protected $filter = FALSE;
 
     /**
+     * Show transfers mode
      *
-     * @var bool
+     * @var string
      */
-    protected $showEth = FALSE;
-
-    /**
-     *
-     * @var bool
-     */
-    protected $showEthForToken = FALSE;
+    protected $showTx = self::SHOW_TX_TOKENS;
 
     /**
      * Cache for getTokens
@@ -278,21 +279,12 @@ class Ethplorer {
     }
 
     /**
-     * Set show ETH flag
+     * Set show tx mode
      *
-     * @param bool $showEth
+     * @param string $showTx
      */
-    public function setShowEth($showEth){
-        $this->showEth = $showEth;
-    }
-
-    /**
-     * Set show ETH flag
-     *
-     * @param bool $showEth
-     */
-    public function setShowEthForToken($showEth){
-        $this->showEthForToken = $showEth;
+    public function setShowTx($showTx){
+        $this->showTx = $showTx;
     }
 
     /**
@@ -387,8 +379,6 @@ class Ethplorer {
         }
         if($result['isContract'] && isset($result['token'])){
             $result['pager'] = array('pageSize' => $limit);
-            $showEthForToken = FALSE;
-            if((isset($_GET['showEthForToken']) && $_GET['showEthForToken']) || $this->showEthForToken) $showEthForToken = TRUE;
             foreach(array('transfers', 'issuances', 'holders') as $type){
                 if(!$refresh || ($type === $refresh)){
                     $page = $this->getPager($type);
@@ -396,9 +386,13 @@ class Ethplorer {
                     $offsetReverse = FALSE;
                     switch($type){
                         case 'transfers':
-                            $count = $this->getContractOperationCount('transfer', $address);
-                            $total = $this->filter ? $this->getContractOperationCount('transfer', $address, FALSE) : $count;
-                            if($showEthForToken){
+                            $count = 0;
+                            $total = 0;
+                            if($this->showTx == self::SHOW_TX_ALL || $this->showTx == self::SHOW_TX_TOKENS){
+                                $count += $this->getContractOperationCount('transfer', $address);
+                                $total += $this->filter ? $this->getContractOperationCount('transfer', $address, FALSE) : $count;
+                            }
+                            if($this->showTx == self::SHOW_TX_ALL || $this->showTx == self::SHOW_TX_ETH){
                                 $countEth = (int)$this->getContractOperationCount('transfer', $address, TRUE, TRUE);
                                 $totalEth = (int)$this->filter ? $this->getContractOperationCount('transfer', $address, FALSE, TRUE) : $countEth;
                                 $count += $countEth;
@@ -462,17 +456,15 @@ class Ethplorer {
             }
             evxProfiler::checkpoint('getTokenLoop', 'FINISH');
             $result["balances"] = $aBalances;
-            $showEth = FALSE;
-            if((isset($_GET['showEth']) && $_GET['showEth']) || $this->showEth) $showEth = TRUE;
-            $countOperations = $this->countOperations($address, TRUE, $showEth);
-            $totalOperations = $this->filter ? $this->countOperations($address, FALSE, $showEth) : $countOperations;
+            $countOperations = $this->countOperations($address, TRUE, $this->showTx);
+            $totalOperations = $this->filter ? $this->countOperations($address, FALSE, $this->showTx) : $countOperations;
             $result['pager']['transfers'] = array(
                 'page' => $this->getPager('transfers'),
                 'records' => $countOperations,
                 'total' => $totalOperations,
             );
             $aOffsets = [$this->getOffset('transfers'), $this->getOffsetReverse('transfers', $countOperations)];
-            $result["transfers"] = $this->getAddressOperations($address, $limit, $aOffsets, array('transfer'), $showEth);
+            $result["transfers"] = $this->getAddressOperations($address, $limit, $aOffsets, array('transfer'), $this->showTx);
         }
         if(!$refresh){
             $result['balance'] = $this->getBalance($address);
@@ -1195,9 +1187,9 @@ class Ethplorer {
      * @param string $address  Contract address
      * @return int
      */
-    public function countOperations($address, $useFilter = TRUE, $showEth = FALSE){        
+    public function countOperations($address, $useFilter = TRUE, $showTx = self::SHOW_TX_TOKENS){        
         evxProfiler::checkpoint('countOperations', 'START', 'address=' . $address . ', useFilter = ' . ($useFilter ? 'ON' : 'OFF'));
-        $cache = 'countOperations-' . $address . ($showEth ? '-eth' : '');
+        $cache = 'countOperations-' . $address . '-' . $showTx;
         $result = $this->oCache->get($cache, false, true, 30);
         if(FALSE === $result){
             $result = 0;
@@ -1210,18 +1202,17 @@ class Ethplorer {
                 if(false !== $aCachedData){
                     evxProfiler::checkpoint('countTransfersFromCache', 'START', 'address=' . $address);
                     $result = $aCachedData['transfersCount'];
-                    if($showEth) $result += $aCachedData['ethTransfersCount'];
+                    if($showTx == self::SHOW_TX_ALL) $result += $aCachedData['ethTransfersCount'];
+                    else if($showTx == self::SHOW_TX_ETH) $result = $aCachedData['ethTransfersCount'];
                     evxProfiler::checkpoint('countTransfersFromCache', 'FINISH', 'count=' . $result);
                 }else{
                     $aSearchFields = array('from', 'to', 'address');
                     foreach($aSearchFields as $searchField){
                         $search = array($searchField => $address);
-                        if(!$showEth){
-                            if($this->useOperations2){
-                                $search['isEth'] = false;
-                            }else{
-                                $search['contract'] = array('$ne' => 'ETH');
-                            }
+                        if($showTx == self::SHOW_TX_ETH){
+                            $search['isEth'] = true;
+                        }else if($showTx == self::SHOW_TX_TOKENS){
+                            $search['isEth'] = false;
                         }
                         if($useFilter && $this->filter){
                             $search = array(
@@ -1263,7 +1254,7 @@ class Ethplorer {
                 $this->oCache->save($cache, true);
                 return true;
             }
-            $opCount = $this->countOperations($address, FALSE, FALSE);
+            $opCount = $this->countOperations($address, FALSE, self::SHOW_TX_TOKENS);
             if($opCount >= 1000){
                 $this->oCache->save($cache, true);
                 return true;
@@ -1439,7 +1430,7 @@ class Ethplorer {
      * @param int $limit       Maximum number of records
      * @return array
      */
-    public function getAddressOperations($address, $limit = 10, $offset = FALSE, array $aTypes = NULL, $showEth = FALSE){
+    public function getAddressOperations($address, $limit = 10, $offset = FALSE, array $aTypes = NULL, $showTx = self::SHOW_TX_TOKENS){
         evxProfiler::checkpoint('getAddressOperations', 'START', 'address=' . $address . ', limit=' . $limit . ', offset=' . (is_array($offset) ? print_r($offset, TRUE) : (int)$offset));
 
         $result = array();
@@ -1451,8 +1442,9 @@ class Ethplorer {
                 $search['type'] = array('$in' => $aTypes);
             }
         }
-        if(!$showEth){
-            //$search['contract'] = array('$ne' => 'ETH');
+        if($showTx == self::SHOW_TX_ETH){
+            $search['isEth'] = true;
+        }else if($showTx == self::SHOW_TX_TOKENS){
             $search['isEth'] = false;
         }
 
@@ -1478,7 +1470,7 @@ class Ethplorer {
             $sortOrder = 1;
             $skip = $offset[1];
         }
-        if(!$showEth){
+        if($showTx == self::SHOW_TX_ETH || $showTx == self::SHOW_TX_TOKENS){
             $hint = 'addresses_1_isEth_1_timestamp_1';
             $cursor = $this->oMongo->find('operations2', $search, array("timestamp" => $sortOrder), $limit, $skip, false, $hint);
         }else{
@@ -1537,7 +1529,7 @@ class Ethplorer {
                 $tokenName = isset($isToken['name']) ? $isToken['name'] : '';
                 $tokenSymbol = isset($isToken['symbol']) ? $isToken['symbol'] : '';
             }else{
-                $operations = $this->getAddressOperations($address, $limit, FALSE, array('transfer'));
+                $operations = $this->getAddressOperations($address, $limit, FALSE, array('transfer'), $this->showTx);
             }
             $aTokenInfo = array();
             foreach($operations as $record){
@@ -2261,18 +2253,21 @@ class Ethplorer {
             $search['$or'] = $fltSearch;
         }
 
-        $showEth = FALSE;
-        if((isset($_GET['showEthForToken']) && $_GET['showEthForToken']) || $this->showEthForToken) $showEth = TRUE;
-        if($showEth && $type == 'transfer'){
-            $ethSearch = array(
-                array("contract" => $address, 'type' => $type),
-                array('addresses' => $address, 'isEth' => TRUE)
-            );
-            $search = array('$or' => $ethSearch);
+        if(($this->showTx == self::SHOW_TX_ETH || $this->showTx == self::SHOW_TX_ALL) && $type == 'transfer'){
+            if($this->showTx == self::SHOW_TX_ETH){
+                $search = $ethSearch = array('addresses' => $address, 'isEth' => TRUE);
+            }else{
+                $ethSearch = array(
+                    array("contract" => $address, 'type' => $type),
+                    array('addresses' => $address, 'isEth' => TRUE)
+                );
+                $search = array('$or' => $ethSearch);
+            }
+
             if($this->filter){
                 $search = array(
                     '$and' => array(
-                        array('$or' => $ethSearch),
+                        $this->showTx == self::SHOW_TX_ETH ? $ethSearch : array('$or' => $ethSearch),
                         array('$or' => $fltSearch)
                     )
                 );
