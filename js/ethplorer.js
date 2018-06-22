@@ -1253,6 +1253,7 @@ Ethplorer = {
     showTransfers: function(switcher, type){
         Ethplorer.Nav.del('transfers');
         if(switcher.checked){
+            type = 'all';
             Ethplorer.showTx = 'all';
         }else{
             if(type == 'eth'){
@@ -1265,7 +1266,7 @@ Ethplorer = {
         }
         Ethplorer.gaSendEvent('userAction', 'listShowTx', type);
         Ethplorer.Storage.set('showTx', type);
-        Ethplorer.Nav.set('showTx', type);
+        if(type != 'all') Ethplorer.Nav.set('showTx', type);
         var tab = Ethplorer.getActiveTab();
         Ethplorer.reloadTab(tab);
     },
