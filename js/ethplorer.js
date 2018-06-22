@@ -306,17 +306,37 @@ Ethplorer = {
         if(Ethplorer.debug){
             requestData.debugId = Ethplorer.debugId;
         }
-        $.getJSON(Ethplorer.service, requestData, function(_txHash){
-            return function(data){
-                if(data.debug){
-                    Ethplorer.requestDebug = data.debug;
+        function loadTxDetails(showResult = true) {
+            $.getJSON(Ethplorer.service, requestData, function(_txHash){
+                return function(data){
+                    if(data.debug){
+                        Ethplorer.requestDebug = data.debug;
+                    }
+                    if(data.ethPrice){
+                        Ethplorer.ethPrice = data.ethPrice;
+                    }
+                    if(showResult) {
+                        // if transaction is pending need send ga event
+                        if (data.tx && data.tx.pending) {
+                            Ethplorer.gaSendEvent('pageView', 'viewTx', 'tx-pending');
+                        }
+                        Ethplorer.showTxDetails(_txHash, data);
+                    } else if (data.tx && !data.tx.pending) {
+                        // Transaction not pending anymore. Reloading the view.
+                        location.reload();
+                    }
+                    // is transaction is pending
+                    if(data.tx && data.tx.pending){
+                        setTimeout(function() { loadTxDetails(false) }, 30000); // every 30 seconds
+                    }
                 }
                 if(data.ethPrice){
                     Ethplorer.ethPrice = data.ethPrice;
                 }
                 Ethplorer.showTxDetails(_txHash, data);
-            }
-        }(txHash));
+            }(txHash));
+        }
+        loadTxDetails();
     },
     knownContracts: [],
     dataFields: {},
@@ -411,7 +431,7 @@ Ethplorer = {
 
         Ethplorer.knownContracts = txData.contracts ? txData.contracts : [];
 
-        if(oTx.blockNumber){
+        if(oTx.blockNumber && !oTx.pending){
             $('#txEthStatus')[oTx.success ? 'removeClass' : 'addClass']('text-danger');
             $('#txEthStatus')[oTx.success ? 'addClass' : 'removeClass']('text-success');
             $('#txEthStatus').html(oTx.success ? 'Success' : 'Failed' + (oTx.failedReason ? (': ' + Ethplorer.getTxErrorReason(oTx.failedReason)) : ''));

@@ -240,7 +240,7 @@ tr.odd {
 }
 
 #loader {
-    margin-top: 40px;
+    margin-top: 90px;
     padding: 40px;
     width: 300px;
     height: 300px;
@@ -252,8 +252,8 @@ tr.odd {
 #loader #searchInProgressText {
     font-size: 18px;
     position: relative;
-    top: -40px;
-    color: white;
+    top: -80px;
+    color: #ddd;
 }
 
 #transaction-tx-parsed,
@@ -975,46 +975,89 @@ li.ui-menu-item.have-more {
     margin-right: -10px;
 }
 
-/* Timer*/
-.timer{
-    width: 47px;
-    height: 47px;
-    background-color: transparent;
-    box-shadow: inset 0px 0px 0px 2px #fff;
-    border-radius: 50%;
+/* Loader */
+
+.loader-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 100%;
+  }
+  
+  .dot-loader {
+    height: 15px;
     position: relative;
-    margin: 38px auto;/* Not necessary- its only for layouting*/    
- }
-.timer:after, .timer:before{
-    position: absolute;
-    content:"";
-    background-color: #fff;
-}
-.timer:after{
-    width: 20px;
-    height: 2px;
-    top: 22px;
-    left: 22px;
-    -webkit-transform-origin: 1px 1px;
-       -moz-transform-origin: 1px 1px;
-            transform-origin: 1px 1px;
-    -webkit-animation: minhand 2s linear infinite;
-       -moz-animation: minhand 2s linear infinite;
-            animation: minhand 2s linear infinite;
+    padding: 8px;
+    width: 75px;
+    margin: 0 auto;
+  }
+  
+  .dot {
+    background: #b7b7b7;
+    border-radius: 50%;
+    float: left;
+    height: 15px;
+    opacity: 0.15;
+    position: relative;
+    left: 0;
+    top: 0;
+    -webkit-transform: scale(1);
+            transform: scale(1);
+    -webkit-animation-delay: 0.6s;
+    animation-delay: 0.6s;
+    width: 15px;
+  }
+  .dot:nth-child(1) {
+    -webkit-animation: dots-animation 1s 0.2s ease-in-out infinite;
+            animation: dots-animation 1s 0.2s ease-in-out infinite;
+    -webkit-animation-delay: 0.2s;
+    animation-delay: 0.2s;
+    left: 0px;
+  }
+  .dot:nth-child(2) {
+    -webkit-animation: dots-animation 1s 0.4s ease-in-out infinite;
+            animation: dots-animation 1s 0.4s ease-in-out infinite;
+    -webkit-animation-delay: 0.4s;
+    animation-delay: 0.4s;
+    left: 7.5px;
+  }
+  .dot:nth-child(3) {
+    -webkit-animation: dots-animation 1s 0.6s ease-in-out infinite;
+            animation: dots-animation 1s 0.6s ease-in-out infinite;
+    -webkit-animation-delay: 0.6s;
+    animation-delay: 0.6s;
+    left: 15px;
+  }
+  
+  @-webkit-keyframes dots-animation {
+        0%, 70%, 100% {
+        opacity: 0.15;
+        -webkit-transform: scale(1);
+                transform: scale(1);
+    }
+        35% {
+        opacity: 1;
+        -webkit-transform: scale(1);
+                transform: scale(1);
+    }
 }
 
-.timer:before{
-    width: 16px;
-    height: 2px;
-    top: 22px;
-    left: 22px;
-    -webkit-transform-origin: 1px 1px;
-       -moz-transform-origin: 1px 1px;
-            transform-origin: 1px 1px;
-    -webkit-animation: hrhand 8s linear infinite;
-       -moz-animation: hrhand 8s linear infinite;
-            animation: hrhand 8s linear infinite;
+  @keyframes dots-animation {
+    0%, 70%, 100% {
+      opacity: 0.15;
+      -webkit-transform: scale(1);
+              transform: scale(1);
+    }
+    35% {
+      opacity: 1;
+      -webkit-transform: scale(1);
+              transform: scale(1);
+    }
 }
+
+/* Loader end */
 
 .cuttable-address {
     white-space: nowrap;
@@ -1242,12 +1285,17 @@ a.token-update {
     }
 }
 
+@media screen and (max-height: 1024px) {
+    #loader {
+        margin-top: -20px;
+    }
+}
+
 @media screen and (max-width: 767px) {
 
     #loader {
         margin-top: -40px;
-    }    
-
+    }
     
     #disqus_thread {
         padding-bottom: 430px;
@@ -1495,4 +1543,8 @@ a.token-update {
 }
 .diff-zero{
     color: rgba(255, 255, 255, 0.6);
+}
+
+#page-create {
+    min-height: 650px;
 }

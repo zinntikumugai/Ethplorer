@@ -677,6 +677,15 @@ class Ethplorer {
                 "tx" => $tx,
                 "contracts" => array()
             );
+            // if transaction is not mained trying get it from pedding pool
+            if(false === $tx){
+                $transaction = $this->getTransactionFromPoolByHash($hash);
+                if ($transaction) {
+                    // transaction is pending if has no blockHash
+                    $transaction['pending'] = true;
+                    $result['tx'] = $transaction ?: false;
+                }
+            }
             $tokenAddr = false;
             if(isset($tx["creates"]) && $tx["creates"]){
                 $result["contracts"][] = $tx["creates"];
@@ -713,12 +722,11 @@ class Ethplorer {
                     }
                 }
             }
-            if($result['tx']){
+            if($result['tx'] && (!isset($result['tx']['pending']) || $result['tx']['pending'])) {
                 $this->oCache->save($cache, $result);
             }
         }
         if(is_array($result) && is_array($result['tx'])){
-
             $confirmations = 1;
             $lastblock = $this->getLastBlock();
             if($lastblock){
@@ -746,6 +754,37 @@ class Ethplorer {
         }
         evxProfiler::checkpoint('getTransactionDetails', 'FINISH');
         return $result;
+    }
+
+    /**
+     * Returns a list of transactions currently in the queue of Parity
+     * @param String $hash Transaction hash
+     * @return Array|null
+     */
+    public function getTransactionFromPoolByHash(string $hash) {
+        evxProfiler::checkpoint('getTransactionFromPoolByHash', 'START');
+        $time = microtime(true);
+        $cacheId = 'ethTransactionByHash-' . $hash;
+        $transaction = $this->oCache->get($cacheId, false, true, 30);
+        if(false === $transaction){
+            $transaction = $this->_callRPC('eth_getTransactionByHash', [$hash]);
+            if (false !== $transaction) {
+                $transaction['blockNumber'] = $transaction['blockNumber'] ? hexdec(str_replace('0x', '', $transaction['blockNumber'])) : null;
+                $transaction['value'] = hexdec(str_replace('0x', '', $transaction['value'])) / pow(10, 18);
+                $transaction['gas'] = hexdec(str_replace('0x', '', $transaction['gas'])) / pow(10, 18);
+                $transaction['gasPrice'] = hexdec(str_replace('0x', '', $transaction['gasPrice'])) / pow(10, 18);
+                $transaction['nonce'] = hexdec(str_replace('0x', '', $transaction['nonce']));
+                $this->oCache->save($cacheId, $transaction);
+            } else {
+                file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . "] - getting transaction by hash from pending pool is failed\n", FILE_APPEND);
+            }
+        }
+        $qTime = microtime(true) - $time;
+        if($qTime > 0.5){
+            file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . '] - (' . $qTime . "s) getting transaction by hash from pending pool too slow\n", FILE_APPEND);
+        }
+        evxProfiler::checkpoint('getTransactionFromPoolByHash', 'FINISH');
+        return $transaction;
     }
 
     /**
