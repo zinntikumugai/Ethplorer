@@ -1272,8 +1272,9 @@ Ethplorer = {
         }
         Ethplorer.gaSendEvent('userAction', 'listShowTx', type);
         Ethplorer.Storage.set('showTx', type);
-        if(type != 'all') Ethplorer.Nav.set('showTx', type);
-        else Ethplorer.Nav.del('showTx');
+        Ethplorer.Nav.set('showTx', type);
+        //if(type != 'all') Ethplorer.Nav.set('showTx', type);
+        //else Ethplorer.Nav.del('showTx');
         var tab = Ethplorer.getActiveTab();
         Ethplorer.reloadTab(tab);
     },
