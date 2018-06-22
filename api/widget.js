@@ -2099,6 +2099,7 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
 
     this.options = {
         period: 365,
+        withEth: false,
         type: 'area',
         theme: 'light',
         options: {},
@@ -2446,7 +2447,7 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
     };
 
     this.getRequestParams = function(additionalParams){
-        var requestOptions = ['period', 'address', 'type', 'theme'];
+        var requestOptions = ['period', 'address', 'withEth', 'type', 'theme'];
         var params = {
             apiKey: 'ethplorer.widget'
         };
