@@ -1053,7 +1053,7 @@ Ethplorer = {
     showFilter: function(data){
         var activeTab = Ethplorer.getActiveTab();
         if(activeTab && data.pager && data.pager[activeTab]){
-            if(data.pager[activeTab].records > 100000 || (data.token && data.token.txsCount && data.token.txsCount > 100000)){
+            if(data.pager[activeTab].records > 100000 || ((activeTab == 'transfers') && (data.token && data.token.txsCount && data.token.txsCount > 100000))){
                 $('#filter_list').hide();
             }else{
                 if(Ethplorer.showTx && data.token){
