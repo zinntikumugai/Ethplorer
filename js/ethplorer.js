@@ -279,9 +279,15 @@ Ethplorer = {
     error: function(message, addationalInfo = ''){
         Ethplorer.hideLoader();
         $('.content-page').hide();
-        $('#error-reason').text(message);
         if (addationalInfo.length) {
-            $('#error-info').html(addationalInfo);
+            $('#error-with-details').show();
+            $('#error').hide();
+            $('#error-with-details .error-title').text(message);
+            $('#error-with-details .error-details').html(addationalInfo);
+        } else {
+            $('#error').show();
+            $('#error-with-details').hide();
+            $('#error-reason').text(message);
         }
         $('#error').show();
         $('#ethplorer-path').hide();
