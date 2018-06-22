@@ -1522,9 +1522,9 @@ Ethplorer = {
         pager.addClass('pagination pagination-sm');
         setTimeout(function(_container, _count, _total){
             return function(){
-                var str = _count + ' total';
+                var str = Ethplorer.Utils.formatNum(_count) + ' total';
                 if(_count < _total){
-                    str = '<span class="filtered-totals">Filtered ' + _count + ' records of ' + _total + ' total</span>';
+                    str = '<span class="filtered-totals">Filtered ' + Ethplorer.Utils.formatNum(_count) + ' records of ' + Ethplorer.Utils.formatNum(_total) + ' total</span>';
                 }
                 _container.parents('.block').find('.total-records').html(str);
                 var filter = Ethplorer.Nav.get('filter');
