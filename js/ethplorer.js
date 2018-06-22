@@ -740,6 +740,9 @@ Ethplorer = {
         if(Ethplorer.debug){
             data.debugId = Ethplorer.debugId;
         }
+        if(Ethplorer.showTx){
+            data.showTx = Ethplorer.showTx;
+        }
         $.getJSON(Ethplorer.service, data, function(_address){
             return function(data){
                 if(data.debug){

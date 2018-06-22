@@ -26,6 +26,7 @@ $refresh = isset($_GET["refresh"]) ? $_GET["refresh"] : false;
 $search = isset($_GET["search"]) ? $_GET["search"] : false;
 $adv = isset($_GET["notes"]) ? $_GET["notes"] : false;
 $debugId = isset($_GET["debugId"]) ? $_GET["debugId"] : false;
+$showTx = isset($_GET["showTx"]) ? $_GET["showTx"] : false;
 
 // Allow cross-domain ajax requests
 header('Access-Control-Allow-Origin: *');
@@ -43,6 +44,7 @@ if($debugId){
 if(strlen($search) || (false !== $data)){
 
     $es = Ethplorer::db($aConfig);
+    if($showTx) $es->setShowTx($showTx);
     //if(isset($aConfig['showTx']) && $aConfig['showTx']) $es->setShowTx($aConfig['showTx']);
 
     if(strlen($search)){
