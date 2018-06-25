@@ -416,7 +416,9 @@ Ethplorer = {
     showTxDetails: function(txHash, txData){
         // $('#ethplorer-path').html('<h1>Transaction hash: ' + txHash + '</h1>');
         $('#ethplorer-path').show();
-        if (txData.pending) {
+        if (txData.pending && txData.tx && txData.tx.blockNumber) {
+            $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Processing transation&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
+        } else if (txData.pending) {
             $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Pending transation&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
         }
 
@@ -442,7 +444,10 @@ Ethplorer = {
             $('#txEthStatus')[oTx.success ? 'addClass' : 'removeClass']('text-success');
             $('#txEthStatus').html(oTx.success ? 'Success' : 'Failed' + (oTx.failedReason ? (': ' + Ethplorer.getTxErrorReason(oTx.failedReason)) : ''));
             $('#tx-status').addClass(oTx.success ? 'green' : 'red');
-        }else{
+        } else if (oTx.blockNumber && txData.pending) {
+            $('#txEthStatus').removeClass('text-danger text-success');
+            $('#txEthStatus').html('Processing'); 
+        } else {
             $('#txEthStatus').removeClass('text-danger text-success');
             $('#txEthStatus').html('Pending');
         }
