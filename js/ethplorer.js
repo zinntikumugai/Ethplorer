@@ -564,7 +564,6 @@ Ethplorer = {
             }
 
             if(txData.operations && txData.operations.length){
-
                 txData.operation = txData.operations[txData.operations.length - 1];
                 var multiop = txData.operations.length > 1;
                 for(var i=0; i<txData.operations.length; i++){
