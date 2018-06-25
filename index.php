@@ -67,6 +67,11 @@ if(isset($_GET['debug']) && $_GET['debug']){
     $debugEnabled = true;
 }
 
+$withEth = false;
+if(isset($_GET['withEth']) && $_GET['withEth']){
+    $withEth = $_GET['withEth'];
+}
+
 $hasNotes = isset($aConfig['adv']) && count($aConfig['adv']);
 
 $sentryURL = false;
@@ -151,7 +156,10 @@ if(is_array($rParts) && isset($rParts[2])){
         var ethplorerWidgetPreload = [
             {
                 method: "getPriceHistoryGrouped",
-                options: {address: '<?php echo $address; ?>'}
+                options: {
+                    address: '<?php echo $address; ?>',
+                    withEth: '<?php echo $withEth; ?>'
+                }
             }
         ];
         </script>

@@ -1117,6 +1117,7 @@ Ethplorer = {
                         getCode: true,
                         address: address,
                         period: 730,
+                        withEth: Ethplorer.Storage.get('withEth', false),
                         //options: {title: widgetTitle}
                     }
                 );
