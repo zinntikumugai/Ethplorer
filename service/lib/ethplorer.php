@@ -690,28 +690,29 @@ class Ethplorer {
                         $token = $this->getToken($transaction['to']);
                         if ($token) {
                             $result['token'] = $token;
-                            
-                            preg_match('/^(?<code>.{10})(?<from>.{64})(?<value>.{64})(?<rest>.*)?$/', $transaction['input'], $operation);
-                            if (strtoupper($operation['code']) === '0XA9059CBB') {
-                                $value = hexdec($operation['value']);
-                                $result['operations'] = [
-                                    [
-                                        'transactionHash' => $transaction['hash'],
-                                        'blockNumber' => null,
-                                        'contract' => $operation['from'],
-                                        'value' => $value,
-                                        'intValue' => (int)$value,
-                                        'type' => 'Transfer',
-                                        'isEth' => false,
-                                        'priority' => 0,
-                                        'from' => $transaction['from'],
-                                        'to' => $transaction['to'],
-                                        'addresses' => '',
-                                        'success' => false,
-                                        'pending' => true,
-                                        'token' => $token
-                                    ]
-                                ];
+                            if (isset($transaction['input'])) {
+                                preg_match('/^(?<code>.{10})(?<from>.{64})(?<value>.{64})(?<rest>.*)?$/', $transaction['input'], $operation);
+                                if (strtoupper($operation['code']) === '0XA9059CBB') {
+                                    $value = hexdec($operation['value']);
+                                    $result['operations'] = [
+                                        [
+                                            'transactionHash' => $transaction['hash'],
+                                            'blockNumber' => null,
+                                            'contract' => $operation['from'],
+                                            'value' => $value,
+                                            'intValue' => (int)$value,
+                                            'type' => 'Transfer',
+                                            'isEth' => false,
+                                            'priority' => 0,
+                                            'from' => $transaction['from'],
+                                            'to' => $transaction['to'],
+                                            'addresses' => '',
+                                            'success' => false,
+                                            'pending' => true,
+                                            'token' => $token
+                                        ]
+                                    ];
+                                }
                             }
                         }
                     }
