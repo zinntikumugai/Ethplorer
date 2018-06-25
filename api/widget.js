@@ -2100,7 +2100,6 @@ ethplorerWidget.Type['addressPriceHistoryGrouped'] = function(element, options, 
 
     this.options = {
         period: 365,
-        withEth: false,
         type: 'area',
         theme: 'light',
         options: {},
