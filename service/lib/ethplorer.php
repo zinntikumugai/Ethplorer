@@ -688,31 +688,27 @@ class Ethplorer {
 
                     if (isset($transaction['to'])) {
                         $token = $this->getToken($transaction['to']);
-                        if ($token) {
-                            $result['token'] = $token;
-                            if (isset($transaction['input'])) {
-                                preg_match('/^(?<code>.{10})(?<from>.{64})(?<value>.{64})(?<rest>.*)?$/', $transaction['input'], $operation);
-                                if (strtoupper($operation['code']) === '0XA9059CBB') {
-                                    $value = hexdec($operation['value']);
-                                    $result['operations'] = [
-                                        [
-                                            'transactionHash' => $transaction['hash'],
-                                            'blockNumber' => null,
-                                            'contract' => $operation['from'],
-                                            'value' => $value,
-                                            'intValue' => (int)$value,
-                                            'type' => 'Transfer',
-                                            'isEth' => false,
-                                            'priority' => 0,
-                                            'from' => $transaction['from'],
-                                            'to' => $transaction['to'],
-                                            'addresses' => '',
-                                            'success' => false,
-                                            'pending' => true,
-                                            'token' => $token
-                                        ]
-                                    ];
-                                }
+                        if ($token && isset($transaction['input'])) {
+                            $operation = $this->getTokenOperationData($transaction['input'], $token['decimals']);
+                            if ($operation && strtoupper($operation['code']) === '0XA9059CBB') {
+                                $result['operations'] = [
+                                    [
+                                        'transactionHash' => $transaction['hash'],
+                                        'blockNumber' => null,
+                                        'contract' => $operation['from'],
+                                        'value' => $operation['value'],
+                                        'intValue' => (int)$operation['value'],
+                                        'type' => 'Transfer',
+                                        'isEth' => false,
+                                        'priority' => 0,
+                                        'from' => $transaction['from'],
+                                        'to' => $transaction['to'],
+                                        'addresses' => '',
+                                        'success' => false,
+                                        'pending' => true,
+                                        'token' => $token
+                                    ]
+                                ];
                             }
                         }
                     }
@@ -793,6 +789,26 @@ class Ethplorer {
         }
         evxProfiler::checkpoint('getTransactionDetails', 'FINISH');
         return $result;
+    }
+
+    /**
+     * Return operation details
+     * @param String $input Transaction input raw data
+     * @param Int $division
+     * @return Array|null Operation data
+     */
+    private function getTokenOperationData($input, $division = 18) {
+        preg_match('/^(?<code>.{10})(?<from>.{64})(?<value>.{64})(?<rest>.*)?$/', $input, $operation);
+        if ($operation) {
+            $ten = Decimal::create(10);
+            $dec = Decimal::create($token['decimals']);;
+            $value = Decimal::create(hexdec($operation['value']));
+            $operation['value'] = '' . $value->div($ten->pow($dec), 4);
+
+            return $operation;
+        }
+
+        return null;
     }
 
     /**
