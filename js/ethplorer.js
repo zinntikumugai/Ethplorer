@@ -1757,6 +1757,13 @@ Ethplorer = {
                     value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH';
                 }
                 break;
+            case 'ether-gwei':
+                if(value < 0){
+                    value = "N/A";
+                }else{
+                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH&nbsp;(' + (Ethplorer.Utils.formatNum(value, false) * 10**9) + '&nbsp;Gwei)';
+                }
+                break;
             case 'ether-full':
                 if(value < 0){
                     value = "N/A";

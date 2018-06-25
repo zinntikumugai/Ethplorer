@@ -448,7 +448,7 @@ if(is_array($rParts) && isset($rParts[2])){
                                 </tr>
                                 <tr>
                                     <td>Gas Price</td>
-                                    <td id="transaction-tx-gasPrice" class="list-field" data-type="ether"></td>
+                                    <td id="transaction-tx-gasPrice" class="list-field" data-type="ether-gwei"></td>
                                  </tr>
                                  <tr>
                                     <td>Tx Cost</td>
