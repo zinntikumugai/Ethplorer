@@ -1148,7 +1148,7 @@ Ethplorer = {
             if(!data.token){
                 $('.filter-form').prepend('<style>@media screen and (max-width: 448px) {.filter-box.out-of-tabs{height: 35px;}}</style>' + showTxChecks);
             }else{
-                $('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 501px) {.filter-box.out-of-tabs{height: 35px;}}</style>' + showTxChecks);
+                $('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 501px) {.filter-box.out-of-tabs{height: 35px !important;}}</style>' + showTxChecks);
             }
         }
         if(!data.transfers || !data.transfers.length){
