@@ -677,6 +677,7 @@ class Ethplorer {
                 "tx" => $tx,
                 "contracts" => array()
             );
+
             // if transaction is not mained trying get it from pedding pool
             if(false === $tx){
                 $transaction = $this->getTransactionFromPoolByHash($hash);
@@ -684,20 +685,20 @@ class Ethplorer {
                     // transaction is pending if has no blockHash
                     $result['pending'] = true;
                     $result['tx'] = $transaction ?: false;
-                    
+
                     if (isset($transaction['to'])) {
                         $token = $this->getToken($transaction['to']);
                         if ($token) {
                             $result['token'] = $token;
-
-                            // Need for operations
-                            if (substr($result['tx']['input'], 0, 4) === '0xA9059CBB') {
-                                $value = hexdec(substr($result['tx']['input'], 4));
+                            
+                            preg_match('/^(?<code>.{10})(?<from>.{64})(?<value>.{64})(?<rest>.*)?$/', $transaction['input'], $operation);
+                            if (strtoupper($operation['code']) === '0XA9059CBB') {
+                                $value = hexdec($operation['value']);
                                 $result['operations'] = [
                                     [
                                         'transactionHash' => $transaction['hash'],
                                         'blockNumber' => null,
-                                        'contract' => $transaction['to'],
+                                        'contract' => $operation['from'],
                                         'value' => $value,
                                         'intValue' => (int)$value,
                                         'type' => 'Transfer',

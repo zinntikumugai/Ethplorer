@@ -662,6 +662,9 @@ Ethplorer = {
                     $('#txTokenStatus')[oOperation.success ? 'addClass' : 'removeClass']('text-success');
                     $('#txTokenStatus').html(oOperation.success ? 'Success' : 'Failed' + (oOperation.failedReason ? (': ' + Ethplorer.getTxErrorReason(oOperation.failedReason)) : ''));
                     $('#operation-status').addClass(oOperation.success ? 'green' : 'red');
+                } else if (oTx.blockNumber && txData.pending) {
+                    $('#txTokenStatus').removeClass('text-danger text-success');
+                    $('#txTokenStatus').html('Processing'); 
                 } else {
                     $('#txTokenStatus').removeClass('text-danger text-success');
                     $('#txTokenStatus').html('Pending'); 
@@ -687,9 +690,12 @@ Ethplorer = {
                     $('#operation-status').addClass(oTx.success ? 'green' : 'red');
                 }
             }
-            if(!oTx.blockNumber){
+            if(!oTx.blockNumber && txData.pending){
                 $('#txTokenStatus').removeClass('text-danger text-success');
                 $('#txTokenStatus').html('Pending');
+            } else if (oTx.blockNumber && txData.pending) {
+                $('#txTokenStatus').removeClass('text-danger text-success');
+                $('#txTokenStatus').html('Processing');
             }
             Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
         }else{
