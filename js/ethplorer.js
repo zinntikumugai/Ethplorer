@@ -1109,17 +1109,18 @@ Ethplorer = {
                     $('#widget-block').hide();
                     $('#token-price-history-grouped-widget').hide();
                 }
-                ethplorerWidget.init(
-                    '#token-price-history-grouped-widget',
-                    'addressPriceHistoryGrouped',
+                var opt = 
                     {
                         theme: 'dark',
                         getCode: true,
                         address: address,
                         period: 730,
-                        withEth: Ethplorer.Storage.get('withEth', false),
-                        //options: {title: widgetTitle}
-                    }
+                    };
+                if(Ethplorer.Storage.get('withEth', false)) opt['withEth'] = true;
+                ethplorerWidget.init(
+                    '#token-price-history-grouped-widget',
+                    'addressPriceHistoryGrouped',
+                    opt
                 );
                 //ethplorerWidget.loadScript("https://www.google.com/jsapi", ethplorerWidget.loadGoogleControlCharts);
                 ethplorerWidget.loadGoogleControlCharts();

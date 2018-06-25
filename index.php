@@ -158,7 +158,7 @@ if(is_array($rParts) && isset($rParts[2])){
                 method: "getPriceHistoryGrouped",
                 options: {
                     address: '<?php echo $address; ?>',
-                    withEth: '<?php echo $withEth; ?>'
+                    <?php if($withEth) echo "withEth: true"; ?>
                 }
             }
         ];
