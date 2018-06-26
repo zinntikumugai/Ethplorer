@@ -704,7 +704,7 @@ Ethplorer = {
             Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
         }else{
             if (
-                (Ethplorer.Storage.get('showTx') == 'all' || Ethplorer.Storage.get('showTx') == 'eth') &&
+                (Ethplorer.Storage.get('showTx') === 'all' || Ethplorer.Storage.get('showTx') === 'eth') &&
                 (!txData.tx.operations || !txData.tx.operations.length) &&
                 txData.tx.success && txData.tx.value > 0
             ) {
@@ -727,10 +727,10 @@ Ethplorer = {
                     $('#operation-status').addClass(txData.operation.success ? 'green' : 'red');
                 } else if (oTx.blockNumber && txData.pending) {
                     $('#operation-status').removeClass('text-danger text-success');
-                    $('#operation-status').html('Processing'); 
+                    $('#txTokenStatus').html('Processing'); 
                 } else {
                     $('#operation-status').removeClass('text-danger text-success');
-                    $('#operation-status').html('Pending');
+                    $('#txTokenStatus').html('Pending');
                 }
             }
             $('#tx-details-block').show();
