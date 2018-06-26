@@ -18,7 +18,7 @@ $aConfig = require dirname(__FILE__) . '/service/config.php';
 require dirname(__FILE__) . '/service/lib/ethplorer.php';
 $es = Ethplorer::db(array());
 
-$codeVersion = isset($aConfig['codeVersion']) ? $aConfig['codeVersion'] : "213";
+$codeVersion = isset($aConfig['codeVersion']) ? $aConfig['codeVersion'] : "214";
 
 $error = TRUE;
 $header = "";
@@ -65,6 +65,11 @@ $debugEnabled = false;
 if(isset($_GET['debug']) && $_GET['debug']){
     $debugId = $_GET['debug'];
     $debugEnabled = true;
+}
+
+$withEth = false;
+if(isset($_GET['withEth']) && $_GET['withEth']){
+    $withEth = $_GET['withEth'];
 }
 
 $hasNotes = isset($aConfig['adv']) && count($aConfig['adv']);
@@ -151,7 +156,10 @@ if(is_array($rParts) && isset($rParts[2])){
         var ethplorerWidgetPreload = [
             {
                 method: "getPriceHistoryGrouped",
-                options: {address: '<?php echo $address; ?>'}
+                options: {
+                    address: '<?php echo $address; ?>',
+                    <?php if($withEth) echo "withEth: true"; ?>
+                }
             }
         ];
         </script>
