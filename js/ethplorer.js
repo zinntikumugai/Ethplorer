@@ -36,13 +36,13 @@ Ethplorer = {
         BigNumber.config({ ERRORS: false });
         Ethplorer.Nav.init();
         Ethplorer.Storage.init();
-        Ethplorer.pageSize = 10; // Ethplorer.Storage.get('pageSize', 10);
+        Ethplorer.pageSize = Ethplorer.Storage.get('pageSize', 10);
         if(Ethplorer.pageSize > 10){
             Ethplorer.Nav.set('pageSize', Ethplorer.pageSize);
         }
-        /*if(Ethplorer.Nav.get('pageSize')){
+        if(Ethplorer.Nav.get('pageSize')){
             Ethplorer.pageSize = Ethplorer.Nav.get('pageSize');
-        }*/
+        }
         if(Ethplorer.Nav.get('filter')){
             var filter = Ethplorer.Nav.get('filter');
             if(filter){
@@ -58,12 +58,7 @@ Ethplorer = {
                 }
             }
         }
-        Ethplorer.showEth = 0;//Ethplorer.Storage.get('showEth', 1);
-        Ethplorer.showEthForToken = 0;//Ethplorer.Storage.get('showEthForToken', 1);
-        //if(Ethplorer.showEthForToken == 1) Ethplorer.Nav.set('showEthForToken', Ethplorer.showEthForToken);
-        /*
-        Ethplorer.Nav.set('showEth', Ethplorer.showEth);
-        */
+        Ethplorer.showTx = Ethplorer.Storage.get('showTx', null);
         Ethplorer.route();
         $('#network').text(Ethplorer.Config.testnet ? 'Test' : 'Modern');
         $('.navbar-nav li[data-page]').click(function(){
@@ -279,9 +274,15 @@ Ethplorer = {
     error: function(message, addationalInfo = ''){
         Ethplorer.hideLoader();
         $('.content-page').hide();
-        $('#error-reason').text(message);
         if (addationalInfo.length) {
-            $('#error-info').html(addationalInfo);
+            $('#error-with-details').show();
+            $('#error').hide();
+            $('#error-with-details .error-title').text(message);
+            $('#error-with-details .error-details').html(addationalInfo);
+        } else {
+            $('#error').show();
+            $('#error-with-details').hide();
+            $('#error-reason').text(message);
         }
         $('#error').show();
         $('#ethplorer-path').hide();
@@ -792,6 +793,9 @@ Ethplorer = {
         if(Ethplorer.debug){
             data.debugId = Ethplorer.debugId;
         }
+        if(Ethplorer.showTx){
+            data.showTx = Ethplorer.showTx;
+        }
         $.getJSON(Ethplorer.service, data, function(_address){
             return function(data){
                 if(data.debug){
@@ -1102,11 +1106,11 @@ Ethplorer = {
     showFilter: function(data){
         var activeTab = Ethplorer.getActiveTab();
         if(activeTab && data.pager && data.pager[activeTab]){
-            if(data.pager[activeTab].records > 100000){
+            if(data.pager[activeTab].records > 100000 || ((activeTab == 'transfers') && (data.token && data.token.txsCount && data.token.txsCount > 100000))){
                 $('#filter_list').hide();
             }else{
-                if(data.token && (Ethplorer.Storage.get('showEthForToken', 0) > 0)){
-                    $('.filter-box').prepend('<style>@media screen and (max-width: 992px) { .filter-box.in-tabs {text-align: right !important; margin-top: 10px !important; height: 40px !important;} .filter-box.in-tabs .filter-form {width: 100% !important;} .filter-box.in-tabs #filter_list {width: 100% !important;} }</style>');
+                if(Ethplorer.showTx && data.token){
+                    $('.filter-box').prepend('<style>@media screen and (max-width: 992px) { .filter-box.in-tabs {text-align: right !important; margin-top: 10px !important; height: 15px !important;} .filter-box.in-tabs .filter-form {width: 100% !important;} .filter-box.in-tabs #filter_list {width: 100% !important;} } @media screen and (max-width: 379px) {.filter-box.in-tabs {height: 40px !important;} }</style>');
                 }
                 $('#filter_list').show();
             }
@@ -1158,16 +1162,18 @@ Ethplorer = {
                     $('#widget-block').hide();
                     $('#token-price-history-grouped-widget').hide();
                 }
-                ethplorerWidget.init(
-                    '#token-price-history-grouped-widget',
-                    'addressPriceHistoryGrouped',
+                var opt = 
                     {
                         theme: 'dark',
                         getCode: true,
                         address: address,
                         period: 730,
-                        //options: {title: widgetTitle}
-                    }
+                    };
+                if(Ethplorer.Storage.get('withEth', false)) opt['withEth'] = true;
+                ethplorerWidget.init(
+                    '#token-price-history-grouped-widget',
+                    'addressPriceHistoryGrouped',
+                    opt
                 );
                 //ethplorerWidget.loadScript("https://www.google.com/jsapi", ethplorerWidget.loadGoogleControlCharts);
                 ethplorerWidget.loadGoogleControlCharts();
@@ -1189,11 +1195,14 @@ Ethplorer = {
         var data = Ethplorer.data;
         var tableId = data.token ? 'address-token-transfers' : 'address-transfers';
         $('#' + tableId).find('.table').empty();
-        if(!data.token && !$('#showEth').length){ // && (Ethplorer.Storage.get('showEth', 0) > 0)){
-            //$('.filter-form').prepend('<style>@media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfers(this);"  id="showEth" type="checkbox" ' + (Ethplorer.showEth > 0 ? 'checked="checked"' : '') + ' name="showEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
-        }
-        if(data.token && !$('#showEthForToken').length){// && (Ethplorer.Storage.get('showEthForToken', 0) > 0)){
-            //$('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 505px) {.filter-box.out-of-tabs{height: 35px;}}</style><span style="color: white;vertical-align:middle;">Show Ethereum transfers:</span> <input onClick="Ethplorer.showEthTransfersForToken(this);"  id="showEthForToken" type="checkbox" ' + (Ethplorer.showEthForToken > 0 ? 'checked="checked"' : '') + ' name="showEthForToken" value="1" style="vertical-align: text-bottom;margin-right:5px;">');
+        if(Ethplorer.showTx && !$('#showTxEth').length){
+            var showTxChecks = '<span style="color: white;vertical-align:middle;"><label for="showTxEth">ETH <sup class="diff-down">new</sup></label></span> <input onClick="Ethplorer.showTransfers(this, \'eth\');" id="showTxEth" type="checkbox" ' + ((Ethplorer.showTx == 'all' || Ethplorer.showTx == 'eth') ? 'checked="checked"' : '') + ' name="showTxEth" value="1" style="vertical-align: text-bottom;margin-right:5px;">' + ' <span style="color: white;vertical-align:middle;"><label for="showTxTokens">Tokens <sup class="diff-down">new</sup></label></span> <input onClick="Ethplorer.showTransfers(this, \'tokens\');" id="showTxTokens" type="checkbox" ' + ((Ethplorer.showTx == 'all' || Ethplorer.showTx == 'tokens') ? 'checked="checked"' : '') + ' name="showTxTokens" value="1" style="vertical-align: text-bottom;margin-right:5px;">';
+
+            if(!data.token){
+                $('.filter-form').prepend('<style>@media screen and (max-width: 501px) {.filter-box.out-of-tabs{height: 35px !important;}}</style>' + showTxChecks);
+            }else{
+                $('.filter-box').prepend('<style>.filter-box.in-tabs .filter-form{width: auto !important;} @media screen and (max-width: 501px) {.filter-box.out-of-tabs{height: 35px !important;}} @media screen and (max-width: 432px) {.filter-box.in-tabs{height: 35px !important;}}</style>' + showTxChecks);
+            }
         }
         if(!data.transfers || !data.transfers.length){
             $('#' + tableId).find('.total-records').empty();
@@ -1305,21 +1314,25 @@ Ethplorer = {
 
         $('#' + tableId).show();
     },
-    showEthTransfers: function(switcher){
+    showTransfers: function(switcher, type){
         Ethplorer.Nav.del('transfers');
-        Ethplorer.showEth = switcher.checked ? 1 : 0;
-        Ethplorer.gaSendEvent('userAction', 'listShowETH', !!Ethplorer.showEth ? 'true' : 'false');
-        Ethplorer.Storage.set('showEth', Ethplorer.showEth);
-        Ethplorer.Nav.set('showEth', Ethplorer.showEth);
-        var tab = Ethplorer.getActiveTab();
-        Ethplorer.reloadTab(tab);
-    },
-    showEthTransfersForToken: function(switcher){
-        Ethplorer.Nav.del('transfers');
-        Ethplorer.showEthForToken = switcher.checked ? 1 : 0;
-        Ethplorer.gaSendEvent('userAction', 'listShowETH', !!Ethplorer.showEthForToken ? 'true' : 'false');
-        Ethplorer.Storage.set('showEthForToken', Ethplorer.showEthForToken);
-        Ethplorer.Nav.set('showEthForToken', Ethplorer.showEthForToken);
+        if(switcher.checked){
+            type = 'all';
+            Ethplorer.showTx = 'all';
+        }else{
+            if(type == 'eth'){
+                Ethplorer.showTx = type = 'tokens';
+                $('#showTxTokens').prop('checked', true);
+            }else{
+                Ethplorer.showTx = type = 'eth';
+                $('#showTxEth').prop('checked', true);
+            }
+        }
+        Ethplorer.gaSendEvent('userAction', 'listShowTx', type);
+        Ethplorer.Storage.set('showTx', type);
+        Ethplorer.Nav.set('showTx', type);
+        //if(type != 'all') Ethplorer.Nav.set('showTx', type);
+        //else Ethplorer.Nav.del('showTx');
         var tab = Ethplorer.getActiveTab();
         Ethplorer.reloadTab(tab);
     },
@@ -1564,9 +1577,9 @@ Ethplorer = {
         pager.addClass('pagination pagination-sm');
         setTimeout(function(_container, _count, _total){
             return function(){
-                var str = _count + ' total';
+                var str = Ethplorer.Utils.formatNum(_count) + ' total';
                 if(_count < _total){
-                    str = '<span class="filtered-totals">Filtered ' + _count + ' records of ' + _total + ' total</span>';
+                    str = '<span class="filtered-totals">Filtered ' + Ethplorer.Utils.formatNum(_count) + ' records of ' + Ethplorer.Utils.formatNum(_total) + ' total</span>';
                 }
                 _container.parents('.block').find('.total-records').html(str);
                 var filter = Ethplorer.Nav.get('filter');
@@ -1630,7 +1643,7 @@ Ethplorer = {
                 }
                 pager.append(page);
             }
-            //container.append(pageSizeSelect);
+            container.append(pageSizeSelect);
             container.append(pager);
         }
     },
