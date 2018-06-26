@@ -1560,4 +1560,5 @@ a.token-update {
 #cookie-notification span {
     padding-bottom: 7px;
     display: inline-block;
+    margin-right: 10px;
 }
