@@ -18,7 +18,7 @@ $aConfig = require dirname(__FILE__) . '/service/config.php';
 require dirname(__FILE__) . '/service/lib/ethplorer.php';
 $es = Ethplorer::db(array());
 
-$codeVersion = isset($aConfig['codeVersion']) ? $aConfig['codeVersion'] : "212";
+$codeVersion = isset($aConfig['codeVersion']) ? $aConfig['codeVersion'] : "214";
 
 $error = TRUE;
 $header = "";
@@ -65,6 +65,11 @@ $debugEnabled = false;
 if(isset($_GET['debug']) && $_GET['debug']){
     $debugId = $_GET['debug'];
     $debugEnabled = true;
+}
+
+$withEth = false;
+if(isset($_GET['withEth']) && $_GET['withEth']){
+    $withEth = $_GET['withEth'];
 }
 
 $hasNotes = isset($aConfig['adv']) && count($aConfig['adv']);
@@ -151,7 +156,10 @@ if(is_array($rParts) && isset($rParts[2])){
         var ethplorerWidgetPreload = [
             {
                 method: "getPriceHistoryGrouped",
-                options: {address: '<?php echo $address; ?>'}
+                options: {
+                    address: '<?php echo $address; ?>',
+                    <?php if($withEth) echo "withEth: true"; ?>
+                }
             }
         ];
         </script>
@@ -215,7 +223,13 @@ if(is_array($rParts) && isset($rParts[2])){
                 <div id="error" class="content-page text-center">
                     <h1 class="text-danger"></h1>
                     <h3 id="error-reason" class="text-danger"></h3>
-                    <p id="error-info"></p>
+                </div>
+
+                <div id="error-with-details" class="content-page text-center">
+                    <div class="ethplorer-panel">
+                        <h3 class="text-danger error-title"></h3>
+                        <div class="error-details"></div>
+                    </div>
                 </div>
 
                 <div>

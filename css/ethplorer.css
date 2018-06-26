@@ -82,9 +82,23 @@ tr.paginationFooter td ul.pagination {
     padding-left: 0px;
 }
 
+#error-with-details h3 {
+    margin: 0;
+    padding-top: 7px;
+    padding-bottom: 15px;
+}
+
+.ethplorer-panel {
+    display: inline-block;
+    background: #1c1c1c;
+    color: #dedede;
+    border-radius: 5px;
+    padding: 15px;
+    font-size: 16px;
+}
+
 #error-info {
-    padding-top: 5px;
-    color: #eee;
+    margin: 0 auto;
 }
 
 .navbar-inverse {
@@ -828,6 +842,14 @@ tr.paginationFooter td {
     opacity: 0.4;
     line-height: 14px;
     padding-top: 4px;
+}
+
+.filter-box {
+	z-index:200;
+}
+
+#address-transfers {
+	z-index:100;
 }
 
 .filter-box.in-tabs {
