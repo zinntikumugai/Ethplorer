@@ -1556,3 +1556,8 @@ a.token-update {
     padding: 10px 0;
     background: #eaeaea;
 }
+
+#cookie-notification span {
+    padding-bottom: 7px;
+    display: inline-block;
+}
