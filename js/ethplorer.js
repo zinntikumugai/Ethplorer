@@ -425,7 +425,7 @@ Ethplorer = {
             Ethplorer.gaSendEvent('pageView', 'viewTx', 'tx-not-found');
             Ethplorer.error(
                 'Transaction not found',
-                'If transaction was created recently, it may not have reached mempool yet.<br/> Wait a minute and try to <a href="javascript:void()" onClick="Ethplorer.gaSendEvent(\'pageView\', \'viewTx\', \'refresh\'); location.reload();">refresh</a> the page.'
+                'If transaction was created recently, it may not have reached mempool yet.<br/> Wait a minute and try to <a href="javascript:void()" onClick="Ethplorer.gaSendEvent(\'pageView\', \'viewTx\', \'refresh\'); setTimeout(function() { location.reload(); }, 500);">refresh</a> the page.'
             );
             return;
         }
