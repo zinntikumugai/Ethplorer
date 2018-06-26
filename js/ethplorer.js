@@ -704,6 +704,7 @@ Ethplorer = {
             Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
         }else{
             if (
+                (Ethplorer.Storage.get('showTx') == 'all' || Ethplorer.Storage.get('showTx') == 'eth') &&
                 (!txData.tx.operations || !txData.tx.operations.length) &&
                 txData.tx.success && txData.tx.value > 0
             ) {
@@ -1792,7 +1793,7 @@ Ethplorer = {
                 if(value < 0){
                     value = "N/A";
                 }else{
-                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH&nbsp;(' + (Ethplorer.Utils.formatNum(value, false) * 10**9) + '&nbsp;Gwei)';
+                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH&nbsp;(' + (Ethplorer.Utils.formatNum(value, true, 18, true) * 10**9) + '&nbsp;Gwei)';
                 }
                 break;
             case 'ether-full':
