@@ -703,6 +703,32 @@ Ethplorer = {
             }
             Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
         }else{
+            if (
+                (!txData.tx.operations || !txData.tx.operations.length) &&
+                txData.tx.success && txData.tx.value > 0
+            ) {
+                $('#token-operation-block').show();
+                $('#token-operation-block .token-name:eq(0)').html('ETH');
+                $('.token-operation-type').text('Transfer');
+                txData.operation = {
+                    from: txData.tx.from,
+                    to: txData.tx.to,
+                    success: txData.tx.success
+                }
+                Ethplorer.fillValues('transfer', txData, ['operation', 'operation.from', 'operation.to']);
+                if(oTx.blockNumber && !txData.pending){
+                    $('#txTokenStatus')[txData.operation.success ? 'removeClass' : 'addClass']('text-danger');
+                    $('#txTokenStatus')[txData.operation.success ? 'addClass' : 'removeClass']('text-success');
+                    $('#txTokenStatus').html(txData.operation.success ? 'Success' : 'Failed');
+                    $('#operation-status').addClass(txData.operation.success ? 'green' : 'red');
+                } else if (oTx.blockNumber && txData.pending) {
+                    $('#operation-status').removeClass('text-danger text-success');
+                    $('#operation-status').html('Processing'); 
+                } else {
+                    $('#operation-status').removeClass('text-danger text-success');
+                    $('#operation-status').html('Pending');
+                }
+            }
             $('#tx-details-block').show();
             $('.tx-details-close').hide();
         }
