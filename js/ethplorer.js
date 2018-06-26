@@ -1819,13 +1819,13 @@ Ethplorer = {
                 }else{
                     var res = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH';
                     if(value){
-                        var price = Ethplorer.Utils.formatNum(Ethplorer.ethPrice.rate * value, true, 4, true);
+                        var price = Ethplorer.Utils.formatNum(Ethplorer.ethPrice.rate * value, true, 2, true);
                         if(true || ('0.00' != price)){
                             var change = Ethplorer.ethPrice.diff;
                             var cls = change > 0 ? 'diff-up' : 'diff-down';
                             var diff = "";
                             // var diff = change ? (' <span class="' + cls + '">(' + Ethplorer.Utils.round(change, 2) + '%)</span>') : '';
-                            res = res + '<br /><span class="transfer-usd">$&nbsp;' + price + diff + '</span>';
+                            res = res + '<br /><b class="transfer-usd">$ ' + price + diff + '</b>';
                         }
                     }
                     value = res;
