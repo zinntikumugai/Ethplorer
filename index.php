@@ -345,7 +345,7 @@ if(is_array($rParts) && isset($rParts[2])){
                                 </tr>
                                 <tr class="blue">
                                     <td>Value</td>
-                                    <td id="transfer-operation-valueEth" data-type="ether" class="list-field"></td>
+                                    <td id="transfer-operation-valueEth" data-type="ether-full" class="list-field"></td>
                                 </tr>
                                 <tr>
                                     <td>Date</td>
