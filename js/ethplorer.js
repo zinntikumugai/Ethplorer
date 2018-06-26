@@ -705,6 +705,7 @@ Ethplorer = {
             Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
         }else{
             if (
+                (Ethplorer.Storage.get('showTx') == 'all' || Ethplorer.Storage.get('showTx') == 'eth') &&
                 (!txData.tx.operations || !txData.tx.operations.length) &&
                 txData.tx.success && txData.tx.value > 0
             ) {
@@ -714,9 +715,12 @@ Ethplorer = {
                 txData.operation = {
                     from: txData.tx.from,
                     to: txData.tx.to,
+                    valueEth: txData.tx.value,
                     success: txData.tx.success
                 }
-                Ethplorer.fillValues('transfer', txData, ['operation', 'operation.from', 'operation.to']);
+
+                Ethplorer.fillValues('transfer', txData, ['operation', 'operation.from', 'operation.to', 'operation.valueEth']);
+                Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
                 if(oTx.blockNumber && !txData.pending){
                     $('#txTokenStatus')[txData.operation.success ? 'removeClass' : 'addClass']('text-danger');
                     $('#txTokenStatus')[txData.operation.success ? 'addClass' : 'removeClass']('text-success');
@@ -1805,7 +1809,7 @@ Ethplorer = {
                 if(value < 0){
                     value = "N/A";
                 }else{
-                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH&nbsp;(' + (Ethplorer.Utils.formatNum(value, false) * 10**9) + '&nbsp;Gwei)';
+                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH&nbsp;(' + (Ethplorer.Utils.formatNum(value, true, 18, true) * 10**9) + '&nbsp;Gwei)';
                 }
                 break;
             case 'ether-full':

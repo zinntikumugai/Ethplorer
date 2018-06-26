@@ -343,6 +343,10 @@ if(is_array($rParts) && isset($rParts[2])){
                                     <td>Value</td>
                                     <td id="transfer-operation-value" class="list-field"></td>
                                 </tr>
+                                <tr class="blue">
+                                    <td>Value</td>
+                                    <td id="transfer-operation-valueEth" data-type="ether" class="list-field"></td>
+                                </tr>
                                 <tr>
                                     <td>Date</td>
                                     <td id="transfer-tx-timestamp" data-type="localdate" class="list-field"></td>
