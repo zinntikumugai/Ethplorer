@@ -422,7 +422,9 @@ Ethplorer = {
     showTxDetails: function(txHash, txData){
         // $('#ethplorer-path').html('<h1>Transaction hash: ' + txHash + '</h1>');
         $('#ethplorer-path').show();
-        if (txData.pending) {
+        if (txData.pending && txData.tx && txData.tx.blockNumber) {
+            $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Processing transation&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
+        } else if (txData.pending) {
             $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Pending transation&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
         }
 
@@ -448,7 +450,10 @@ Ethplorer = {
             $('#txEthStatus')[oTx.success ? 'addClass' : 'removeClass']('text-success');
             $('#txEthStatus').html(oTx.success ? 'Success' : 'Failed' + (oTx.failedReason ? (': ' + Ethplorer.getTxErrorReason(oTx.failedReason)) : ''));
             $('#tx-status').addClass(oTx.success ? 'green' : 'red');
-        }else{
+        } else if (oTx.blockNumber && txData.pending) {
+            $('#txEthStatus').removeClass('text-danger text-success');
+            $('#txEthStatus').html('Processing'); 
+        } else {
             $('#txEthStatus').removeClass('text-danger text-success');
             $('#txEthStatus').html('Pending');
         }
@@ -704,6 +709,32 @@ Ethplorer = {
             }
             Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
         }else{
+            if (
+                (!txData.tx.operations || !txData.tx.operations.length) &&
+                txData.tx.success && txData.tx.value > 0
+            ) {
+                $('#token-operation-block').show();
+                $('#token-operation-block .token-name:eq(0)').html('ETH');
+                $('.token-operation-type').text('Transfer');
+                txData.operation = {
+                    from: txData.tx.from,
+                    to: txData.tx.to,
+                    success: txData.tx.success
+                }
+                Ethplorer.fillValues('transfer', txData, ['operation', 'operation.from', 'operation.to']);
+                if(oTx.blockNumber && !txData.pending){
+                    $('#txTokenStatus')[txData.operation.success ? 'removeClass' : 'addClass']('text-danger');
+                    $('#txTokenStatus')[txData.operation.success ? 'addClass' : 'removeClass']('text-success');
+                    $('#txTokenStatus').html(txData.operation.success ? 'Success' : 'Failed');
+                    $('#operation-status').addClass(txData.operation.success ? 'green' : 'red');
+                } else if (oTx.blockNumber && txData.pending) {
+                    $('#operation-status').removeClass('text-danger text-success');
+                    $('#operation-status').html('Processing'); 
+                } else {
+                    $('#operation-status').removeClass('text-danger text-success');
+                    $('#operation-status').html('Pending');
+                }
+            }
             $('#tx-details-block').show();
             $('.tx-details-close').hide();
         }
@@ -1760,14 +1791,21 @@ Ethplorer = {
                 if(value < 0){
                     value = "N/A";
                 }else{
-                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + ' ETHER';
+                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH';
+                }
+                break;
+            case 'ether-gwei':
+                if(value < 0){
+                    value = "N/A";
+                }else{
+                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH&nbsp;(' + (Ethplorer.Utils.formatNum(value, false) * 10**9) + '&nbsp;Gwei)';
                 }
                 break;
             case 'ether-full':
                 if(value < 0){
                     value = "N/A";
                 }else{
-                    var res = Ethplorer.Utils.formatNum(value, true, 18, true) + ' ETHER';
+                    var res = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH';
                     if(value){
                         var price = Ethplorer.Utils.formatNum(Ethplorer.ethPrice.rate * value, true, 4, true);
                         if(true || ('0.00' != price)){
