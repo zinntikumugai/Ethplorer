@@ -705,7 +705,7 @@ Ethplorer = {
             Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
         }else{
             if (
-                (Ethplorer.Storage.get('showTx') == 'all' || Ethplorer.Storage.get('showTx') == 'eth') &&
+                (Ethplorer.Storage.get('showTx') === 'all' || Ethplorer.Storage.get('showTx') === 'eth') &&
                 (!txData.tx.operations || !txData.tx.operations.length) &&
                 txData.tx.success && txData.tx.value > 0
             ) {
@@ -728,10 +728,10 @@ Ethplorer = {
                     $('#operation-status').addClass(txData.operation.success ? 'green' : 'red');
                 } else if (oTx.blockNumber && txData.pending) {
                     $('#operation-status').removeClass('text-danger text-success');
-                    $('#operation-status').html('Processing'); 
+                    $('#txTokenStatus').html('Processing'); 
                 } else {
                     $('#operation-status').removeClass('text-danger text-success');
-                    $('#operation-status').html('Pending');
+                    $('#txTokenStatus').html('Pending');
                 }
             }
             $('#tx-details-block').show();
@@ -1809,7 +1809,8 @@ Ethplorer = {
                 if(value < 0){
                     value = "N/A";
                 }else{
-                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH&nbsp;(' + (Ethplorer.Utils.formatNum(value, true, 18, true) * 10**9) + '&nbsp;Gwei)';
+                    var gwei = Ethplorer.Utils.toBig(value).mul(Math.pow(10, 9)).toString();
+                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH&nbsp;(' + Ethplorer.Utils.formatNum(gwei, true, 3, true).toString().replace(/[0.]*$/, '', 'g') + '&nbsp;Gwei)';
                 }
                 break;
             case 'ether-full':
