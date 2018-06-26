@@ -1760,7 +1760,6 @@ Ethplorer = {
         }
     },
     fillValue: function(id, value){
-        console.log(id, value);
         var type = $('#' + id).attr('data-type') || 'none';
         var options = $('#' + id).attr('data-options') ? $('#' + id).attr('data-options').split('|') : [];
         switch(type){
