@@ -685,12 +685,12 @@ class Ethplorer {
                     // transaction is pending if has no blockHash
                     $result['pending'] = true;
                     $result['tx'] = $transaction ?: false;
-
                     if (isset($transaction['to'])) {
                         $token = $this->getToken($transaction['to']);
                         if ($token && isset($transaction['input'])) {
                             $operation = $this->getTokenOperationData($transaction['input'], $token['decimals']);
                             if ($operation && strtoupper($operation['code']) === '0XA9059CBB') {
+                                $result['token'] = $token;
                                 $result['operations'] = [
                                     [
                                         'transactionHash' => $transaction['hash'],
@@ -794,14 +794,14 @@ class Ethplorer {
     /**
      * Return operation details
      * @param String $input Transaction input raw data
-     * @param Int $division
+     * @param Int $decimals
      * @return Array|null Operation data
      */
-    private function getTokenOperationData($input, $division = 18) {
+    private function getTokenOperationData($input, $decimals = 18) {
         preg_match('/^(?<code>.{10})(?<from>.{64})(?<value>.{64})(?<rest>.*)?$/', $input, $operation);
         if ($operation) {
             $ten = Decimal::create(10);
-            $dec = Decimal::create($token['decimals']);;
+            $dec = Decimal::create($decimals);
             $value = Decimal::create(hexdec($operation['value']));
             $operation['value'] = '' . $value->div($ten->pow($dec), 4);
 
