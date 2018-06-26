@@ -1796,7 +1796,8 @@ Ethplorer = {
                 if(value < 0){
                     value = "N/A";
                 }else{
-                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH&nbsp;(' + (Ethplorer.Utils.formatNum(value, true, 18, true) * 10**9) + '&nbsp;Gwei)';
+                    var gwei = Ethplorer.Utils.toBig(value).mul(Math.pow(10, 9)).toString();
+                    value = Ethplorer.Utils.formatNum(value, true, 18, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH&nbsp;(' + Ethplorer.Utils.formatNum(gwei, true, 3, true).toString().replace(/[0.]*$/, '', 'g') + '&nbsp;Gwei)';
                 }
                 break;
             case 'ether-full':
