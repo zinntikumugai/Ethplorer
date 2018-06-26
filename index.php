@@ -818,7 +818,7 @@ if(Ethplorer.Config.fb){
         $('#cookie-notification').removeClass('hidden');
         $('.agree-using-cookies').on('click', function() {
             var date = new Date();
-            date.setFullYear(date.getFullYear + 2); // + 2 years
+            date.setFullYear(date.getFullYear() + 2); // + 2 years
             document.cookie = 'agree_to_use=' + Date.now() + '; path=/; expires=' + date.toUTCString();
             $('#cookie-notification').addClass('hide');
             return false;
