@@ -959,9 +959,9 @@ class Ethplorer {
                     $aResult[$address]['symbol'] = htmlspecialchars($aResult[$address]['symbol']);
                 }
 
-                $cursor = $this->oMongo->find('addressCache', array("address" => $address));
+                $cursor2 = $this->oMongo->find('addressCache', array("address" => $address));
                 $aCachedData = false;
-                foreach($cursor as $aCachedData) break;
+                foreach($cursor2 as $aCachedData) break;
                 if(false !== $aCachedData){
                     $aResult[$address]['txsCount'] = $aCachedData['txsCount'];
                     if(isset($aCachedData['ethTransfersCount'])) $aResult[$address]['ethTransfersCount'] = $aCachedData['ethTransfersCount'];
