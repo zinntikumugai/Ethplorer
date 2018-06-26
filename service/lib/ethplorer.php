@@ -794,7 +794,7 @@ class Ethplorer {
             $result = false;
             $cursor = $this->oMongo->find('ethBalances', array('address' => $address));
             foreach($cursor as $result) break;
-            if($result && isset($result['balance'])){
+            if($result && isset($result['balance']) && ((time() * 1000 - (int)$result['lastUpdated']) < 3600000 * 24)){
                 $balance = $result['balance'];               
             }else{
                 $balance = $this->_callRPC('eth_getBalance', array($address, 'latest'));
