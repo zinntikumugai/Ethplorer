@@ -714,9 +714,12 @@ Ethplorer = {
                 txData.operation = {
                     from: txData.tx.from,
                     to: txData.tx.to,
+                    valueEth: txData.tx.value,
                     success: txData.tx.success
                 }
-                Ethplorer.fillValues('transfer', txData, ['operation', 'operation.from', 'operation.to']);
+
+                Ethplorer.fillValues('transfer', txData, ['operation', 'operation.from', 'operation.to', 'operation.valueEth']);
+                Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
                 if(oTx.blockNumber && !txData.pending){
                     $('#txTokenStatus')[txData.operation.success ? 'removeClass' : 'addClass']('text-danger');
                     $('#txTokenStatus')[txData.operation.success ? 'addClass' : 'removeClass']('text-success');
@@ -1757,6 +1760,7 @@ Ethplorer = {
         }
     },
     fillValue: function(id, value){
+        console.log(id, value);
         var type = $('#' + id).attr('data-type') || 'none';
         var options = $('#' + id).attr('data-options') ? $('#' + id).attr('data-options').split('|') : [];
         switch(type){
