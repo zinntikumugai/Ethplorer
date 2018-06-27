@@ -1022,7 +1022,7 @@ Ethplorer = {
                 if(balances[k].price){
                     var rate = oToken.price;
                     var price = balances[k].balanceUSD;
-                    value += ('<br><div class="balances-price" title="$' + price + '">$&nbsp;' + Ethplorer.Utils.formatNum(price, true, 2, true) + ' ');
+                    value += ('<br><div class="balances-price" title="$' + price + '">$&nbsp;' + Ethplorer.Utils.toBig(price).toFixed(2) + ' ');
                     if(rate.diff){
                         var cls = getDiffClass(rate.diff);
                         var hint = 'Updated at ' + Ethplorer.Utils.ts2date(rate.ts, true);
@@ -1055,7 +1055,7 @@ Ethplorer = {
                 $('#address-token-balances table').append(row);
             }
             if(totalPrice){
-                var value = '~ $&nbsp;' + Ethplorer.Utils.formatNum(totalPrice, true, 2, true, true);
+                var value = '~ $&nbsp;' + Ethplorer.Utils.toBig(totalPrice).toFixed(2);
                 if(totalDiff){
                     var cls = getDiffClass(totalDiff);
                     if(totalDiff > 0){
