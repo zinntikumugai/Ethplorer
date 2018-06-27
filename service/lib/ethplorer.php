@@ -2771,6 +2771,7 @@ class Ethplorer {
     }
 
     public function getAddressPriceHistoryGrouped($address, $updateCache = FALSE, $withEth = FALSE){
+        $withEth = FALSE;
         evxProfiler::checkpoint('getAddressPriceHistoryGrouped', 'START', 'address=' . $address . ', withEth=' . ($withEth ? 'TRUE' : 'FALSE'));
 
         $cache = 'address_operations_history-' . $address . ($withEth ? '-eth' : '');
