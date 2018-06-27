@@ -113,17 +113,20 @@ class ethplorerController {
         if($command && (in_array($command, $this->apiCommands) || in_array($command, $this->apiPostCommands)) && method_exists($this, $command)){
             $key = in_array($command, $this->apiCommands) ? $this->getRequest('apiKey', FALSE) : $this->getPostRequest('apiKey', FALSE);
             if(!$key || !$this->db->checkAPIkey($key)){
+                header('HTTP/1.1 403 Forbidden');
                 $this->sendError(1, 'Invalid API key');
             }
             $this->defaults = $this->db->getAPIKeyDefaults($key, $command);
 
             if($this->db->isSuspendedAPIKey($key)){
+                header('HTTP/1.1 403 Forbidden');
                 $this->sendError(133, 'API key temporary suspended. Contact support.');
             }
             
             if(in_array($command, $this->apiPostCommands)){
                 // @todo: Temporary solution, special key property will be used later
                 if($key == "freekey"){
+                    header('HTTP/1.1 403 Forbidden');
                     $this->sendError(1, 'Invalid API key');
                 }
                 $result = call_user_func(array($this, $command));
