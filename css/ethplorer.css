@@ -564,6 +564,11 @@ a.dashed {
     text-overflow: ellipsis
 }
 
+#ethplorer-path .tx-pending {
+    padding-top: 10px;
+    margin: 0;
+}
+
 #ethplorer-alert {
     display: none;
     padding: 16px;

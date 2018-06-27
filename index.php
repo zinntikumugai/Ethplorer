@@ -343,6 +343,10 @@ if(is_array($rParts) && isset($rParts[2])){
                                     <td>Value</td>
                                     <td id="transfer-operation-value" class="list-field"></td>
                                 </tr>
+                                <tr class="blue">
+                                    <td>Value</td>
+                                    <td id="transfer-operation-valueEth" data-type="ether-full" class="list-field"></td>
+                                </tr>
                                 <tr>
                                     <td>Date</td>
                                     <td id="transfer-tx-timestamp" data-type="localdate" class="list-field"></td>
@@ -462,7 +466,7 @@ if(is_array($rParts) && isset($rParts[2])){
                                 </tr>
                                 <tr>
                                     <td>Gas Price</td>
-                                    <td id="transaction-tx-gasPrice" class="list-field" data-type="ether"></td>
+                                    <td id="transaction-tx-gasPrice" class="list-field" data-type="ether-gwei"></td>
                                  </tr>
                                  <tr>
                                     <td>Tx Cost</td>

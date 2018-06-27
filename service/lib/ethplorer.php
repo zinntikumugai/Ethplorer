@@ -669,13 +669,41 @@ class Ethplorer {
                 "tx" => $tx,
                 "contracts" => array()
             );
+
             // if transaction is not mained trying get it from pedding pool
             if(false === $tx){
                 $transaction = $this->getTransactionFromPoolByHash($hash);
                 if ($transaction) {
                     // transaction is pending if has no blockHash
-                    $transaction['pending'] = true;
+                    $result['pending'] = true;
                     $result['tx'] = $transaction ?: false;
+                    if (isset($transaction['to'])) {
+                        $token = $this->getToken($transaction['to']);
+                        if ($token && isset($transaction['input'])) {
+                            $operation = $this->getTokenOperationData($transaction['input'], $token['decimals']);
+                            if ($operation && strtoupper($operation['code']) === '0XA9059CBB') {
+                                $result['token'] = $token;
+                                $result['operations'] = [
+                                    [
+                                        'transactionHash' => $transaction['hash'],
+                                        'blockNumber' => null,
+                                        'contract' => $operation['from'],
+                                        'value' => $operation['value'],
+                                        'intValue' => (int)$operation['value'],
+                                        'type' => 'Transfer',
+                                        'isEth' => false,
+                                        'priority' => 0,
+                                        'from' => $transaction['from'],
+                                        'to' => $transaction['to'],
+                                        'addresses' => '',
+                                        'success' => false,
+                                        'pending' => true,
+                                        'token' => $token
+                                    ]
+                                ];
+                            }
+                        }
+                    }
                 }
             }
             $tokenAddr = false;
@@ -694,40 +722,47 @@ class Ethplorer {
                 }
             }
             $result["contracts"] = array_values(array_unique($result["contracts"]));
-            if($tokenAddr){
-                // If no price, but token have price, save current and set cache lifetime for 1 hour
-                if($token = $this->getToken($tokenAddr)){
-                    $result['token'] = $token;
-                    $result['token']['priceHistoric'] = $this->_getRateByDate($tokenAddr, date("Y-m-d", $tx['timestamp']));
-                }
-            }
-            $result["operations"] = $this->getOperations($hash);
-            if(is_array($result["operations"]) && count($result["operations"])){
-                foreach($result["operations"] as $idx => $operation){
-                    if($result["operations"][$idx]['contract'] !== $tx["to"]){
-                        $result["contracts"][] = $operation['contract'];
-                    }
-                    if($token = $this->getToken($operation['contract'])){
+            if (!isset($result['pending'])) {
+                if($tokenAddr){
+                    // If no price, but token have price, save current and set cache lifetime for 1 hour
+                    if($token = $this->getToken($tokenAddr)){
                         $result['token'] = $token;
-                        $result["operations"][$idx]['type'] = ucfirst($operation['type']);
-                        $result["operations"][$idx]['token'] = $token;
+                        $result['token']['priceHistoric'] = $this->_getRateByDate($tokenAddr, date("Y-m-d", $tx['timestamp']));
+                    }
+                }
+                $result["operations"] = $this->getOperations($hash);
+                if(is_array($result["operations"]) && count($result["operations"])){
+                    foreach($result["operations"] as $idx => $operation){
+                        if($result["operations"][$idx]['contract'] !== $tx["to"]){
+                            $result["contracts"][] = $operation['contract'];
+                        }
+                        if($token = $this->getToken($operation['contract'])){
+                            $result['token'] = $token;
+                            $result["operations"][$idx]['type'] = ucfirst($operation['type']);
+                            $result["operations"][$idx]['token'] = $token;
+                        }
                     }
                 }
             }
-            if($result['tx'] && !isset($result['tx']['pending'])) {
+            if($result['tx'] && !isset($result['pending'])) {
                 $this->oCache->save($cache, $result);
             }
         }
         if(is_array($result) && is_array($result['tx'])){
-            $confirmations = 1;
-            $lastblock = $this->getLastBlock();
-            if($lastblock){
-                $confirmations = $lastblock - $result['tx']['blockNumber'] + 1;
-                if($confirmations < 1){
-                    $confirmations = 1;
+            if (!isset($result['pending'])) {
+                $confirmations = 1;
+                $lastblock = $this->getLastBlock();
+                if($lastblock){
+                    $confirmations = $lastblock - $result['tx']['blockNumber'] + 1;
+                    if($confirmations < 1){
+                        $confirmations = 1;
+                    }
                 }
+                $result['tx']['confirmations'] = $confirmations;
+            } else {
+                // if transaction in pending status
+                $result['tx']['confirmations'] = 0;
             }
-            $result['tx']['confirmations'] = $confirmations;
 
             // Temporary
             $methodsFile = dirname(__FILE__) . "/../methods.sha3.php";
@@ -741,11 +776,31 @@ class Ethplorer {
                 }
             }
         }
-        if(is_array($result) && isset($result['token']) && is_array($result['token'])){
+        if(is_array($result) && isset($result['token']) && is_array($result['token']) && !isset($result['pending'])){
             $result['token'] = $this->getToken($result['token']['address']);
         }
         evxProfiler::checkpoint('getTransactionDetails', 'FINISH');
         return $result;
+    }
+
+    /**
+     * Return operation details
+     * @param String $input Transaction input raw data
+     * @param Int $decimals
+     * @return Array|null Operation data
+     */
+    private function getTokenOperationData($input, $decimals = 18) {
+        preg_match('/^(?<code>.{10})(?<from>.{64})(?<value>.{64})(?<rest>.*)?$/', $input, $operation);
+        if ($operation) {
+            $ten = Decimal::create(10);
+            $dec = Decimal::create($decimals);
+            $value = Decimal::create(hexdec($operation['value']));
+            $operation['value'] = '' . $value->div($ten->pow($dec), 4);
+
+            return $operation;
+        }
+
+        return null;
     }
 
     /**
@@ -759,13 +814,20 @@ class Ethplorer {
         $cacheId = 'ethTransactionByHash-' . $hash;
         $transaction = $this->oCache->get($cacheId, false, true, 30);
         if(false === $transaction){
-            $transaction = $this->_callRPC('eth_getTransactionByHash', [$hash]);
-            if (false !== $transaction) {
-                $transaction['blockNumber'] = $transaction['blockNumber'] ? hexdec(str_replace('0x', '', $transaction['blockNumber'])) : null;
-                $transaction['value'] = hexdec(str_replace('0x', '', $transaction['value'])) / pow(10, 18);
-                $transaction['gas'] = hexdec(str_replace('0x', '', $transaction['gas'])) / pow(10, 18);
-                $transaction['gasPrice'] = hexdec(str_replace('0x', '', $transaction['gasPrice'])) / pow(10, 18);
-                $transaction['nonce'] = hexdec(str_replace('0x', '', $transaction['nonce']));
+            $transactionRaw = $this->_callRPC('eth_getTransactionByHash', [$hash]);
+            if (false !== $transactionRaw) {
+                $transaction = [
+                    'hash' => $transactionRaw['blockHash'],
+                    'blockNumber' => $transactionRaw['blockNumber'] ? hexdec(str_replace('0x', '', $transactionRaw['blockNumber'])) : null,
+                    'to' => $transactionRaw['to'],
+                    'from' => $transactionRaw['from'],
+                    'value' => hexdec(str_replace('0x', '', $transactionRaw['value'])) / pow(10, 18),
+                    'input' => $transactionRaw['input'],
+                    'gasLimit' => hexdec(str_replace('0x', '', $transactionRaw['gas'])),
+                    'gasPrice' => hexdec(str_replace('0x', '', $transactionRaw['gasPrice'])) / pow(10, 18),
+                    'nonce' => hexdec(str_replace('0x', '', $transactionRaw['nonce']))
+                ];
+
                 $this->oCache->save($cacheId, $transaction);
             } else {
                 file_put_contents(__DIR__ . '/../log/parity.log', '[' . date('Y-m-d H:i:s') . "] - getting transaction by hash from pending pool is failed\n", FILE_APPEND);
