@@ -665,6 +665,10 @@ a.dashed {
 #address-balances-total-inner {
     max-width: 250px;
     display: inline-block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    line-height: 1em;
+    overflow-x: hidden;
 }
 
 .total-supply-usd {
