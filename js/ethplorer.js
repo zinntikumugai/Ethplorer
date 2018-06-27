@@ -1839,7 +1839,7 @@ Ethplorer = {
                             var cls = change > 0 ? 'diff-up' : 'diff-down';
                             var diff = "";
                             // var diff = change ? (' <span class="' + cls + '">(' + Ethplorer.Utils.round(change, 2) + '%)</span>') : '';
-                            res = res + '<br /><b class="transfer-usd">$ ' + price + diff + '</b>';
+                            res = res + '<br /><span class="transfer-usd tx-value-price">$ ' + price + diff + '</span>';
                         }
                     }
                     value = res;
