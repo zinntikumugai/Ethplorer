@@ -2069,7 +2069,7 @@ Ethplorer = {
                 for(var i=1; i<parseInt(parts[1]); i++){
                     res = '0' + res;
                 }
-                return '0.' + res;
+                num = parseFloat('0.' + res);
             }
 
             if(withDecimals){
