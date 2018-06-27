@@ -637,6 +637,7 @@ a.dashed {
 }
 
 .tx-value-price {
+    font-weight: bold;
     font-size: 0.9em;
     color: white;
     opacity: 0.6;
