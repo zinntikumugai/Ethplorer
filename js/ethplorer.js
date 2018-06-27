@@ -328,7 +328,7 @@ Ethplorer = {
                         location.reload();
                     }
                     // is transaction is pending
-                    if(data.pending && stopCheckingPendingAt < Date.now()){
+                    if(data.pending && stopCheckingPendingAt > Date.now()){
                         setTimeout(function() {
                             loadTxDetails(false);
                         }, 30000); // every 30 seconds
@@ -433,7 +433,7 @@ Ethplorer = {
             Ethplorer.gaSendEvent('pageView', 'viewTx', 'tx-not-found');
             Ethplorer.error(
                 'Transaction not found',
-                'If transaction was created recently, it may not have reached mempool yet.<br/> Wait a minute and try to <a href="javascript:void()" onClick="Ethplorer.gaSendEvent(\'pageView\', \'viewTx\', \'refresh\'); location.reload();">refresh</a> the page.'
+                'If transaction was created recently, it may not have reached mempool yet.<br/> Wait a minute and try to <a href="javascript:void()" onClick="Ethplorer.gaSendEvent(\'pageView\', \'viewTx\', \'refresh\'); setTimeout(function() {location.reload();}, 1000)">refresh</a> the page.'
             );
             return;
         }
@@ -2069,7 +2069,7 @@ Ethplorer = {
                 for(var i=1; i<parseInt(parts[1]); i++){
                     res = '0' + res;
                 }
-                num = parseFloat('0.' + res);
+                return '0.' + res;
             }
 
             if(withDecimals){
