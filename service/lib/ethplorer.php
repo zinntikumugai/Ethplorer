@@ -761,7 +761,7 @@ class Ethplorer {
                 $result['tx']['confirmations'] = $confirmations;
             } else {
                 // if transaction in pending status
-                $result['tx']['confirmations'] = $result['tx']['blockNumber'] !== null ? 1 : 0;
+                $result['tx']['confirmations'] = !empty($result['tx']['blockNumber']) ? 1 : 0;
             }
 
             // Temporary
