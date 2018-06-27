@@ -724,13 +724,14 @@ Ethplorer = {
                 Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
                 
                 // Custom price value
+                var value = Ethplorer.Utils.formatNum(txData.tx.value, true, 18, true, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH';
                 if(txData.tx.value && txData.tx.usdPrice && Ethplorer.ethPrice.rate) {
-                    value =  Ethplorer.Utils.formatNum(txData.tx.value, true, 18, true, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH<br><span class="tx-value-price">$&nbsp;' + Ethplorer.Utils.formatNum(Ethplorer.ethPrice.rate * txData.tx.value, true, 2, true, true) + '</span>';
+                    value +=  '<br><span class="tx-value-price">$&nbsp;' + Ethplorer.Utils.formatNum(Ethplorer.ethPrice.rate * txData.tx.value, true, 2, true, true) + '</span>';
                     value += getHistDiffPriceString(txData.tx.usdPrice, Ethplorer.ethPrice.rate);
+                    // Price of eth on transaction exceute
+                    $('#historical-price').html(getHistUsdPriceString(txData.tx.usdPrice, txData.tx.value));
                 }
                 $('#transfer-operation-value').html(value);
-                // Price of eth on transaction exceute
-                $('#historical-price').html(getHistUsdPriceString(txData.tx.usdPrice, txData.tx.value));
 
                 if(oTx.blockNumber && !txData.pending){
                     $('#txTokenStatus')[txData.operation.success ? 'removeClass' : 'addClass']('text-danger');
