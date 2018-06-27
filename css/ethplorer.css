@@ -1578,6 +1578,7 @@ a.token-update {
 
 #cookie-notification {
     position: fixed;
+    z-index: 1000;
     width: 100%;
     bottom: 0;
     padding: 10px 0;
