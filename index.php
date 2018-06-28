@@ -68,8 +68,8 @@ if(isset($_GET['debug']) && $_GET['debug']){
 }
 
 $withEth = false;
-if(isset($_GET['withEth']) && $_GET['withEth']){
-    $withEth = $_GET['withEth'];
+if((isset($_GET['withEth']) && (bool)$_GET['withEth']) || (isset($_GET['witheth']) && (bool)$_GET['witheth'])){
+    $withEth = true;
 }
 
 $hasNotes = isset($aConfig['adv']) && count($aConfig['adv']);
@@ -818,30 +818,6 @@ if(Ethplorer.Config.fb){
     fbq('track', 'PageView');
 }
 <?php if(isset($aConfig['scriptAddon'])) echo $aConfig['scriptAddon']; ?></script>
-<div id="cookie-notification" class="hidden">
-    <div class="container text-center">
-        <div class="row">
-            <div class="col-xs-12">
-                <span>This website uses cookies to ensure you get the best experience on our website.</span>
-                <a class="agree-using-cookies btn btn-lg btn-primary hidden-xs" href="">Got it</a>
-                <a class="agree-using-cookies btn btn-lg btn-block btn-primary visible-xs-inline-block" href="">Got it</a>
-            </div>
-        </div>
-    </div>
-</div>
-<script>
-    var matches = document.cookie.match(new RegExp("(?:^|; )agree_to_use=([^;]*)"));
-    var agreeToUseCookie = matches ? decodeURIComponent(matches[1]) : undefined;
-    if (!agreeToUseCookie) {
-        $('#cookie-notification').removeClass('hidden');
-        $('.agree-using-cookies').on('click', function() {
-            var date = new Date();
-            date.setFullYear(date.getFullYear() + 2); // + 2 years
-            document.cookie = 'agree_to_use=' + Date.now() + '; path=/; expires=' + date.toUTCString();
-            $('#cookie-notification').addClass('hide');
-            return false;
-        });
-    }
-</script>
+<script src="/js/cookie-notify.js" async></script>
 </body>
 </html>
