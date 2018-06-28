@@ -2070,15 +2070,11 @@ Ethplorer = {
                 return num.toString();
             }
             if((num.toString().indexOf("e-") > 0) && withDecimals){
-                return Ethplorer.Utils.toBig(num).toFixed(decimals);
-                /*
-                var parts = num.toString().split("e-");
-                var res = parts[0].replace('.', '');
-                for(var i=1; i<parseInt(parts[1]); i++){
-                    res = '0' + res;
+                var res = Ethplorer.Utils.toBig(num).toFixed(decimals);
+                if(cutZeroes){
+                    res = res.replace(/0*$/, '');
                 }
-                return '0.' + res;
-                */
+                return res;
             }
 
             if(withDecimals){
