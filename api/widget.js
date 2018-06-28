@@ -161,7 +161,7 @@ ethplorerWidget = {
                 apiKey: 'ethplorer.widget',
                 domain: document.location.href,
                 period: 730,
-                withEth: preloadMethod.options.withEth ? preloadMethod.options.withEth : false,
+                withEth: preloadMethod.options.withEth ? preloadMethod.options.withEth : '',
             };
 
             $.getJSON(api, params, function(_address){
