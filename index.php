@@ -822,7 +822,7 @@ if(Ethplorer.Config.fb){
     <div class="container text-center">
         <div class="row">
             <div class="col-xs-12">
-                <span>This website uses cookies to ensure you get the best experience on our website.</span>
+                <span>We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies. Find out more in <a href="https://ethplorer.io/privacy" target="_blank">Privacy Policy</a>.</span>
                 <a class="agree-using-cookies btn btn-lg btn-primary hidden-xs" href="">Got it</a>
                 <a class="agree-using-cookies btn btn-lg btn-block btn-primary visible-xs-inline-block" href="">Got it</a>
             </div>
