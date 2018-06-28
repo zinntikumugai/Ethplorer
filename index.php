@@ -68,7 +68,7 @@ if(isset($_GET['debug']) && $_GET['debug']){
 }
 
 $withEth = false;
-if(isset($_GET['withEth']) && (bool)$_GET['withEth']){
+if((isset($_GET['withEth']) && (bool)$_GET['withEth']) || (isset($_GET['witheth']) && (bool)$_GET['witheth'])){
     $withEth = $_GET['withEth'];
 }
 
