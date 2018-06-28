@@ -13,12 +13,11 @@ $(document).ready(function() {
     var agreeToUseCookie = matches && decodeURIComponent(matches[1]);
     if (!agreeToUseCookie) {
         $('body').append(template);
-        template.hide().fadeIn(300);
         $('.agree-using-cookies').on('click', function() {
             var date = new Date();
             date.setFullYear(date.getFullYear() + 2); // + 2 years
             document.cookie = 'agree_to_use=' + Date.now() + '; path=/; expires=' + date.toUTCString();
-            $('#cookie-notification').fadeOut(500).hide();
+            $('#cookie-notification').hide();
             return false;
         });
     }
