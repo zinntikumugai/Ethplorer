@@ -668,7 +668,9 @@ a.dashed {
     white-space: nowrap;
     text-overflow: ellipsis;
     line-height: 1em;
-    overflow-x: hidden;
+    overflow: hidden;
+    position: relative;
+    top: 2px;
 }
 
 .total-supply-usd {
