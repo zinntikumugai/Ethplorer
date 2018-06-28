@@ -12,13 +12,15 @@ $(document).ready(function() {
     var matches = document.cookie.match(new RegExp("(?:^|; )agree_to_use=([^;]*)"));
     var agreeToUseCookie = matches && decodeURIComponent(matches[1]);
     if (!agreeToUseCookie) {
-        $('body').append(template);
-        $('.agree-using-cookies').on('click', function() {
-            var date = new Date();
-            date.setFullYear(date.getFullYear() + 2); // + 2 years
-            document.cookie = 'agree_to_use=' + Date.now() + '; path=/; expires=' + date.toUTCString();
-            $('#cookie-notification').hide();
-            return false;
-        });
+        setTimeout(function() {
+            $('body').append(template);
+            $('.agree-using-cookies').on('click', function() {
+                var date = new Date();
+                date.setFullYear(date.getFullYear() + 2); // + 2 years
+                document.cookie = 'agree_to_use=' + Date.now() + '; path=/; expires=' + date.toUTCString();
+                $('#cookie-notification').hide();
+                return false;
+            });
+        }, 200);
     }
 });
