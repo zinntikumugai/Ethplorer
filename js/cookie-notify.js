@@ -18,7 +18,7 @@ $(document).ready(function() {
             var date = new Date();
             date.setFullYear(date.getFullYear() + 2); // + 2 years
             document.cookie = 'agree_to_use=' + Date.now() + '; path=/; expires=' + date.toUTCString();
-            $('#cookie-notification').fadeOut(500);
+            $('#cookie-notification').fadeOut(500).hide();
             return false;
         });
     }
