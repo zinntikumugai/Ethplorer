@@ -418,9 +418,9 @@ Ethplorer = {
         // $('#ethplorer-path').html('<h1>Transaction hash: ' + txHash + '</h1>');
         $('#ethplorer-path').show();
         if (txData.pending && txData.tx && txData.tx.blockNumber) {
-            $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Processing transation&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
+            $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Processing transaction&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
         } else if (txData.pending) {
-            $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Pending transation&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
+            $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Pending transaction&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
         }
 
         $('.list-field').empty();
