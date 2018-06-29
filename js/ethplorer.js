@@ -59,6 +59,14 @@ Ethplorer = {
             }
         }
         Ethplorer.showTx = Ethplorer.Storage.get('showTx', null);
+        var showTxHash = window.location.hash.substr(1);
+        if(showTxHash){
+            aShowTxHash = showTxHash.split('=');
+            if(aShowTxHash.length > 1 && (aShowTxHash[0] == 'showTx') && (['all', 'eth', 'tokens'].indexOf(aShowTxHash[1]) >= 0)){
+                Ethplorer.showTx = aShowTxHash[1];
+                Ethplorer.Storage.set('showTx', aShowTxHash[1]);
+            }
+        }
         Ethplorer.route();
         $('#network').text(Ethplorer.Config.testnet ? 'Test' : 'Modern');
         $('.navbar-nav li[data-page]').click(function(){
