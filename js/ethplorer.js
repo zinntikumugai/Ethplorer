@@ -418,9 +418,9 @@ Ethplorer = {
         // $('#ethplorer-path').html('<h1>Transaction hash: ' + txHash + '</h1>');
         $('#ethplorer-path').show();
         if (txData.pending && txData.tx && txData.tx.blockNumber) {
-            $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Processing transation&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
+            $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Processing transaction&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
         } else if (txData.pending) {
-            $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Pending transation&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
+            $('#ethplorer-path').html($('#ethplorer-path').text() + '<br /><h4 class="text-danger tx-pending">Pending transaction&nbsp;&nbsp;<i class="table-loading fa fa-spinner fa-spin"></i></h4>')
         }
 
         $('.list-field').empty();
@@ -707,7 +707,7 @@ Ethplorer = {
             if (
                 (Ethplorer.Storage.get('showTx') === 'all' || Ethplorer.Storage.get('showTx') === 'eth') &&
                 (!txData.tx.operations || !txData.tx.operations.length) &&
-                txData.tx.success && txData.tx.value > 0
+                txData.tx.value > 0
             ) {
                 $('#token-operation-block').show();
                 $('#token-operation-block .token-name:eq(0)').html('ETH');
@@ -719,21 +719,27 @@ Ethplorer = {
                     success: txData.tx.success,
                     usdPrice: txData.tx.usdPrice
                 }
-
-                Ethplorer.fillValues('transfer', txData, ['operation', 'operation.from', 'operation.to']);
-                Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
                 
-                // Custom price value
+                var operationFields = ['operation', 'operation.from', 'operation.to']; 
                 var value = Ethplorer.Utils.formatNum(txData.tx.value, true, 18, true, true) + '&nbsp;<i class="fab fa-ethereum"></i>&nbsp;ETH';
-                if(txData.tx.value && Ethplorer.ethPrice.rate) {
-                    value += '<br><span class="tx-value-price">$&nbsp;' + Ethplorer.Utils.formatNum(Ethplorer.ethPrice.rate * txData.tx.value, true, 2, true, true) + '</span>';
-                    if (txData.tx.usdPrice) {
-                        value += getHistDiffPriceString(txData.tx.usdPrice, Ethplorer.ethPrice.rate);
-                        // Price of eth on transaction exceute
-                        $('#historical-price').html(getHistUsdPriceString(txData.tx.usdPrice, txData.tx.value));
+                if (txData.tx.success) {
+                    // Custom price value
+                    if(txData.tx.value && Ethplorer.ethPrice.rate) {
+                        value += '<br><span class="tx-value-price">$&nbsp;' + Ethplorer.Utils.formatNum(Ethplorer.ethPrice.rate * txData.tx.value, true, 2, true, true) + '</span>';
+                        if (txData.tx.usdPrice) {
+                            value += getHistDiffPriceString(txData.tx.usdPrice, Ethplorer.ethPrice.rate);
+                            // Price of eth on transaction exceute
+                            $('#historical-price').html(getHistUsdPriceString(txData.tx.usdPrice, txData.tx.value));
+                        }
                     }
+                    $('#transfer-operation-value').html(value);
+                } else {
+                    // if no history show with using fillValues
+                    operationFields.push('operation.valueEth');
                 }
-                $('#transfer-operation-value').html(value);
+
+                Ethplorer.fillValues('transfer', txData, operationFields);
+                Ethplorer.fillValues('transfer', txData, ['tx', 'tx.timestamp']);
 
                 if(oTx.blockNumber && !txData.pending){
                     $('#txTokenStatus')[txData.operation.success ? 'removeClass' : 'addClass']('text-danger');
@@ -1839,7 +1845,7 @@ Ethplorer = {
                             var cls = change > 0 ? 'diff-up' : 'diff-down';
                             var diff = "";
                             // var diff = change ? (' <span class="' + cls + '">(' + Ethplorer.Utils.round(change, 2) + '%)</span>') : '';
-                            res = res + '<br /><span class="transfer-usd tx-value-price">$ ' + price + diff + '</span>';
+                            res = res + '<br /><span class="tx-value-price">$ ' + price + diff + '</span>';
                         }
                     }
                     value = res;
@@ -2068,15 +2074,11 @@ Ethplorer = {
                 return num.toString();
             }
             if((num.toString().indexOf("e-") > 0) && withDecimals){
-                return Ethplorer.Utils.toBig(num).toFixed(decimals);
-                /*
-                var parts = num.toString().split("e-");
-                var res = parts[0].replace('.', '');
-                for(var i=1; i<parseInt(parts[1]); i++){
-                    res = '0' + res;
+                var res = Ethplorer.Utils.toBig(num).toFixed(decimals);
+                if(cutZeroes){
+                    res = res.replace(/0*$/, '');
                 }
-                return '0.' + res;
-                */
+                return res;
             }
 
             if(withDecimals){
