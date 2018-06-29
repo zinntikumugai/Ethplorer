@@ -1607,7 +1607,7 @@ class Ethplorer {
                     if(isset($aTokenInfo[$contract])){
                         $token = $aTokenInfo[$contract];
                     }else{
-                        if($contract == 'ETH'){
+                        if($contract == 'ETH' || $contract = self::ADDRESS_ETH){
                             $token = $this->getEthToken();
                         }else{
                             $token = $this->getToken($contract, TRUE);
