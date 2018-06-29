@@ -1604,7 +1604,15 @@ class Ethplorer {
                     $tokenName = '';
                     $tokenSymbol = '';
                     $contract = $record['contract'];
-                    $token = isset($aTokenInfo[$contract]) ? $aTokenInfo[$contract] : $this->getToken($contract, TRUE);
+                    if(isset($aTokenInfo[$contract])){
+                        $token = $aTokenInfo[$contract];
+                    }else{
+                        if($contract == self::ADDRESS_ETH){
+                            $token = $this->getEthToken();
+                        }else{
+                            $token = $this->getToken($contract, TRUE);
+                        }
+                    }
                     if($token){
                         $tokenName = isset($token['name']) ? $token['name'] : '';
                         $tokenSymbol = isset($token['symbol']) ? $token['symbol'] : '';
