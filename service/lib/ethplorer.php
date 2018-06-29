@@ -1600,7 +1600,7 @@ class Ethplorer {
                 $from = isset($record['from']) ? $record['from'] : '';
                 $to = isset($record['to']) ? $record['to'] : '';
                 $tokenAddress = '';
-                if($addTokenInfo && isset($record['contract'])){
+                if(isset($record['contract'])){
                     $tokenName = '';
                     $tokenSymbol = '';
                     $contract = $record['contract'];
