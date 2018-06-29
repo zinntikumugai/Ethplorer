@@ -1567,7 +1567,7 @@ class Ethplorer {
         if(FALSE === $result){
             $cr = "\r\n";
             $spl = ";";
-            $result = 'date;txhash;from;to;token-name;token-address;value;symbol' . $cr;
+            $result = 'date;txhash;from;to;token-name;token-address;value;usdPrice;symbol' . $cr;
 
             $options = array(
                 'address' => $address,
