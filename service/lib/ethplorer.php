@@ -1562,7 +1562,7 @@ class Ethplorer {
     public function getAddressOperationsCSV($address, $type = 'transfer'){
         $limit = 1000;
 
-        $cache = 'address_operations_csv-' . $address . '-' . $limit;
+        $cache = 'address_operations_csv-' . $address . '-' . $limit . '-' . $this->showTx;
         $result = $this->oCache->get($cache, false, true, 600);
         if(FALSE === $result){
             $cr = "\r\n";
