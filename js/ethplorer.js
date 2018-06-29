@@ -94,6 +94,11 @@ Ethplorer = {
             if(href.indexOf('&hash') == -1){
                 href += '&hash=' + md5($(this).attr("href") + hashDate);
             }
+            var showTx = Ethplorer.Storage.get('showTx', null);
+            if(showTx){
+                href += '&showTx=' + showTx;
+            }
+
             $(this).attr("href", href);
             /*$('.export-csv').hide();
             $('.export-csv-spinner').show();
@@ -1898,11 +1903,7 @@ Ethplorer = {
         console.log('Download data for ' + address);
         address = address.replace(/^\s+/, '').replace(/\s+$/, '');
         if(address.length && Ethplorer.Utils.isAddress(address)){
-            var showTx = Ethplorer.Storage.get('showTx', null);
             var data = {data: address, csv: true};
-            if(showTx){
-                data['showTx'] = showTx;
-            }
             $.get(Ethplorer.service, data, function(data, textStatus, jqXHR){
                 //console.log(data);
                 Ethplorer.saveData(data, 'ethplorer.csv', 'text/csv');
