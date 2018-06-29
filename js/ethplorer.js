@@ -2085,7 +2085,7 @@ Ethplorer = {
             if((num.toString().indexOf("e-") > 0) && withDecimals){
                 var res = Ethplorer.Utils.toBig(num).toFixed(decimals);
                 if(cutZeroes){
-                    res = res.replace(/0*$/, '').replace(/\.$/, '');
+                    res = res.replace(/0*$/, '').replace(/\.$/, '.00');
                 }
                 return res;
             }
