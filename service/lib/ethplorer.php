@@ -1599,6 +1599,7 @@ class Ethplorer {
                 $hash = $record['transactionHash'];
                 $from = isset($record['from']) ? $record['from'] : '';
                 $to = isset($record['to']) ? $record['to'] : '';
+                $dec = false;
                 $tokenAddress = '';
                 if(isset($record['contract'])){
                     $tokenName = '';
@@ -1607,7 +1608,7 @@ class Ethplorer {
                     if(isset($aTokenInfo[$contract])){
                         $token = $aTokenInfo[$contract];
                     }else{
-                        if($contract == 'ETH' || $contract = self::ADDRESS_ETH){
+                        if($contract == 'ETH'){
                             $token = $this->getEthToken();
                         }else{
                             $token = $this->getToken($contract, TRUE);
@@ -1617,7 +1618,7 @@ class Ethplorer {
                         $tokenName = isset($token['name']) ? $token['name'] : '';
                         $tokenSymbol = isset($token['symbol']) ? $token['symbol'] : '';
                         $tokenAddress = isset($token['address']) ? $token['address'] : '';
-                        if(isset($token['decimals'])) $dec = Decimal::create($token['decimals']);
+                        if(isset($token['decimals']) && ($contract != 'ETH')) $dec = Decimal::create($token['decimals']);
                         if(!isset($aTokenInfo[$contract])) $aTokenInfo[$contract] = $token;
                     }
                 }
