@@ -1629,6 +1629,7 @@ class Ethplorer {
                     $value = $value->div($ten->pow($dec), 4);
                 }
                 $value = str_replace(".", ",", $value);
+                $usdPrice = str_replace(".", ",", $usdPrice);
                 $result .= $date . $spl . $hash . $spl . $from . $spl . $to . $spl . $tokenName . $spl . $tokenAddress . $spl . $value . $spl . $usdPrice . $spl . $tokenSymbol . $cr;
             }
             $this->oCache->save($cache, $result);
