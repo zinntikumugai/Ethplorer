@@ -1599,6 +1599,7 @@ class Ethplorer {
                 $hash = $record['transactionHash'];
                 $from = isset($record['from']) ? $record['from'] : '';
                 $to = isset($record['to']) ? $record['to'] : '';
+                $usdPrice = isset($record['usdPrice']) ? $record['usdPrice'] : '';
                 $dec = false;
                 $tokenAddress = '';
                 if(isset($record['contract'])){
@@ -1627,7 +1628,8 @@ class Ethplorer {
                     $value = Decimal::create($record['value']);
                     $value = $value->div($ten->pow($dec), 4);
                 }
-                $result .= $date . $spl . $hash . $spl . $from . $spl . $to . $spl . $tokenName . $spl . $tokenAddress . $spl . $value . $spl . $tokenSymbol . $cr;
+                $value = str_replace(".", ",", $value);
+                $result .= $date . $spl . $hash . $spl . $from . $spl . $to . $spl . $tokenName . $spl . $tokenAddress . $spl . $value . $spl . $usdPrice . $spl . $tokenSymbol . $cr;
             }
             $this->oCache->save($cache, $result);
         }
